@@ -102,3 +102,60 @@ export const deleteUserApi = async (id: string): Promise<void> => {
     });
   }
 };
+
+
+export const getInstansiOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
+  if (USE_REAL_API) {
+    // Nanti ganti endpoint sesuai buatan Backend
+    const response = await fetch(`${BASE_URL}/instansi-options`);
+    return response.json();
+  } else {
+    // Data Dummy Instansi
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          { label: "Polinema", value: "Polinema" },
+          { label: "SMAN 1 Malang", value: "SMAN 1 Malang" },
+          { label: "Universitas Brawijaya", value: "Universitas Brawijaya" },
+        ]);
+      }, 300);
+    });
+  }
+};
+
+export const getKelasOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
+  if (USE_REAL_API) {
+    // Nanti ganti endpoint sesuai buatan Backend
+    const response = await fetch(`${BASE_URL}/kelas-options`);
+    return response.json();
+  } else {
+    // Data Dummy Kelas
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          { label: "10 IPA 1", value: "10 IPA 1" },
+          { label: "11 IPS 2", value: "11 IPS 2" },
+          { label: "12 Bahasa", value: "12 Bahasa" },
+        ]);
+      }, 300);
+    });
+  }
+};
+
+export const getRoleOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
+  if (USE_REAL_API) {
+    const response = await fetch(`${BASE_URL}/role-options`);
+    return response.json();
+  } else {
+    // Data Dummy Role
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          { label: "Admin", value: "Admin" },
+          { label: "Pengajar", value: "Pengajar" },
+          { label: "Pelajar", value: "Pelajar" },
+        ]);
+      }, 300);
+    });
+  }
+};

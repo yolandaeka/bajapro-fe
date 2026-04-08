@@ -15,6 +15,7 @@ import {
   QuestionCircleOutlined,
   SafetyCertificateOutlined,
   DeploymentUnitOutlined,
+  BankOutlined
 } from "@ant-design/icons";
 import { Layout, Menu, ConfigProvider, Button } from "antd";
 import type { MenuProps } from "antd";
@@ -81,7 +82,7 @@ export const allMenuItems: MenuItem[] = [
       {
         key: "kelas",
         label: <Link href="/dashboard/master/kelas">Class</Link>,
-        icon: <TeamOutlined />,
+        icon: <BankOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
       },
       {

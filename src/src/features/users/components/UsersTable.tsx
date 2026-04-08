@@ -1,6 +1,6 @@
 import React from "react";
-import { Table, Space, Button, Tag, Popconfirm } from "antd"; // 👈 Tambahkan Popconfirm
-import { EyeFilled, EditFilled, DeleteFilled, TeamOutlined } from "@ant-design/icons"; // 👈 Pakai Filled
+import { Table, Space, Button, Tag, Popconfirm } from "antd"; 
+import { EyeFilled, EditFilled, DeleteFilled, TeamOutlined } from "@ant-design/icons"; 
 import { useRouter } from "next/navigation";
 import { UserData } from "../types";
 
@@ -32,20 +32,20 @@ export const UserTable: React.FC<UserTableProps> = ({
       title: "Nama", 
       dataIndex: "name", 
       key: "name", 
-      width: "35%", // 👈 Kolom Nama dibesarkan
-      sorter: (a: UserData, b: UserData) => a.name.localeCompare(b.name), // 👈 Logika sorting A-Z
+      width: "35%", 
+      sorter: (a: UserData, b: UserData) => a.name.localeCompare(b.name), 
     },
     { 
       title: "Role", 
       dataIndex: "role", 
       key: "role", 
-      sorter: (a: UserData, b: UserData) => a.role.localeCompare(b.role), // 👈 Logika sorting A-Z
+      sorter: (a: UserData, b: UserData) => a.role.localeCompare(b.role), 
     },
     { 
       title: "Email", 
       dataIndex: "email", 
       key: "email", 
-      sorter: (a: UserData, b: UserData) => a.email.localeCompare(b.email), // 👈 Logika sorting A-Z
+      sorter: (a: UserData, b: UserData) => a.email.localeCompare(b.email),
     },
     {
       title: "Status", 
