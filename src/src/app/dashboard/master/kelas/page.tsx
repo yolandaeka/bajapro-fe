@@ -20,7 +20,7 @@ import {
   FilterOutlined, 
   ThunderboltOutlined 
 } from "@ant-design/icons";
-import { useClass} from "@/src/features/class/hooks/useClass";
+import { useClass } from "@/src/features/class/hooks/useClass";
 import { ClassData } from "@/src/features/class/types";
 import { ClassTable } from "@/src/features/class/components/ClassTable";
 
@@ -39,7 +39,7 @@ export default function ClassPage() {
   
   const [form] = Form.useForm();
 
- const currentUserRole = "Admin" as "Admin" | "Pengajar";
+  const currentUserRole = "Admin" as "Admin" | "Pengajar";
   const currentUserId = "p1"; 
   // const { role } = useAuth();
 
@@ -50,7 +50,14 @@ export default function ClassPage() {
 
   const [searchText, setSearchText] = useState("");
   const [filterGuru, setFilterGuru] = useState<string | null>(null);
+  const [filterSekolah, setFilterSekolah] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // MENDAPATKAN DAFTAR NAMA SEKOLAH UNIK DARI DATA UNTUK DROPDOWN
+  const uniqueSchools = Array.from(new Set(kelas.map((k) => k.school_name))).map((school) => ({
+    value: school,
+    label: school,
+  }));
 
   const filteredKelas = kelas.filter((k) => {
     // 1. Jika Pengajar, hanya tampilkan kelas buatannya (berdasarkan teacher_id)
@@ -65,6 +72,11 @@ export default function ClassPage() {
 
     // 3. Filter Guru hanya untuk Admin (berdasarkan teacher_name)
     if (currentUserRole === "Admin" && filterGuru && k.teacher_name !== filterGuru) {
+      return false;
+    }
+
+    // 4. Filter Sekolah (Bisa dipakai Admin dan Pengajar)
+    if (filterSekolah && k.school_name !== filterSekolah) {
       return false;
     }
 
@@ -113,24 +125,50 @@ export default function ClassPage() {
     for (let i = 0; i < 6; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    // Set field form dengan key yang sesuai dengan DB
     form.setFieldsValue({ class_code: result });
   };
 
   const filterContent = (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "220px" }}>
+      
+      {/* Hanya tampilkan filter Guru kalau yang login Admin */}
+      {currentUserRole === "Admin" && (
+        <div>
+          <Typography.Text strong>Nama Guru</Typography.Text>
+          <Select 
+            style={{ width: "100%", marginTop: "4px" }} 
+            placeholder="Semua Guru" 
+            allowClear 
+            value={filterGuru} 
+            onChange={setFilterGuru} 
+            options={guruOptions}
+          />
+        </div>
+      )}
+
+      {/* Filter Sekolah */}
       <div>
-        <Typography.Text strong>Nama Guru</Typography.Text>
+        <Typography.Text strong>Nama Sekolah</Typography.Text>
         <Select 
           style={{ width: "100%", marginTop: "4px" }} 
-          placeholder="Semua Guru" 
+          placeholder="Semua Sekolah" 
           allowClear 
-          value={filterGuru} 
-          onChange={setFilterGuru} 
-          options={guruOptions}
+          value={filterSekolah} 
+          onChange={setFilterSekolah} 
+          options={uniqueSchools}
         />
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+        <Button 
+          type="dashed" 
+          onClick={() => {
+            setFilterGuru(null);
+            setFilterSekolah(null);
+          }}
+        >
+          Reset
+        </Button>
         <Button 
           type="primary" 
           style={{ backgroundColor: "#7246BA" }} 
@@ -171,27 +209,25 @@ export default function ClassPage() {
               onChange={(e) => setSearchText(e.target.value)} 
             />
             
-            {/* Filter Guru hanya muncul jika role Admin */}
-            {currentUserRole === "Admin" && (
-              <Popover 
-                content={filterContent} 
-                title="Filter Data" 
-                trigger="click" 
-                open={isFilterOpen} 
-                onOpenChange={setIsFilterOpen} 
-                placement="bottomRight"
-              >
-                <Button size="large" icon={<FilterOutlined />} style={{ borderRadius: "8px" }}>
-                  Filter
-                </Button>
-              </Popover>
-            )}
+            <Popover 
+              content={filterContent} 
+              title="Filter Data" 
+              trigger="click" 
+              open={isFilterOpen} 
+              onOpenChange={setIsFilterOpen} 
+              placement="bottomRight"
+            >
+              <Button size="large" icon={<FilterOutlined />} style={{ borderRadius: "8px" }}>
+                Filter
+              </Button>
+            </Popover>
           </Space>
         </div>
 
         <ClassTable 
           data={filteredKelas} 
           loading={loading} 
+          role={currentUserRole}
           onAction={handleAction} 
           onDelete={deleteKelas} 
         />

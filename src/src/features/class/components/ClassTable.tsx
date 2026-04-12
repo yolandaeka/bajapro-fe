@@ -2,16 +2,18 @@ import React from "react";
 import { Table, Button, Space, Tag, Popconfirm } from "antd";
 import { EyeFilled, EditFilled, DeleteFilled } from "@ant-design/icons";
 import { ClassData } from "../types";
+import type { TableProps } from "antd";
 
 interface ClassTableProps {
   data: ClassData[];
   loading: boolean;
+  role: "Admin" | "Pengajar"; 
   onAction: (action: "view" | "edit", record: ClassData) => void;
   onDelete: (id: string) => void;
 }
 
-export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, onAction, onDelete }) => {
-  const columns = [
+export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onAction, onDelete }) => {
+  const columns: TableProps<ClassData>['columns'] = [
     {
       title: "No.",
       key: "index",
@@ -30,12 +32,24 @@ export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, onAction,
       key: "class_code",
       sorter: (a: ClassData, b: ClassData) => a.class_code.localeCompare(b.class_code),
     },
-    {
-      title: "Nama Sekolah",
-      dataIndex: "school_name",
-      key: "school_name",
-      sorter: (a: ClassData, b: ClassData) => a.school_name.localeCompare(b.school_name),
-    },
+    
+    ...(role === "Admin"
+      ? [
+          {
+            title: "Nama Pengajar",
+            dataIndex: "teacher_name",
+            key: "teacher_name",
+            sorter: (a: ClassData, b: ClassData) => (a.teacher_name || "").localeCompare(b.teacher_name || ""),
+          },
+          {
+            title: "Nama Sekolah",
+            dataIndex: "school_name",
+            key: "school_name",
+            sorter: (a: ClassData, b: ClassData) => a.school_name.localeCompare(b.school_name),
+          },
+        ]
+      : []),
+
     {
       title: "Status",
       dataIndex: "isactive",

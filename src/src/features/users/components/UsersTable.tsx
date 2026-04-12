@@ -1,5 +1,6 @@
 import React from "react";
 import { Table, Space, Button, Tag, Popconfirm } from "antd"; 
+import type { TableProps } from "antd"; // 👈 Tambahkan ini biar ESLint aman
 import { EyeFilled, EditFilled, DeleteFilled, TeamOutlined } from "@ant-design/icons"; 
 import { useRouter } from "next/navigation";
 import { UserData } from "../types";
@@ -21,7 +22,7 @@ export const UserTable: React.FC<UserTableProps> = ({
 }) => {
   const router = useRouter();
 
-  const columns = [
+  const columns: TableProps<UserData>['columns'] = [
     { 
       title: "No", 
       key: "no", 
@@ -32,7 +33,7 @@ export const UserTable: React.FC<UserTableProps> = ({
       title: "Nama", 
       dataIndex: "name", 
       key: "name", 
-      width: "35%", 
+      width: "25%", 
       sorter: (a: UserData, b: UserData) => a.name.localeCompare(b.name), 
     },
     { 
@@ -47,11 +48,32 @@ export const UserTable: React.FC<UserTableProps> = ({
       key: "email", 
       sorter: (a: UserData, b: UserData) => a.email.localeCompare(b.email),
     },
+    
+    // 👇 KONDISI 1: JIKA ADMIN, TAMPILKAN KOLOM INSTANSI
+    ...(currentUserRole === "Admin" ? [
+      {
+        title: "Instansi",
+        dataIndex: "instansi", // Pastikan key-nya sesuai dengan API/Database (misal: school_name)
+        key: "instansi",
+        sorter: (a: UserData, b: UserData) => (a.instansi || "").localeCompare(b.instansi || "")
+      }
+    ] : []),
+
+    // 👇 KONDISI 2: JIKA PENGAJAR, TAMPILKAN KOLOM KELAS
+    ...(currentUserRole === "Pengajar" ? [
+      {
+        title: "Kelas",
+        dataIndex: "class_name", // Pastikan key-nya sesuai dengan API/Database
+        key: "class_name",
+        sorter: (a: UserData, b: UserData) => (a.class_name || "").localeCompare(b.class_name || "")
+      }
+    ] : []),
+
     {
       title: "Status", 
       dataIndex: "isactive", 
       key: "isactive", 
-      sorter: (a: UserData, b: UserData) => a.isactive - b.isactive, // 👈 Logika sorting angka (1 dan 0)
+      sorter: (a: UserData, b: UserData) => a.isactive - b.isactive,
       render: (val: number) => (
         <Tag color={val === 1 ? "green" : "red"}>
           {val === 1 ? "Active" : "Nonactive"}
@@ -63,23 +85,18 @@ export const UserTable: React.FC<UserTableProps> = ({
       key: "action",
       render: (_text: unknown, record: UserData) => (
         <Space size="small">
-          {/* Tombol View */}
           <Button
             type="primary"
             style={{ backgroundColor: "#1677ff" }}
             icon={<EyeFilled />}
-            onClick={() => onAction("view", record)} // Tetap pakai 'record' ya, agar form bisa langsung terisi
+            onClick={() => onAction("view", record)}
           />
-          
-          {/* Tombol Edit */}
           <Button
             type="primary"
             style={{ backgroundColor: "#facc15", color: "black" }}
             icon={<EditFilled />}
-            onClick={() => onAction("edit", record)} // Tetap pakai 'record'
+            onClick={() => onAction("edit", record)}
           />
-          
-          {/* Tombol Delete dengan Konfirmasi */}
           <Popconfirm
             title="Hapus User"
             description="Apakah kamu yakin ingin menghapus user ini?"
@@ -87,11 +104,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             okText="Ya, Hapus"
             cancelText="Batal"
           >
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteFilled />}
-            />
+            <Button type="primary" danger icon={<DeleteFilled />} />
           </Popconfirm>
           
           {/* Tombol Lihat Murid khusus Admin ke Pengajar */}
@@ -117,7 +130,7 @@ export const UserTable: React.FC<UserTableProps> = ({
       rowKey="id" 
       loading={loading} 
       pagination={{ pageSize: 5 }} 
-      scroll={{ x: 800 }} // 👈 Mencegah tabel berantakan kalau layar kekecilan
+      scroll={{ x: 800 }} 
     />
   );
 };

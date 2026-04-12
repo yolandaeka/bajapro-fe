@@ -37,11 +37,15 @@ export default function UserPage() {
     instansiOptions,
     kelasOptions,
   } = useUser();
+  
   const [form] = Form.useForm();
   const selectedFormRole = Form.useWatch("role", form);
 
-  const currentUserRole: string = "Pengajar";
+  // --- CONFIG USER ---
+  const currentUserRole: string = "Admin";
+  const currentUserId: string = "p1"; // 👈 Tambahkan ini agar tidak error
 
+  // --- STATES ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -53,38 +57,40 @@ export default function UserPage() {
   const [filterKelas, setFilterKelas] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const filteredUsers = users.filter((user) => {
-    let match = true;
-    if (
-      searchText &&
-      !user.name.toLowerCase().includes(searchText.toLowerCase())
-    )
-      match = false;
-    if (filterRole && user.role !== filterRole) match = false;
-    if (filterInstansi && user.instansi !== filterInstansi) match = false;
-    if (filterKelas && user.kelas !== filterKelas) match = false;
-    return match;
-  });
+  // --- LOGIKA FILTERING ---
+  const filteredUsers = users.filter((u) => {
+    // 1. Role Pengajar: Hanya lihat muridnya sendiri
+    if (currentUserRole === "Pengajar") {
+      if (u.role !== "Student") return false;
+      if (u.id !== currentUserId) return false; 
+    }
 
+    // 2. Search Text
+    if (searchText && !u.name.toLowerCase().includes(searchText.toLowerCase())) return false;
+
+    // 3. Filter Dropdown
+    if (filterRole && u.role !== filterRole) return false;
+    if (filterInstansi && u.instansi !== filterInstansi) return false;
+    if (filterKelas && u.class_name !== filterKelas) return false;
+
+    return true;
+  }); // 👈 Sekarang sudah tertutup dengan benar
+
+  // --- HANDLERS ---
   const handleAction = (action: "add" | "edit" | "view", record?: UserData) => {
-
     setModalMode(action);
     setSelectedId(record?.id || null);
     setIsModalOpen(true);
-    if (action === "add") form.resetFields();
-    else if (record) setTimeout(() => form.setFieldsValue(record), 50);
 
     if (action === "view" && record) {
       setViewData(record);
     } else {
       setViewData(null);
-
-    if (action === "add") {
+      if (action === "add") {
         form.resetFields();
       } else if (record) {
         setTimeout(() => form.setFieldsValue(record), 50);
       }
-
     }
   };
 
@@ -102,14 +108,7 @@ export default function UserPage() {
   };
 
   const filterContent = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        width: "220px",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "220px" }}>
       {currentUserRole === "Admin" && (
         <>
           <div>
@@ -120,7 +119,7 @@ export default function UserPage() {
               allowClear
               value={filterRole}
               onChange={setFilterRole}
-              options= {roleOptions}
+              options={roleOptions}
             />
           </div>
           <div>
@@ -131,11 +130,12 @@ export default function UserPage() {
               allowClear
               value={filterInstansi}
               onChange={setFilterInstansi}
-              options= {instansiOptions}
+              options={instansiOptions}
             />
           </div>
         </>
       )}
+      
       {currentUserRole === "Pengajar" && (
         <div>
           <Typography.Text strong>Kelas</Typography.Text>
@@ -149,19 +149,19 @@ export default function UserPage() {
           />
         </div>
       )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "8px",
-        }}
-      >
+      
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+        <Button type="dashed" onClick={() => {
+            setFilterRole(null);
+            setFilterInstansi(null);
+            setFilterKelas(null);
+        }}>Reset</Button>
         <Button
           type="primary"
           style={{ backgroundColor: "#7246BA", borderRadius: "6px" }}
           onClick={() => setIsFilterOpen(false)}
         >
-          Tutup
+          Terapkan
         </Button>
       </div>
     </div>
@@ -171,21 +171,12 @@ export default function UserPage() {
     <div style={{ padding: "24px" }}>
       {contextHolder}
       <Card style={{ borderRadius: "12px", padding: "12px" }}>
-        <Title level={3} style={{ marginBottom: "4px" }}>
-          List User
-        </Title>
+        <Title level={3} style={{ marginBottom: "4px" }}>List User</Title>
         <p style={{ color: "gray", marginTop: "0px", marginBottom: "24px" }}>
           Kelola pengguna dan profilnya
         </p>
 
-        {/* TOOLBAR */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "16px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -212,11 +203,7 @@ export default function UserPage() {
               onOpenChange={setIsFilterOpen}
               placement="bottomRight"
             >
-              <Button
-                size="large"
-                icon={<FilterOutlined />}
-                style={{ borderRadius: "8px" }}
-              >
+              <Button size="large" icon={<FilterOutlined />} style={{ borderRadius: "8px" }}>
                 Filter
               </Button>
             </Popover>
@@ -232,7 +219,7 @@ export default function UserPage() {
         />
       </Card>
 
-     <Modal
+      <Modal
         title={
           <span style={{ color: "#7246BA", fontSize: "20px", fontWeight: "bold" }}>
             {modalMode === "add" ? "Tambah User" : modalMode === "edit" ? "Edit User" : "Detail User"}
@@ -254,24 +241,14 @@ export default function UserPage() {
         {modalMode === "view" ? (
           viewData ? (
             <Descriptions column={1} bordered style={{ marginTop: "24px" }}>
-              <Descriptions.Item label="Nama User">
-                <strong>{viewData.name}</strong>
-              </Descriptions.Item>
-              <Descriptions.Item label="Role">
-                {viewData.role}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email">
-                {viewData.email}
-              </Descriptions.Item>
+              <Descriptions.Item label="Nama User"><strong>{viewData.name}</strong></Descriptions.Item>
+              <Descriptions.Item label="Role">{viewData.role}</Descriptions.Item>
+              <Descriptions.Item label="Email">{viewData.email}</Descriptions.Item>
               {viewData.role === "Pengajar" && (
-                <Descriptions.Item label="Instansi">
-                  {viewData.instansi || "-"}
-                </Descriptions.Item>
+                <Descriptions.Item label="Instansi">{viewData.instansi || "-"}</Descriptions.Item>
               )}
               {viewData.role === "Pelajar" && (
-                <Descriptions.Item label="Kelas">
-                  {viewData.kelas || "-"}
-                </Descriptions.Item>
+                <Descriptions.Item label="Kelas">{viewData.class_name || "-"}</Descriptions.Item>
               )}
               <Descriptions.Item label="Status">
                 <Tag color={viewData.isactive === 1 ? "green" : "red"}>
@@ -283,11 +260,7 @@ export default function UserPage() {
             <p>Memuat data...</p>
           )
         ) : (
-          <Form
-            form={form}
-            layout="vertical"
-            style={{ marginTop: "24px" }}
-          >
+          <Form form={form} layout="vertical" style={{ marginTop: "24px" }}>
             <div style={{ display: "flex", gap: "16px" }}>
               <Form.Item label="Nama User" name="name" style={{ flex: 1 }} rules={[{ required: true }]}>
                 <Input placeholder="Type here" size="large" />

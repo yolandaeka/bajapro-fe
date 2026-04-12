@@ -75,3 +75,13 @@ export const getGuruOptionsApi = async (): Promise<{ label: string; value: strin
     ]), 300);
   });
 };
+
+export const getInstansiOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
+  if (USE_REAL_API) return fetch(`${BASE_URL}/instansi-options`).then((res) => res.json());
+  return new Promise((resolve) => {
+    setTimeout(() => resolve([
+      { label: "SMAN 1 Malang", value: "SMAN 1 Malang" },
+      { label: "Polinema", value: "Polinema" },
+    ]), 300);
+  });
+};
