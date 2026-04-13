@@ -93,7 +93,7 @@ export const allMenuItems: MenuItem[] = [
       },
       {
         key: "approval",
-        label: <Link href="/dashboard/master/approval">Approval</Link>,
+        label: <Link href="/dashboard/transaction/approval">Approval</Link>,
         icon: <AppstoreAddOutlined />,
         roles: ["ADMIN"],
       },
