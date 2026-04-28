@@ -1,0 +1,404 @@
+{
+  "roles": [
+    {
+      "id": "1",
+      "role_name": "Teacher",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "role_name": "Student",
+      "isactive": true
+    }
+  ],
+  "class": [
+    {
+      "id": "1",
+      "teacher_id": 1,
+      "class_name": "Kelas XII RPL A",
+      "school_name": "SMKN 1 Malang",
+      "class_code": "RPL12A",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "teacher_id": 2,
+      "class_name": "Kelas XII RPL B",
+      "school_name": "SMKN 1 Malang",
+      "class_code": "RPL12B",
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "teacher_id": 1,
+      "class_name": "Kelas XI TKJ A",
+      "school_name": "SMKN 1 Malang",
+      "class_code": "TKJ11A",
+      "isactive": true
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "role_id": 1,
+      "class_id": null,
+      "name": "Budi Santoso",
+      "email": "budi@guru.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "role_id": 1,
+      "class_id": null,
+      "name": "Siti Aminah",
+      "email": "siti@guru.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "role_id": 2,
+      "class_id": 1,
+      "name": "Andi Pratama",
+      "email": "andi@siswa.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "4",
+      "role_id": 2,
+      "class_id": 1,
+      "name": "Bagas Dwi",
+      "email": "bagas@siswa.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "5",
+      "role_id": 2,
+      "class_id": 2,
+      "name": "Citra Lestari",
+      "email": "citra@siswa.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "6",
+      "role_id": 2,
+      "class_id": 2,
+      "name": "Dewi Sartika",
+      "email": "dewi@siswa.id",
+      "password": "123",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    },
+    {
+      "id": "7",
+      "role_id": 2,
+      "class_id": 3,
+      "name": "Eko Purnomo",
+      "email": "eko@siswa.id",
+      "password": "123",
+      "is_approved_by_admin": 0,
+      "instansi_sekolah": "SMKN 1 Malang",
+      "isactive": true
+    }
+  ],
+  "badges": [
+    {
+      "id": "1",
+      "name": "Bronze Coder",
+      "image": "bronze.png",
+      "min_score": 50,
+      "max_score": 69,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "name": "Silver Hacker",
+      "image": "silver.png",
+      "min_score": 70,
+      "max_score": 84,
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "name": "Gold Master",
+      "image": "gold.png",
+      "min_score": 85,
+      "max_score": 100,
+      "isactive": true
+    }
+  ],
+  "courses": [
+    {
+      "id": "1",
+      "course_name": "Frontend Web Development",
+      "description": "HTML, CSS, JS",
+      "img_thumbnail": "frontend.png",
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "course_name": "Backend Development",
+      "description": "NodeJS & Database",
+      "img_thumbnail": "backend.png",
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "course_name": "Data Science Basic",
+      "description": "Python for Data",
+      "img_thumbnail": "python.png",
+      "published": 0,
+      "isactive": true
+    }
+  ],
+  "t_student_course": [
+    {
+      "id": "1",
+      "course_id": 1,
+      "student_id": 3,
+      "total_score": 95,
+      "badge_id": 3,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "course_id": 1,
+      "student_id": 4,
+      "total_score": 75,
+      "badge_id": 2,
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "course_id": 2,
+      "student_id": 3,
+      "total_score": 60,
+      "badge_id": 1,
+      "isactive": true
+    },
+    {
+      "id": "4",
+      "course_id": 2,
+      "student_id": 5,
+      "total_score": 88,
+      "badge_id": 3,
+      "isactive": true
+    }
+  ],
+  "levels": [
+    {
+      "id": "1",
+      "level_name": "Beginner",
+      "description": "Pemula",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "level_name": "Intermediate",
+      "description": "Menengah",
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "level_name": "Advanced",
+      "description": "Mahir",
+      "isactive": true
+    }
+  ],
+  "lessons": [
+    {
+      "id": "1",
+      "course_id": 1,
+      "level_id": 3,
+      "title": "Dasar HTML",
+      "description": "Pengenalan Tag",
+      "position": 4,
+      "img_thumbnail": "html.png",
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "course_id": 1,
+      "level_id": 2,
+      "title": "Dasar CSS",
+      "description": "Styling Web",
+      "position": 1,
+      "img_thumbnail": "css.png",
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "course_id": 2,
+      "level_id": 2,
+      "title": "Pengenalan Database",
+      "description": "SQL Dasar",
+      "position": 1,
+      "img_thumbnail": "sql.png",
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "4",
+      "course_id": 1,
+      "level_id": 3,
+      "title": "Advanced Web",
+      "description": "Optimization",
+      "position": 1,
+      "img_thumbnail": null,
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "level_id": 1,
+      "title": "Coba begin",
+      "course_id": 1,
+      "position": 1,
+      "img_thumbnail": null,
+      "published": 1,
+      "isactive": true,
+      "id": "9zuRcD1w8Hw"
+    }
+  ],
+  "sublessons": [
+    {
+      "id": "1",
+      "lesson_id": 1,
+      "title": "Tag Heading",
+      "order_position": 1,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "lesson_id": 1,
+      "title": "Tag Paragraf",
+      "order_position": 2,
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "lesson_id": 2,
+      "title": "Color & Background",
+      "order_position": 1,
+      "isactive": true
+    },
+    {
+      "id": "4",
+      "lesson_id": 3,
+      "title": "SELECT Query",
+      "order_position": 1,
+      "isactive": true
+    }
+  ],
+  "materials": [
+    {
+      "id": "1",
+      "sub_lesson_id": 1,
+      "title": "Materi Heading",
+      "materials": "Heading h1-h6...",
+      "url_video": "url/1",
+      "content_position": 1,
+      "published": 1,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "sub_lesson_id": 2,
+      "title": "Materi Paragraf",
+      "materials": "Tag p...",
+      "url_video": "url/2",
+      "content_position": 1,
+      "published": 1,
+      "isactive": true
+    }
+  ],
+  "t_student_progress": [
+    {
+      "id": "1",
+      "user_id": 3,
+      "sub_lesson_id": 1,
+      "status": "completed",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "user_id": 4,
+      "sub_lesson_id": 1,
+      "status": "in_progress",
+      "isactive": true
+    }
+  ],
+  "t_code_question": [
+    {
+      "id": "1",
+      "sub_lesson_id": 1,
+      "code_question": "Buat <h1>Hello</h1>",
+      "image": "hint1.png",
+      "score": 50,
+      "hint": "H1",
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "sub_lesson_id": 4,
+      "code_question": "SELECT * FROM users",
+      "image": null,
+      "score": 100,
+      "hint": "SELECT",
+      "isactive": true
+    }
+  ],
+  "t_essay_answer": [
+    {
+      "id": "1",
+      "user_id": 3,
+      "essay_question_id": 1,
+      "answer": "Untuk judul paling besar pak.",
+      "konteks_penjelasan": "Sesuai",
+      "keruntutan": 5,
+      "kebenaran": 5,
+      "teacher_notes": "Bagus!",
+      "is_approved_by_teacher": true,
+      "isactive": true
+    }
+  ],
+  "t_code_history_logs": [
+    {
+      "id": "1",
+      "user_id": 3,
+      "code_question_id": 1,
+      "time_count": 15,
+      "message": "Success",
+      "is_error": false,
+      "isactive": true
+    },
+    {
+      "id": "2",
+      "user_id": 4,
+      "code_question_id": 1,
+      "time_count": 120,
+      "message": "Error",
+      "is_error": true,
+      "isactive": true
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

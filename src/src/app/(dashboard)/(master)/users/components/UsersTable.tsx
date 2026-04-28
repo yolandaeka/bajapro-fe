@@ -1,0 +1,137 @@
+import React from "react";
+
+import { Table, Space, Button, Tag, Popconfirm } from "antd"; 
+import type { TableProps } from "antd"; // 👈 Tambahkan ini biar ESLint aman
+import { EyeFilled, EditFilled, DeleteFilled, TeamOutlined } from "@ant-design/icons"; 
+import { useRouter } from "next/navigation";
+import { UserData } from "../types";
+
+interface UserTableProps {
+  data: UserData[];
+  loading: boolean;
+  currentUserRole: string;
+  onAction: (action: "view" | "edit", record: UserData) => void;
+  onDelete: (id: string) => void;
+}
+
+export const UserTable: React.FC<UserTableProps> = ({ 
+  data, 
+  loading, 
+  currentUserRole, 
+  onAction, 
+  onDelete 
+}) => {
+  const router = useRouter();
+
+  const columns: TableProps<UserData>['columns'] = [
+    { 
+      title: "No", 
+      key: "no", 
+      render: (_: unknown, __: unknown, index: number) => index + 1, 
+      width: 60 
+    },
+    { 
+      title: "Nama", 
+      dataIndex: "name", 
+      key: "name", 
+      width: "25%", 
+      sorter: (a: UserData, b: UserData) => a.name.localeCompare(b.name), 
+    },
+    { 
+      title: "Role", 
+      dataIndex: "role", 
+      key: "role", 
+      sorter: (a: UserData, b: UserData) => a.role.localeCompare(b.role), 
+    },
+    { 
+      title: "Email", 
+      dataIndex: "email", 
+      key: "email", 
+      sorter: (a: UserData, b: UserData) => a.email.localeCompare(b.email),
+    },
+    
+    // 👇 KONDISI 1: JIKA ADMIN, TAMPILKAN KOLOM INSTANSI
+    ...(currentUserRole === "Admin" ? [
+      {
+        title: "Instansi",
+        dataIndex: "instansi", // Pastikan key-nya sesuai dengan API/Database (misal: school_name)
+        key: "instansi",
+        sorter: (a: UserData, b: UserData) => (a.instansi || "").localeCompare(b.instansi || "")
+      }
+    ] : []),
+
+    // 👇 KONDISI 2: JIKA PENGAJAR, TAMPILKAN KOLOM KELAS
+    ...(currentUserRole === "Pengajar" ? [
+      {
+        title: "Kelas",
+        dataIndex: "class_name", // Pastikan key-nya sesuai dengan API/Database
+        key: "class_name",
+        sorter: (a: UserData, b: UserData) => (a.class_name || "").localeCompare(b.class_name || "")
+      }
+    ] : []),
+
+    {
+      title: "Status", 
+      dataIndex: "isactive", 
+      key: "isactive", 
+      sorter: (a: UserData, b: UserData) => a.isactive - b.isactive,
+      render: (val: number) => (
+        <Tag color={val === 1 ? "green" : "red"}>
+          {val === 1 ? "Active" : "Nonactive"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Action", 
+      key: "action",
+      render: (_text: unknown, record: UserData) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            style={{ backgroundColor: "#1677ff" }}
+            icon={<EyeFilled />}
+            onClick={() => onAction("view", record)}
+          />
+          <Button
+            type="primary"
+            style={{ backgroundColor: "#facc15", color: "black" }}
+            icon={<EditFilled />}
+            onClick={() => onAction("edit", record)}
+          />
+          <Popconfirm
+            title="Hapus User"
+            description="Apakah kamu yakin ingin menghapus user ini?"
+            onConfirm={() => onDelete(record.id)}
+            okText="Ya, Hapus"
+            cancelText="Batal"
+          >
+            <Button type="primary" danger icon={<DeleteFilled />} />
+          </Popconfirm>
+          
+          {/* Tombol Lihat Murid khusus Admin ke Pengajar */}
+          {currentUserRole === "Admin" && record.role === "Pengajar" && (
+            <Button 
+              type="primary" 
+              icon={<TeamOutlined />}
+              onClick={() => router.push(`/dashboard/users/pengajar/${record.id}/murid`)}
+              style={{ backgroundColor: "#7246BA" }}
+            >
+              Lihat Murid
+            </Button>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <Table 
+      dataSource={data} 
+      columns={columns} 
+      rowKey="id" 
+      loading={loading} 
+      pagination={{ pageSize: 5 }} 
+      scroll={{ x: 800 }} 
+    />
+  );
+};

@@ -4,6 +4,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider } from 'antd';
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { App } from 'antd';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,16 +18,13 @@ const geistMono = Geist_Mono({
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // Pilih berat font yang kamu butuhkan
-  variable: "--font-poppins", // Opsional: Untuk digunakan via CSS Variable
+  weight: ["400", "500", "600", "700"], 
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
   title: "BAJAPRO",
   description: "Platform Belajar Masa Kini",
-  icons: {
-    icon: "/assets/logo/logo-sm.png",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,8 +33,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${poppins.variable} ${poppins.className} antialiased`}>
         <AntdRegistry>
           <ConfigProvider theme={{ token: { colorPrimary: '#531DAB', fontFamily: poppins.style.fontFamily || 'sans-serif' } }}>
+            <App>
             {children}
+              </App>
           </ConfigProvider>
+        
         </AntdRegistry>
       </body>
     </html>
