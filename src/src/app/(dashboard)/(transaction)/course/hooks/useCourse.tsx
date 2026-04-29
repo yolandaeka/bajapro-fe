@@ -29,6 +29,9 @@ import {
   updateSubLessonApi,
   createMaterialsApi,
   updateMaterialsApi,
+  deleteCourseApi,
+  fetchMaterialsBySubLessonApi,
+  deleteMaterialApi
 } from "../api/courseApi";
 
 export const useManageCourseMateri = (courseId: number | null) => {
@@ -37,6 +40,7 @@ export const useManageCourseMateri = (courseId: number | null) => {
   const [loading, setLoading] = useState<boolean>(false);
   const isEditing = !!courseId;
   const [messageApi, contextHolder] = message.useMessage();
+  const [modalApi, modalContextHolder] = Modal.useModal();
 
   // --- STATE TAB 1: Detail Course ---
   const [courseData, setCourseData] = useState<CourseRecord | null>(null);
@@ -126,6 +130,32 @@ export const useManageCourseMateri = (courseId: number | null) => {
   // ========================================================
   // A. CRUD HANDLER TAB 1: Detail Course
   // ========================================================
+
+    // 2. Fungsi Delete dengan Pengecekan Reference
+const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promise<unknown>, type: string, onSuccess: () => void) => {
+  modalApi.confirm({
+    title: `Hapus ${type}?`,
+    content: `Apakah Anda yakin ingin menghapus ${type} ini? Tindakan ini tidak dapat dibatalkan.`,
+    okText: 'Hapus',
+    okType: 'danger',
+    cancelText: 'Batal',
+    onOk: async () => {
+      try {
+        await deleteApi(id);
+        messageApi.success(`${type} berhasil dihapus.`);
+        onSuccess();
+      } catch (error: unknown) {
+        // ERROR HANDLING UNTUK DATA YANG MASIH BERELASI (FOREIGN KEY)
+        console.error(error);
+        modalApi.error({
+          title: "Gagal Menghapus",
+          content: `Data ${type} ini tidak bisa dihapus karena masih digunakan atau memiliki data terkait (misal: Lesson masih punya Sub Lesson). Silakan hapus data di bawahnya terlebih dahulu.`,
+        });
+      }
+    },
+  });
+};
+
   const handleSaveCourse = async (values: CourseFormData) => {
     setLoading(true);
     try {
@@ -196,36 +226,10 @@ export const useManageCourseMateri = (courseId: number | null) => {
           })
           .sort((a, b) => a.position - b.position),
       );
-      message.success("Urutan lesson berhasil diperbarui");
+      messageApi.success("Urutan lesson berhasil diperbarui");
     } catch (error) {
-      message.error("Gagal memperbarui urutan.");
+      messageApi.error("Gagal memperbarui urutan.");
     }
-  };
-
-  const handleDeleteLesson = async (lessonId: number) => {
-    // Munculkan konfirmasi dulu (opsional, tapi disarankan)
-    Modal.confirm({
-      title: "Hapus Lesson?",
-      content:
-        "Apakah Anda yakin ingin menghapus materi ini? Data yang dihapus tidak bisa dikembalikan.",
-      okText: "Ya, Hapus",
-      okType: "danger",
-      cancelText: "Batal",
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await deleteLessonApi(lessonId);
-          messageApi.success("Lesson berhasil dihapus");
-
-          // Update state lokal agar tampilan langsung hilang tanpa refresh
-          setLessons((prev) => prev.filter((item) => item.id !== lessonId));
-        } catch (error) {
-          messageApi.error("Gagal menghapus lesson");
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
   };
 
   // ========================================================
@@ -234,66 +238,89 @@ export const useManageCourseMateri = (courseId: number | null) => {
 
   const handleSaveSubLessonAll = async (
     values: SubLessonCreateData,
-    materials: MaterialRecord[],
-    editingId?: number,
+    materialList: MaterialRecord[],
+    editId?: number
   ) => {
-    if (!selectedLessonId) return;
     setLoading(true);
-
     try {
-      if (editingId) {
-        // --- 1. PROSES UPDATE ---
-        await updateSubLessonApi(editingId, values);
+      let subLessonId: number;
 
-        for (const [index, mat] of materials.entries()) {
-          const payload = {
-            title: mat.title,
-            materials: mat.materials,
-            url_video: mat.url_video,
-            sub_lesson_id: editingId,
-            content_position: index + 1,
-            isactive: true,
-          };
+      // ==========================================
+      // 1. PROSES SUB LESSON & HAPUS MATERI LAMA
+      // ==========================================
 
-          // Logika Diffing Pintar: Kalau punya ID dari database (ID > 0), berarti Update
-          if (mat.id && mat.id > 0) {
-            await updateMaterialsApi(mat.id, payload);
-          } else {
-            // Kalau tidak punya ID (atau ID Temp), berarti dia section baru
-            await createMaterialsApi(payload);
-          }
+      if (editId) {
+        // UPDATE data Sub Lesson lama
+        await updateSubLessonApi(editId, values);
+        subLessonId = editId; 
+
+        const existingMaterials = await fetchMaterialsBySubLessonApi(editId);
+
+        const incomingIds = materialList.map(m => m.id);
+        
+        const idsToDelete = existingMaterials
+          .filter(existing => !incomingIds.includes(existing.id))
+          .map(m => m.id);
+
+        for (const id of idsToDelete) {
+          await deleteMaterialApi(id);
         }
+        // -----------------------------------------------------------
+
       } else {
-        // --- 2. PROSES CREATE NEW ---
-        const newSub = await createSubLessonApi({
+        // INSERT data Sub Lesson baru
+        const payload = {
           ...values,
-          lesson_id: selectedLessonId,
-        });
+          order_position: subLessons.length + 1,
+          isactive: true,
+        };
+        const res = await createSubLessonApi(payload);
+        subLessonId = res.id; 
+      }
 
-        const newSubId = newSub.id; // Dapatkan ID dari respon Golang
+      // ==========================================
+      // 2. PROSES MATERIALS (CREATE / UPDATE)
+      // ==========================================
+      // Lakukan perulangan untuk menyimpan setiap section materi yang tersisa
+      for (let i = 0; i < materialList.length; i++) {
+        const mat = materialList[i];
+        const matPayload = {
+          sub_lesson_id: subLessonId,
+          title: mat.title,
+          materials: mat.materials,
+          url_video: mat.url_video,
+          content_position: i + 1,
+          isactive: true,
+        };
 
-        for (const [index, mat] of materials.entries()) {
-          await createMaterialsApi({
-            title: mat.title,
-            materials: mat.materials,
-            url_video: mat.url_video,
-            sub_lesson_id: newSubId, // Hubungkan ke parent
-            content_position: index + 1,
-          });
+        if (mat.id < 0) {
+          // INSERT materi baru (ID bawaan form masih negatif)
+          await createMaterialsApi(matPayload);
+        } else {
+          // UPDATE materi lama
+          await updateMaterialsApi(mat.id, matPayload);
         }
       }
 
-      message.success("Data Sub Lesson dan Materi Berhasil Disimpan!");
+      messageApi.success("Data Sub Lesson dan Materi Berhasil Disimpan!");
 
-      // Refresh ulang state local dari database
-      const updatedSubs = await fetchSubLessonsByLessonApi(selectedLessonId);
-      setSubLessons(updatedSubs);
-    } catch (error) {
-      message.error("Gagal menyimpan materi. Pastikan koneksi server aman.");
+      // ==========================================
+      // 3. REFRESH DATA SUB LESSON DI TABEL/LIST
+      // ==========================================
+      if (selectedLessonId) {
+        const updatedSubs = await fetchSubLessonsByLessonApi(selectedLessonId);
+        setSubLessons(updatedSubs.sort((a, b) => a.order_position - b.order_position));
+      }
+
+    } catch (error: unknown) {
+      console.error("Gagal simpan sub lesson:", error);
+      messageApi.error("Terjadi kesalahan saat menyimpan data.");
     } finally {
       setLoading(false);
     }
   };
+
+  
 
   const handleReorderSubLessons = async (updates: ReorderItem[]) => {
     if (!selectedLessonId) return;
@@ -308,24 +335,26 @@ export const useManageCourseMateri = (courseId: number | null) => {
           })
           .sort((a, b) => a.order_position - b.order_position),
       );
-      message.success("Urutan materi berhasil diperbarui!");
+      messageApi.success("Urutan materi berhasil diperbarui!");
     } catch (error) {
-      message.error("Gagal memperbarui urutan.");
+      messageApi.error("Gagal memperbarui urutan.");
     }
   };
 
-  const handleDeleteSubLesson = async (subLessonId: number) => {
-    setLoading(true);
-    try {
-      await deleteSubLessonApi(subLessonId);
-      message.warning("Materi berhasil dihapus.");
-      setSubLessons((prev) => prev.filter((item) => item.id !== subLessonId));
-    } catch (error) {
-      message.error("Gagal menghapus materi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+
+// Implementasi ke fungsi masing-masing
+const handleDeleteCourse = (id: number) => 
+  handleDeleteGeneral(id, deleteCourseApi, "Course", () => router.push("/course"));
+
+const handleDeleteLesson = (id: number) => 
+  handleDeleteGeneral(id, deleteLessonApi, "Lesson", () => {
+    setLessons(prev => prev.filter(l => l.id !== id));
+  });
+
+const handleDeleteSubLesson = (id: number) => 
+  handleDeleteGeneral(id, deleteSubLessonApi, "Sub Lesson", () => {
+    setSubLessons(prev => prev.filter(s => s.id !== id));
+  });
 
   return {
     loading,
@@ -335,6 +364,7 @@ export const useManageCourseMateri = (courseId: number | null) => {
     // Tab 1
     courseData,
     handleSaveCourse,
+    handleDeleteCourse,
     // Tab 2
     lessons,
     handleAddLesson,
@@ -351,5 +381,6 @@ export const useManageCourseMateri = (courseId: number | null) => {
     handleDeleteSubLesson,
     contextHolder,
     isMounted,
+    modalContextHolder
   };
 };

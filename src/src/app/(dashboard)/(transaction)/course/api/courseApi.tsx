@@ -138,7 +138,7 @@ export const updateCourseApi = async (
   }
 };
 
-export const handleDelete = async (id: number): Promise<void> => {
+export const deleteCourseApi = async (id: number): Promise<void> => {
   if (USE_REAL_API) {
     await fetch(`${BASE_URL}/courses/${id}`, { method: "DELETE" });
   } else {
@@ -240,7 +240,7 @@ export const deleteLessonApi = async (id: number): Promise<void> => {
 export const fetchSubLessonsByLessonApi = (
   lessonId: number,
 ): Promise<SubLessonRecord[]> =>
-  handleFetch(`${BASE_URL}/sublessons?lesson_id=${lessonId}}`);
+  handleFetch(`${BASE_URL}/sublessons?lesson_id=${lessonId}`);
 
 // CREATE SUBLESSON
 export const createSubLessonApi = async (
@@ -285,7 +285,7 @@ export const reorderSubLessonsApi = (
 export const fetchMaterialsBySubLessonApi = (
   sublessonId: number,
 ): Promise<MaterialRecord[]> =>
-  handleFetch(`${BASE_URL}/materials?sublesson_id=${sublessonId}}`);
+  handleFetch(`${BASE_URL}/materials?sub_lesson_id=${sublessonId}`);
 
 // CREATE SUBLESSON
 export const createMaterialsApi = async (

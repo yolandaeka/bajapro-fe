@@ -19,7 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { TableColumnsType } from "antd";
 import { CourseRecord } from "../types";
-import { handleDelete } from "../api/courseApi";
+import { deleteCourseApi } from "../api/courseApi";
 const { Title } = Typography;
 
 export default function ListCourse({
@@ -83,7 +83,7 @@ export default function ListCourse({
             okText="Ya, Hapus"
             cancelText="Batal"
             onConfirm={() => {
-              handleDelete(record.id).then(() => {
+              deleteCourseApi(record.id).then(() => {
                 setCourses((prev) =>
                   prev.filter((item) => item.id !== record.id),
                 );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Form, Button, Card, Space, message, Tabs, App } from "antd"; // Tambah Tabs & App
+import { Form, Button, Card, Space, message, Tabs, App } from "antd"; 
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useRouter, useParams } from "next/navigation";
 import { fetchLessonsByCourseApi, createLessonApi } from "../api/courseApi";
@@ -14,7 +14,7 @@ import { CourseDetailTab } from "./CourseDetailTab";
 export const ManageCourseMateri = () => {
   const router = useRouter();
   const params = useParams();
-  const { message: messageApi } = App.useApp(); // Rekomendasi AntD 5
+  const { message: messageApi } = App.useApp(); 
   const courseId = params?.id ? Number(params.id) : null;
 
   const {
@@ -30,10 +30,18 @@ export const ManageCourseMateri = () => {
     handleUpdateLesson,
     handleDeleteLesson,
     handleReorderLessons,
-    isMounted
+    isMounted,
     
-  } = useManageCourseMateri(courseId);
+    // PERBAIKAN: Ambil state dan fungsi untuk SubLesson dari hook
+    subLessons,
+    selectedLessonId,
+    setSelectedLessonId,
+    handleSaveSubLessonAll,
+    handleDeleteSubLesson,
+    handleReorderSubLessons,
+    modalContextHolder
 
+  } = useManageCourseMateri(courseId);
 
   // 1. Cek apakah ini mode Edit (sudah ada ID di URL)
   const isEditMode = !!params?.id;
@@ -72,7 +80,7 @@ export const ManageCourseMateri = () => {
         <LessonListTab
           courseId={courseId!}
           courseName={courseData?.course_name || "Course Tanpa Nama"}
-          levels={levels} // <--- Wajib dikirim dari Induk
+          levels={levels} 
           lessons={lessons}
           loading={loading}
           onAdd={handleAddLesson}
@@ -87,12 +95,13 @@ export const ManageCourseMateri = () => {
       children: (
         <SubLessonListTab
           lessons={lessons}
-          subLessons={[]}
-          onSelectLesson={(id) => console.log(id)}
-          onSaveAll={() => {}}
-          onDeleteSub={(id) => console.log(id)}
-          onReorderSub={(newList) => console.log(newList)}
-          loading = {loading}
+          subLessons={subLessons}
+          selectedLessonId={selectedLessonId}
+          onSelectLesson={setSelectedLessonId}
+          onSaveAll={handleSaveSubLessonAll}
+          onDeleteSub={handleDeleteSubLesson}
+          onReorderSub={handleReorderSubLessons}
+          loading={loading}
         />
       ),
     },
@@ -115,6 +124,7 @@ export const ManageCourseMateri = () => {
       }}
     >
       {contextHolder}
+      {modalContextHolder}
       <div
         style={{
           display: "flex",

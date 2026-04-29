@@ -20,7 +20,12 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 // 1. IMPORT LIBRARY BARU
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import { LessonRecord, LessonCreateData } from "../types";
 import { LevelData } from "@/src/app/(dashboard)/(master)/level/types";
 
@@ -53,9 +58,13 @@ export const LessonListTab: React.FC<Props> = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [localLessons, setLocalLessons] = useState<LessonRecord[]>([]);
 
-  // Sinkronisasi data dari parent (API) ke state lokal
   useEffect(() => {
-    setLocalLessons(lessons);
+    // Tunda update state ke microtask berikutnya agar tidak terjadi cascading render
+    const timeoutId = setTimeout(() => {
+      setLocalLessons(lessons);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [lessons]);
 
   // --- FUNGSI MODAL ---
@@ -80,7 +89,7 @@ export const LessonListTab: React.FC<Props> = ({
         });
       } else {
         const lessonsInLevel = localLessons.filter(
-          (l) => Number(l.level_id) === levelIdNumber
+          (l) => Number(l.level_id) === levelIdNumber,
         );
         const nextPosition = lessonsInLevel.length + 1;
 
@@ -113,7 +122,7 @@ export const LessonListTab: React.FC<Props> = ({
 
     const updatedLessons = Array.from(localLessons);
     const draggedLessonIndex = updatedLessons.findIndex(
-      (l) => String(l.id) === draggableId
+      (l) => String(l.id) === draggableId,
     );
 
     if (draggedLessonIndex === -1) return;
@@ -121,34 +130,29 @@ export const LessonListTab: React.FC<Props> = ({
 
     // SKENARIO A: PINDAH POSISI DI LEVEL YANG SAMA
     if (source.droppableId === destination.droppableId) {
-      
       const levelLessons = updatedLessons
         .filter((l) => String(l.level_id) === source.droppableId)
         .sort((a, b) => Number(a.position || 0) - Number(b.position || 0));
 
-      
       levelLessons.splice(source.index, 1);
       levelLessons.splice(destination.index, 0, draggedLesson);
 
-      
       levelLessons.forEach((lesson, index) => {
         const newPosition = index + 1;
-        
+
         if (lesson.position !== newPosition) {
           lesson.position = newPosition; // Update lokal
           onUpdate(lesson.id, { position: newPosition }); // Update API
         }
       });
-    }
-   
-    else {
+    } else {
       draggedLesson.level_id = Number(destination.droppableId);
 
       const targetLevelLessons = updatedLessons
         .filter(
           (l) =>
             String(l.level_id) === destination.droppableId &&
-            String(l.id) !== draggableId
+            String(l.id) !== draggableId,
         )
         .sort((a, b) => Number(a.position || 0) - Number(b.position || 0));
 
@@ -213,7 +217,9 @@ export const LessonListTab: React.FC<Props> = ({
                 // Saring menggunakan localLessons
                 const levelLessons = localLessons
                   .filter((l) => Number(l.level_id) === Number(level.id))
-                  .sort((a, b) => Number(a.position || 0) - Number(b.position || 0));
+                  .sort(
+                    (a, b) => Number(a.position || 0) - Number(b.position || 0),
+                  );
 
                 return (
                   // KOTAK LEVEL (Droppable)
@@ -223,15 +229,22 @@ export const LessonListTab: React.FC<Props> = ({
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         style={{
-                          backgroundColor: snapshot.isDraggingOver ? "#f0f7ff" : "#fcfcfc",
-                          border: snapshot.isDraggingOver ? "1px dashed #1677ff" : "1px solid #d9d9d9",
+                          backgroundColor: snapshot.isDraggingOver
+                            ? "#f0f7ff"
+                            : "#fcfcfc",
+                          border: snapshot.isDraggingOver
+                            ? "1px dashed #1677ff"
+                            : "1px solid #d9d9d9",
                           borderRadius: "8px",
                           padding: "16px",
                           minHeight: "130px",
                           transition: "all 0.3s ease",
                         }}
                       >
-                        <Title level={5} style={{ marginTop: 0, marginBottom: 16 }}>
+                        <Title
+                          level={5}
+                          style={{ marginTop: 0, marginBottom: 16 }}
+                        >
                           <Tag
                             color="cyan"
                             style={{ fontSize: 12, padding: "4px 12px" }}
@@ -240,9 +253,15 @@ export const LessonListTab: React.FC<Props> = ({
                           </Tag>
                         </Title>
 
-                        {levelLessons.length === 0 && !snapshot.isDraggingOver ? (
-                          <div style={{ textAlign: "center", padding: "20px 0" }}>
-                            <Text type="secondary" style={{ fontStyle: "italic" }}>
+                        {levelLessons.length === 0 &&
+                        !snapshot.isDraggingOver ? (
+                          <div
+                            style={{ textAlign: "center", padding: "20px 0" }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{ fontStyle: "italic" }}
+                            >
                               Belum ada lesson. Tarik (drag) materi ke sini...
                             </Text>
                           </div>
@@ -269,11 +288,13 @@ export const LessonListTab: React.FC<Props> = ({
                                       display: "flex",
                                       alignItems: "center",
                                       padding: "12px 16px",
-                                      backgroundColor: snapshot.isDragging ? "#fafafa" : "#ffffff",
+                                      backgroundColor: snapshot.isDragging
+                                        ? "#fafafa"
+                                        : "#ffffff",
                                       border: "1px solid #f0f0f0",
                                       borderRadius: "6px",
-                                      boxShadow: snapshot.isDragging 
-                                        ? "0 8px 16px rgba(0,0,0,0.1)" 
+                                      boxShadow: snapshot.isDragging
+                                        ? "0 8px 16px rgba(0,0,0,0.1)"
                                         : "0 1px 2px rgba(0,0,0,0.02)",
                                       // Gabungkan style bawaan Pangea agar posisinya akurat
                                       ...provided.draggableProps.style,
@@ -282,11 +303,18 @@ export const LessonListTab: React.FC<Props> = ({
                                     {/* AREA PEGANGAN (Drag Handle) */}
                                     <div
                                       {...provided.dragHandleProps}
-                                      style={{ cursor: "grab", marginRight: "16px", display: "flex", alignItems: "center" }}
+                                      style={{
+                                        cursor: "grab",
+                                        marginRight: "16px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                      }}
                                     >
-                                      <MenuOutlined style={{ color: "#bfbfbf" }} />
+                                      <MenuOutlined
+                                        style={{ color: "#bfbfbf" }}
+                                      />
                                     </div>
-                                    
+
                                     <div style={{ flex: 1 }}>
                                       <Text strong>{lesson.title}</Text>
                                     </div>
@@ -341,15 +369,16 @@ export const LessonListTab: React.FC<Props> = ({
             label="Pilih Level"
             rules={[{ required: true, message: "Level wajib dipilih!" }]}
           >
-            <Select placeholder="-- Pilih Level --" size="large">
-              {levels.map((level) => (
-                <Select.Option key={level.id} value={level.id}>
-                  {level.level_name}
-                </Select.Option>
-              ))}
-            </Select>
+            <Select
+              placeholder="-- Pilih Level --"
+              size="large"
+              // Lebih rapi dan performa lebih baik menggunakan prop 'options'
+              options={levels.map((level) => ({
+                label: level.level_name,
+                value: Number(level.id), // <-- KUNCINYA DI SINI: Paksa jadi Number
+              }))}
+            />
           </Form.Item>
-
           <Form.Item
             name="title"
             label="Nama Lesson"

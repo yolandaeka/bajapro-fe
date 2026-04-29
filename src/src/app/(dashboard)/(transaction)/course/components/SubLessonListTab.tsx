@@ -5,25 +5,25 @@ import { Card, Select, Button, Typography, Empty, Space, message } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, MenuOutlined } from "@ant-design/icons";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { SubLessonForm } from "./SubLessonForm";
-import { LessonRecord, SubLessonRecord, ReorderItem, MaterialRecord, SubLessonCreateData } from "../types";
+import { LessonRecord, SubLessonRecord, ReorderItem, MaterialRecord, SubLessonCreateData, MaterialsCreateData } from "../types";
 
 const { Text } = Typography;
 
 interface Props {
   lessons: LessonRecord[];
   subLessons: SubLessonRecord[];
+  selectedLessonId: number | null;
   onSelectLesson: (id: number) => void;
-  onSaveAll: (subLesson: SubLessonCreateData, materials: MaterialRecord[]) => void;
+  onSaveAll: (subLesson: SubLessonCreateData, materials: MaterialRecord[], editId?: number) => void;
   onDeleteSub: (id: number) => void;
   onReorderSub: (updates: ReorderItem[]) => void;
   loading: boolean;
 }
 
 export const SubLessonListTab: React.FC<Props> = ({
-  lessons, subLessons, onSelectLesson, onSaveAll, onDeleteSub, onReorderSub, loading
+  lessons, subLessons, selectedLessonId, onSelectLesson, onSaveAll, onDeleteSub, onReorderSub, loading
 }) => {
   const [view, setView] = useState<"list" | "form">("list");
-  const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<SubLessonRecord | null>(null);
 
   const handleOnDragEnd = (result: DropResult) => {
@@ -41,12 +41,16 @@ export const SubLessonListTab: React.FC<Props> = ({
 
   if (view === "form") {
     return (
-      <SubLessonForm
+     <SubLessonForm
         lessons={lessons}
         initialLessonId={selectedLessonId}
         initialData={editingData}
         onBack={() => { setEditingData(null); setView("list"); }}
-        onSave={(vals, mats) => { onSaveAll(vals, mats); setView("list"); }}
+        onSave={(vals, mats) => { 
+          // PERBAIKAN: Tambahkan editingData?.id sebagai parameter ketiga!
+          onSaveAll(vals, mats, editingData?.id); 
+          setView("list"); 
+        }}
         loading={loading}
       />
     );
@@ -60,8 +64,9 @@ export const SubLessonListTab: React.FC<Props> = ({
           <Select
             className="w-full"
             placeholder="Pilih Lesson"
-            onChange={(val) => { setSelectedLessonId(val); onSelectLesson(val); }}
             options={lessons.map(l => ({ label: l.title, value: l.id }))}
+            value={selectedLessonId}
+            onChange={(val) => onSelectLesson(val)}
           />
           <Button 
             style={{marginTop: 4}}
@@ -90,7 +95,7 @@ export const SubLessonListTab: React.FC<Props> = ({
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className="flex items-center justify-between p-4 bg-white border rounded-lg shadow-sm"
+                          className="flex items-center justify-between p-4 bg-white border-1 border-black-300 rounded-lg shadow-sm"
                         >
                           <Space>
                             <div {...provided.dragHandleProps} className="cursor-grab text-gray-400">

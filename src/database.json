@@ -166,6 +166,13 @@
       "img_thumbnail": "python.png",
       "published": 0,
       "isactive": true
+    },
+    {
+      "course_name": "Coba Java",
+      "description": "Coba",
+      "img_thumbnail": "",
+      "id": "4",
+      "isactive": true
     }
   ],
   "t_student_course": [
@@ -224,23 +231,12 @@
   ],
   "lessons": [
     {
-      "id": "1",
-      "course_id": 1,
-      "level_id": 3,
-      "title": "Dasar HTML",
-      "description": "Pengenalan Tag",
-      "position": 4,
-      "img_thumbnail": "html.png",
-      "published": 1,
-      "isactive": true
-    },
-    {
       "id": "2",
       "course_id": 1,
       "level_id": 2,
       "title": "Dasar CSS",
       "description": "Styling Web",
-      "position": 1,
+      "position": 2,
       "img_thumbnail": "css.png",
       "published": 1,
       "isactive": true
@@ -268,7 +264,7 @@
       "isactive": true
     },
     {
-      "level_id": 1,
+      "level_id": 2,
       "title": "Coba begin",
       "course_id": 1,
       "position": 1,
@@ -276,16 +272,20 @@
       "published": 1,
       "isactive": true,
       "id": "9zuRcD1w8Hw"
+    },
+    {
+      "level_id": 2,
+      "title": "Coba lessonsss",
+      "description": "huwii",
+      "course_id": 4,
+      "position": 1,
+      "img_thumbnail": null,
+      "published": 1,
+      "isactive": true,
+      "id": "f57c8bHNhXo"
     }
   ],
   "sublessons": [
-    {
-      "id": "1",
-      "lesson_id": 1,
-      "title": "Tag Heading",
-      "order_position": 1,
-      "isactive": true
-    },
     {
       "id": "2",
       "lesson_id": 1,
@@ -306,6 +306,21 @@
       "title": "SELECT Query",
       "order_position": 1,
       "isactive": true
+    },
+    {
+      "lesson_id": "9zuRcD1w8Hw",
+      "title": "Lucu",
+      "id": "yOvd8yuWC_4"
+    },
+    {
+      "lesson_id": "9zuRcD1w8Hw",
+      "title": "Lucu 2",
+      "id": "cvT0zdS-K4g"
+    },
+    {
+      "lesson_id": 1,
+      "title": "Baru",
+      "id": "TNicbcYyoIs"
     }
   ],
   "materials": [
@@ -328,6 +343,55 @@
       "content_position": 1,
       "published": 1,
       "isactive": true
+    },
+    {
+      "title": "Coba materi",
+      "materials": "<p>OKEE</p>",
+      "url_video": null,
+      "sub_lesson_id": "g5OxO68DTn8",
+      "content_position": 1,
+      "id": "y1khkcmccZc"
+    },
+    {
+      "title": "Materi Paragraf",
+      "materials": "Tag p...",
+      "url_video": "url/2",
+      "sub_lesson_id": "2",
+      "content_position": 1,
+      "id": "7dLmpynZn2g"
+    },
+    {
+      "title": "Coba section",
+      "materials": "YA",
+      "url_video": "YUTOB.COM",
+      "sub_lesson_id": "2",
+      "content_position": 2,
+      "id": "cXszLPqwOjs"
+    },
+    {
+      "title": "Video Pembelajaran",
+      "materials": null,
+      "url_video": "youtube.com",
+      "sub_lesson_id": "yOvd8yuWC_4",
+      "content_position": 1,
+      "id": "uHNXO9n_lgM"
+    },
+    {
+      "title": "YAAA",
+      "materials": "<p>YAA</p>",
+      "url_video": null,
+      "sub_lesson_id": "cvT0zdS-K4g",
+      "content_position": 1,
+      "id": "ZfBSOUjiPrw"
+    },
+    {
+      "sub_lesson_id": "TNicbcYyoIs",
+      "title": "Oke",
+      "materials": "<p>Coba</p>",
+      "url_video": null,
+      "content_position": 1,
+      "isactive": true,
+      "id": "3il9FqmeJRs"
     }
   ],
   "t_student_progress": [
