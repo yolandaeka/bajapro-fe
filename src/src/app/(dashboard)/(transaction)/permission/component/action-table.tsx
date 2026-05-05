@@ -1,97 +1,72 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
-import { Table, Checkbox, Card, Row, Col, Button, Typography, Tag } from "antd";
+import { Table, Checkbox, Card, Row, Col, Button, Typography } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
-import { PermissionRow } from "../types"; 
+import { usePermission, ACTIONS } from "../hooks/usePermission";
 
-const { Title, Text } = Typography;
-
-// List fitur yang mau kita munculkan di tabel (Bisa ditaruh di constant)
-const FEATURES = ["Course", "Users", "Kelas", "Leaderboard"];
-const ACTIONS = ["create", "read", "update", "delete"];
+const { Text } = Typography;
 
 export const PermissionTab = () => {
-  const [selectedRole, setSelectedRole] = useState<string>("Admin");
-  const [rolePermissions, setRolePermissions] = useState<number[]>([]); // ID permission yang aktif
-
-
-  const dataSource: PermissionRow[] = FEATURES.map((feat) => {
-    const row: PermissionRow = { feature: feat, key: feat };
-    ACTIONS.forEach((act) => {
-      row[act] = Math.floor(Math.random() * 1000); // Ganti dengan ID asli dari API
-    });
-    return row;
-  });
-
-  const columns = [
-    {
-      title: "Nama",
-      dataIndex: "feature",
-      key: "feature",
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    ...ACTIONS.map((action) => ({
-      title: action.charAt(0).toUpperCase() + action.slice(1),
-      dataIndex: action,
-      key: action,
-      align: "center" as const,
-      render: (id: number) => (
-        <Checkbox 
-          checked={rolePermissions.includes(id)}
-          onChange={(e) => {
-            if (e.target.checked) setRolePermissions([...rolePermissions, id]);
-            else setRolePermissions(rolePermissions.filter(p => p !== id));
-          }}
-        />
-      ),
-    })),
-  ];
+  const {
+    loading, roles, selectedRole, handleSelectRole,
+    tableDataSource, activePermissionIds, handleToggle, handleSave, contextHolder
+  } = usePermission();
 
   return (
-    <div style={{ padding: 24, background: "#F8FAFC", minHeight: "100vh" }}>
+    <div style={{ padding: 24, background: "#F8FAFC" }}>
+      {contextHolder}
       <Row gutter={24}>
-        {/* Kolom Kiri: List Role */}
+        {/* KOLOM KIRI: LIST ROLE DARI API */}
         <Col span={8}>
           <Card title="List Role System" style={{ borderRadius: 16 }}>
             <Table
-              dataSource={[
-                { id: 1, name: "Admin" },
-                { id: 2, name: "Pengajar" },
-                { id: 3, name: "Pelajar" },
-              ]}
+              dataSource={roles} // <-- DATA DARI API
+              rowKey="id"
+              loading={loading && roles.length === 0}
+              pagination={false}
               columns={[
-                { title: "Role", dataIndex: "name", key: "name" },
+                { title: "Role", dataIndex: "role_name", key: "name" },
                 {
                   title: "Action",
                   key: "action",
                   render: (_, record) => (
                     <Button 
-                      type={selectedRole === record.name ? "primary" : "default"}
-                      onClick={() => setSelectedRole(record.name)}
+                      type={selectedRole?.id === record.id ? "primary" : "default"}
+                      onClick={() => handleSelectRole(record)}
                     >
                       Detail
                     </Button>
                   ),
                 },
               ]}
-              pagination={false}
             />
           </Card>
         </Col>
 
-        {/* Kolom Kanan: Manajemen Akses */}
+        {/* KOLOM KANAN: CHECKBOX AKSES */}
         <Col span={16}>
           <Card 
-            title={<span>Manajemen Akses : <Text color="purple">{selectedRole}</Text></span>}
-            extra={<Button type="primary" icon={<SaveOutlined />} style={{ backgroundColor: '#5B21B6' }}>Save</Button>}
+            title={<span>Manajemen Akses : <Text color="purple">{selectedRole?.role_name || "..."}</Text></span>}
+            extra={<Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={loading}>Save</Button>}
             style={{ borderRadius: 16 }}
           >
             <Table 
-              dataSource={dataSource} 
-              columns={columns} 
+              dataSource={tableDataSource} 
+              loading={loading}
               pagination={false}
-              bordered={false}
+              columns={[
+                { title: "Fitur", dataIndex: "feature", key: "feature", render: (t) => <Text strong>{t}</Text> },
+                ...ACTIONS.map(act => ({
+                  title: act.toUpperCase(),
+                  dataIndex: act,
+                  align: "center" as const,
+                  render: (permId: number) => permId ? (
+                    <Checkbox 
+                      checked={(activePermissionIds || []).includes(permId)}
+                      onChange={(e) => handleToggle(permId, e.target.checked)}
+                    />
+                  ) : "-"
+                }))
+              ]}
             />
           </Card>
         </Col>

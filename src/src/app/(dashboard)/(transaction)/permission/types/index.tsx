@@ -1,11 +1,7 @@
-export interface Role {
-  id: number;
-  name: string;
-}
-
 export interface Permission {
   id: number;
   name: string; // Isinya: "course.create", "user.read", dll
+  role_ids: number[];
 }
 
 // Ini tipe untuk baris di tabel UI

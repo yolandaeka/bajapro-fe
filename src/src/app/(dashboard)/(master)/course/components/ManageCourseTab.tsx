@@ -31,8 +31,6 @@ export const ManageCourseMateri = () => {
     handleDeleteLesson,
     handleReorderLessons,
     isMounted,
-    
-    // PERBAIKAN: Ambil state dan fungsi untuk SubLesson dari hook
     subLessons,
     selectedLessonId,
     setSelectedLessonId,
@@ -43,7 +41,6 @@ export const ManageCourseMateri = () => {
 
   } = useManageCourseMateri(courseId);
 
-  // 1. Cek apakah ini mode Edit (sudah ada ID di URL)
   const isEditMode = !!params?.id;
 
   if (!isMounted) {

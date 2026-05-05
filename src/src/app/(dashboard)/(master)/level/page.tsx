@@ -48,7 +48,7 @@ export default function LevelPage() {
         setTimeout(() => {
           form.resetFields();
           form.setFieldsValue({
-            levelName: dataLama.level,
+            levelName: dataLama.level_name,
             description: dataLama.deskripsi,
           });
         }, 50);
@@ -147,7 +147,7 @@ export default function LevelPage() {
           viewData ? (
             <Descriptions column={1} bordered style={{ marginTop: "24px" }}>
               <Descriptions.Item label="Nama Level">
-                <strong>{viewData.level}</strong>
+                <strong>{viewData.level_name}</strong>
               </Descriptions.Item>
               <Descriptions.Item label="Deskripsi">
                 {viewData.deskripsi}

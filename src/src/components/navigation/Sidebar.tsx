@@ -62,7 +62,7 @@ export const allMenuItems: MenuItem[] = [
       },
       {
         key: "question",
-        label: <Link href="/question">Question</Link>,
+        label: <Link href="/code_question">Question</Link>,
         icon: <QuestionCircleOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
       },

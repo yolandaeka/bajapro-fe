@@ -159,7 +159,7 @@ export const SubLessonForm: React.FC<Props> = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6" style={{ backgroundColor: "white", padding: "16px", borderRadius: "8px" }}>
         <Button
           color="default"
           variant="filled"

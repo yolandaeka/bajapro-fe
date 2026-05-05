@@ -14,7 +14,7 @@ import { TableHeader } from "@tiptap/extension-table-header";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { common, createLowlight } from "lowlight";
 import java from "highlight.js/lib/languages/java";
-import React from "react";
+import React, { useEffect } from "react";
 
 // Ant Design Icons - Sudah diperbaiki namanya
 import {
@@ -42,7 +42,7 @@ lowlight.register("java", java);
 // --- TYPE DEFINITIONS (Menghilangkan error ESLint any) ---
 interface EditorProps {
   value: string;
-  onChange: (content: string) => void;
+  onChange?: (content: string) => void;
 }
 
 interface BtnProps {
@@ -107,10 +107,20 @@ export default function TiptapEditor({ value, onChange }: EditorProps) {
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange?.(editor.getHTML());
     },
     immediatelyRender: false,
   });
+
+  
+  useEffect(() => {
+    if (!editor) return;
+    const currentHTML = editor.getHTML();
+    if (value !== currentHTML) {
+      // `setContent` dengan emitUpdate: false agar tidak trigger onUpdate/onChange
+      editor.commands.setContent(value ?? "", { emitUpdate: false });
+    }
+  }, [editor, value]);
 
   if (!editor) return null;
 

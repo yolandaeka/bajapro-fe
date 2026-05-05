@@ -246,7 +246,7 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
       let subLessonId: number;
 
       // ==========================================
-      // 1. PROSES SUB LESSON & HAPUS MATERI LAMA
+      // 1. PROSES SUB LESSON 
       // ==========================================
 
       if (editId) {
@@ -319,8 +319,6 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
       setLoading(false);
     }
   };
-
-  
 
   const handleReorderSubLessons = async (updates: ReorderItem[]) => {
     if (!selectedLessonId) return;

@@ -113,7 +113,7 @@ export default function ListCourse({
           boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
         }}
       >
-        <Title level={2} style={{ marginBottom: 8 }}>
+        <Title level={2} style={{ marginBottom: 8, fontSize: "clamp(20px, 4vw, 24px)" }}>
           List Course
         </Title>
         <p style={{ color: "gray", marginBottom: "24px" }}>

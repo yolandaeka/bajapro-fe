@@ -2,12 +2,17 @@
   "roles": [
     {
       "id": "1",
-      "role_name": "Teacher",
+      "role_name": "Admin",
       "isactive": true
     },
     {
-      "id": "2",
-      "role_name": "Student",
+      "id": 2,
+      "role_name": "Pengajar",
+      "isactive": true
+    },
+    {
+      "id": "3",
+      "role_name": "Pelajar",
       "isactive": true
     }
   ],
@@ -264,7 +269,7 @@
       "isactive": true
     },
     {
-      "level_id": 2,
+      "level_id": 1,
       "title": "Coba begin",
       "course_id": 1,
       "position": 1,
@@ -410,24 +415,128 @@
       "isactive": true
     }
   ],
-  "t_code_question": [
+  "code_question": [
     {
-      "id": "1",
-      "sub_lesson_id": 1,
-      "code_question": "Buat <h1>Hello</h1>",
-      "image": "hint1.png",
-      "score": 50,
-      "hint": "H1",
-      "isactive": true
+      "sub_lesson_id": 3,
+      "code_question": "<p>Coba</p>",
+      "score": 30,
+      "isactive": true,
+      "id": "CgDW8itYas8"
     },
     {
-      "id": "2",
-      "sub_lesson_id": 4,
-      "code_question": "SELECT * FROM users",
-      "image": null,
-      "score": 100,
-      "hint": "SELECT",
-      "isactive": true
+      "sub_lesson_id": "4",
+      "code_question": "<p>COBA BANGETTTT</p>",
+      "score": 30,
+      "isactive": true,
+      "id": "f302RWu3US8"
+    },
+    {
+      "sub_lesson_id": "4",
+      "code_question": "<p>COBA1</p>",
+      "score": 34,
+      "isactive": true,
+      "id": "axV4TLAS2CQ"
+    }
+  ],
+  "essay_question": [
+    {
+      "question": "<p>YAAA</p>",
+      "answer": "YAA",
+      "answer_1": "TAAA",
+      "answer_2": "YAA",
+      "answer_3": "YAA",
+      "answer_4": "YAA",
+      "code_question_id": "CgDW8itYas8",
+      "isactive": true,
+      "id": "mmnhPJC4U_U"
+    },
+    {
+      "question": "<p>YOO</p>",
+      "answer": "UUU",
+      "answer_1": "YY",
+      "answer_2": "YYY",
+      "answer_3": "YY",
+      "answer_4": "YY",
+      "code_question_id": "CgDW8itYas8",
+      "isactive": true,
+      "id": "xZ0_o2O4kJ4"
+    },
+    {
+      "question": "<p>RRRRR</p>",
+      "answer": "RRRR",
+      "answer_1": "YYYY",
+      "answer_2": "UUUU",
+      "answer_3": "UUU",
+      "answer_4": "UUUU",
+      "code_question_id": "CgDW8itYas8",
+      "isactive": true,
+      "id": "XNDs0AMnZmY"
+    },
+    {
+      "question": "<p>YAAA</p>",
+      "answer": "YAA",
+      "answer_1": "YAA",
+      "answer_2": "COBA2",
+      "answer_3": "COBA3",
+      "answer_4": "COBA4",
+      "code_question_id": "f302RWu3US8",
+      "isactive": true,
+      "id": "0r9EDBphZ-s"
+    },
+    {
+      "question": "<p>YAA2</p>",
+      "answer": "UTAMA",
+      "answer_1": "COBA1",
+      "answer_2": "COBA2",
+      "answer_3": "COBA3",
+      "answer_4": "COBA4",
+      "code_question_id": "f302RWu3US8",
+      "isactive": true,
+      "id": "97PUNLXWAmY"
+    },
+    {
+      "question": "<p>ESAAY 3</p>",
+      "answer": "UTAMA3",
+      "answer_1": "COBA1",
+      "answer_2": "COBA2",
+      "answer_3": "COBA3",
+      "answer_4": "COBA4",
+      "code_question_id": "f302RWu3US8",
+      "isactive": true,
+      "id": "9sgqdYu8Q6M"
+    },
+    {
+      "question": "<p>COBA1</p>",
+      "answer": "COBA1",
+      "answer_1": "COBA1",
+      "answer_2": "COBA1",
+      "answer_3": "COBA1",
+      "answer_4": "COBA1",
+      "code_question_id": "axV4TLAS2CQ",
+      "isactive": true,
+      "id": "OUplWXZARUs"
+    },
+    {
+      "question": "<p>COBA1</p>",
+      "answer": "COBA1",
+      "answer_1": "COBA1",
+      "answer_2": "COBA1",
+      "answer_3": "COBA1",
+      "answer_4": "COBA1",
+      "code_question_id": "axV4TLAS2CQ",
+      "isactive": true,
+      "id": "q150eRNXl1E"
+    },
+    {
+      "question": "<p>COBA1</p>",
+      "answer": "COBA1",
+      "answer_1": "COBA1",
+      "answer_2": "COBA1",
+      "answer_3": "COBA1",
+      "answer_4": "COBA1",
+      "code_question_id": "axV4TLAS2CQ",
+      "isactive": true,
+      "id": "2XE03I4eubM"
     }
   ],
   "t_essay_answer": [
@@ -464,5 +573,155 @@
       "isactive": true
     }
   ],
+  "permissions": [
+    {
+      "id": "1",
+      "name": "course.create",
+      "role_ids": [
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "2",
+      "name": "course.read",
+      "role_ids": [
+        1,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "3",
+      "name": "course.update",
+      "role_ids": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "4",
+      "name": "course.delete",
+      "role_ids": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "5",
+      "name": "users.create",
+      "role_ids": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "6",
+      "name": "users.read",
+      "role_ids": [
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "id": "7",
+      "name": "users.delete",
+      "role_ids": [
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "id": "8",
+      "name": "users.update",
+      "role_ids": [
+        1,
+        2
+      ]
+    }
+  ],
+  "t_student_course": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "course_id": 1,
+      "total_score": 85,
+      "badge_id": 1
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "course_id": 1,
+      "total_score": 90,
+      "badge_id": 2
+    }
+  ],
+  "t_student_progress": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "course_id": 1,
+      "sub_lesson_id": 101,
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "course_id": 1,
+      "sub_lesson_id": 102,
+      "status": "in_progress"
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "course_id": 1,
+      "sub_lesson_id": 101,
+      "status": "pending"
+    }
+  ],
+  "t_essay_answer": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "sub_lesson_id": 101,
+      "essay_question_id": 501,
+      "answer": "Object Oriented Programming adalah paradigma pemrograman yang berorientasi pada objek...",
+      "konteks_penjelasan": 0,
+      "keruntutan": 0,
+      "kebenaran": 0,
+      "teacher_notes": "",
+      "is_approved_by_teacher": "pending"
+    }
+  ],
+  "t_code_history_logs": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "sub_lesson_id": 101,
+      "code_question_id": 601,
+      "is_error": true,
+      "message": "SyntaxError: Missing semicolon on line 3"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "sub_lesson_id": 101,
+      "code_question_id": 601,
+      "is_error": true,
+      "message": "ReferenceError: variable 'x'is not defined"
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "sub_lesson_id": 101,
+      "code_question_id": 601,
+      "is_error": false,
+      "message": "Build successful! All tests passed."
+    }],
   "$schema": "./node_modules/json-server/schema.json"
 }

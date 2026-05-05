@@ -6,9 +6,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 const USE_REAL_API = false; 
 
 let dummyRoles: RoleData[] = [
-  { id: "1", role_name: "Admin", isactive: "Aktif" },
-  { id: "2", role_name: "Pengajar", isactive: "Aktif" },
-   { id: "3", role_name: "Pelajar", isactive: "Aktif" },
+  { id: 1, role_name: "Admin", isactive: "Aktif" },
+  { id: 2, role_name: "Pengajar", isactive: "Aktif" },
+   { id: 3, role_name: "Pelajar", isactive: "Aktif" },
 ];
 
 // 1. GET ALL
@@ -23,7 +23,7 @@ export const getRolesApi = async (): Promise<RoleData[]> => {
 };
 
 // 2. GET BY ID
-export const getRoleByIdApi = async (id: string): Promise<RoleData> => {
+export const getRoleByIdApi = async (id: number): Promise<RoleData> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/roles/${id}`);
     if (!response.ok) throw new Error("Gagal mengambil detail badge");
@@ -31,7 +31,7 @@ export const getRoleByIdApi = async (id: string): Promise<RoleData> => {
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const found = dummyRoles.find(item => item.id === id);
+        const found = dummyRoles.find(item => item.id == id);
         resolve(found as RoleData);
       }, 0);
     });
@@ -51,7 +51,7 @@ export const createRoleApi = async (data: RoleFormData): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const newRole: RoleData = {
-          id: Math.random().toString(36).substring(7),
+          id: Math.random(),
           role_name: data.role_name,
           isactive: "Aktif"
         };
@@ -63,7 +63,7 @@ export const createRoleApi = async (data: RoleFormData): Promise<void> => {
 };
 
 // 4. PUT (EDIT)
-export const updateRoleApi = async (id: string, data: RoleFormData): Promise<void> => {
+export const updateRoleApi = async (id: number, data: RoleFormData): Promise<void> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/roles/${id}`, {
       method: "PUT",
@@ -87,7 +87,7 @@ export const updateRoleApi = async (id: string, data: RoleFormData): Promise<voi
 };
 
 // 5. DELETE (HAPUS)
-export const deleteRoleApi = async (id: string): Promise<void> => {
+export const deleteRoleApi = async (id: number): Promise<void> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/roles/${id}`, {
       method: "DELETE",
@@ -96,7 +96,7 @@ export const deleteRoleApi = async (id: string): Promise<void> => {
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        dummyRoles = dummyRoles.filter(item => item.id !== id);
+        dummyRoles = dummyRoles.filter(item => item.id != id);
         resolve();
       }, 0);
     });
