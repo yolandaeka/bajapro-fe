@@ -28,7 +28,7 @@ export default function Filter() {
         // Nanti kalau fitur login sudah jadi, tinggal ganti angka ini 
         // dengan data dari LocalStorage atau Context Auth.
         // =========================================================
-        const loggedInTeacherId = 2; 
+        const loggedInTeacherId = 3; 
 
         // Jalankan fetch secara bersamaan agar lebih cepat
         const [resClasses, resCourses] = await Promise.all([

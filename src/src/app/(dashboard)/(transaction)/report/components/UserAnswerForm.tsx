@@ -1,76 +1,328 @@
 "use client";
-import { Card, Descriptions, Tag, Input, Radio, Button, Form, message, Space } from 'antd';
+import { Card, Tag, Input, Button, Form, message, Space, Typography, Table, Modal } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useReport } from '../hooks/useReport';
+import { useApproval } from '../hooks/useApproval';
 import { reportApi } from '../api/reportApi';
+import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+
+const { Title, Text } = Typography;
 
 export default function UserAnswerForm({ userId, subLessonId }: { userId: string, subLessonId: string }) {
   const router = useRouter();
-  const { data, loading } = useReport(undefined, userId, subLessonId);
+  const { data, loading, updateGrade, updateProgress } = useApproval(userId, subLessonId);
   const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const onSave = async (values: any) => {
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectNotes, setRejectNotes] = useState("");
+
+  const onApprove = async () => {
     try {
-      // Catatan: subLessonId di sini diasumsikan sebagai progressId berdasarkan struktur sebelumnya
-      await reportApi.updateGrade(subLessonId, values);
-      message.success("Penilaian berhasil disimpan!");
+      if (!data?.essayAnswers || data.essayAnswers.length === 0) {
+        messageApi.error("Jawaban esai tidak ditemukan!");
+        return;
+      }
+      const values = form.getFieldsValue();
+      await Promise.all(data.essayAnswers.map(ea => {
+        const isQ1 = data.essayQuestions[0] && ea.essay_question_id == data.essayQuestions[0].id;
+        const isQ2 = data.essayQuestions[1] && ea.essay_question_id == data.essayQuestions[1].id;
+        const isQ3 = data.essayQuestions[2] && ea.essay_question_id == data.essayQuestions[2].id;
+
+        return updateGrade(ea.id, {
+          ...ea,
+          konteks_penjelasan: isQ1 ? values.konteks_penjelasan : (ea.konteks_penjelasan || 0),
+          keruntutan: isQ2 ? values.keruntutan : (ea.keruntutan || 0),
+          kebenaran: isQ3 ? values.kebenaran : (ea.kebenaran || 0),
+          is_approved_by_teacher: "true",
+          teacher_notes: ""
+        });
+      }));
+      messageApi.success("Jawaban berhasil di-Approve!");
       router.back();
-    } catch (e) { 
-      message.error("Gagal menyimpan penilaian!"); 
+    } catch (e) {
+      messageApi.error("Gagal menyimpan penilaian!");
+    }
+  };
+
+  const onReject = async () => {
+    if (!rejectNotes.trim()) {
+      messageApi.error("Catatan (Notes) wajib diisi saat melakukan Reject!");
+      return;
+    }
+    if (!data?.essayAnswers || data.essayAnswers.length === 0) {
+      messageApi.error("Jawaban esai tidak ditemukan!");
+      return;
+    }
+    try {
+      const values = form.getFieldsValue();
+      await Promise.all(data.essayAnswers.map(ea => {
+        const isQ1 = data.essayQuestions[0] && ea.essay_question_id == data.essayQuestions[0].id;
+        const isQ2 = data.essayQuestions[1] && ea.essay_question_id == data.essayQuestions[1].id;
+        const isQ3 = data.essayQuestions[2] && ea.essay_question_id == data.essayQuestions[2].id;
+
+        return updateGrade(ea.id, {
+          ...ea,
+          konteks_penjelasan: isQ1 ? values.konteks_penjelasan : (ea.konteks_penjelasan || 0),
+          keruntutan: isQ2 ? values.keruntutan : (ea.keruntutan || 0),
+          kebenaran: isQ3 ? values.kebenaran : (ea.kebenaran || 0),
+          is_approved_by_teacher: "false",
+          teacher_notes: rejectNotes
+        });
+      }));
+      messageApi.success("Jawaban berhasil di-Reject!");
+      setIsRejectModalOpen(false);
+      router.back();
+    } catch (e) {
+      messageApi.error("Gagal menyimpan penilaian!");
     }
   };
 
   if (loading) return <div className="p-6">Memuat data...</div>;
 
-  const errorCount = data?.logs?.filter((l: any) => l.status === 'error').length || 0;
-  const successCount = data?.logs?.filter((l: any) => l.status === 'success').length || 0;
+  const errorCount = data?.logs?.filter((l: any) => l.is_error).length || 0;
+  const successCount = data?.logs?.filter((l: any) => !l.is_error).length || 0;
+
+  const wonderingScore = data?.wonderingScore?.score || 0;
+  const exploringScore = data?.codeAnswer?.exploring_score || 0;
+
+  let explainScore = 0;
+  if (data?.essayAnswers) {
+    data.essayAnswers.forEach((ea: any) => {
+      explainScore += (ea.keruntutan || 0) + (ea.kebenaran || 0) + (ea.konteks_penjelasan || 0);
+    });
+  }
+
+  const totalScore = wonderingScore + exploringScore + explainScore;
+
+  // Mocking values based on UI since API mapping is not fully perfect yet
+  const summaryColumns = [
+    { title: 'Wondering Score', dataIndex: 'wondering', align: 'center' as const },
+    { title: 'Exploring Score', dataIndex: 'exploring', align: 'center' as const },
+    { title: 'Explain Score', dataIndex: 'explain', align: 'center' as const },
+    { title: 'Total Score', dataIndex: 'total', align: 'center' as const },
+  ];
+
+  const summaryData = [{
+    key: '1',
+    wondering: wonderingScore,
+    exploring: exploringScore,
+    explain: explainScore,
+    total: totalScore
+  }];
+
+  const caseColumns = [
+    { title: 'Jumlah Errors', dataIndex: 'errors', align: 'center' as const },
+    { title: 'Jumlah Success', dataIndex: 'success', align: 'center' as const },
+    { title: 'Exploring Score', dataIndex: 'exploring', align: 'center' as const },
+  ];
+
+  const caseData = [{
+    key: '1',
+    errors: errorCount || 0,
+    success: successCount || 0,
+    exploring: exploringScore
+  }];
+
+  const approvalStatus = data?.essayAnswers?.[0]?.is_approved_by_teacher;
+  const statusText = approvalStatus === "true" ? "Approved" : approvalStatus === "false" ? "Rejected" : "Pending";
+  const statusColor = approvalStatus === "true" ? "green" : approvalStatus === "false" ? "red" : "orange";
 
   return (
-    <Card title="Detail Jawaban & Form Grading" className="shadow-sm">
-      <Descriptions bordered column={{ xs: 1, sm: 2 }} className="mb-6">
-        <Descriptions.Item label="Jawaban Essay" span={2}>
-          <div className="bg-gray-50 p-3 rounded border">
-            {data?.essay?.answer || "Belum ada jawaban essay."}
+    <div className="bg-gray-50 min-h-screen">
+      {contextHolder}
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6 shadow-sm bg-white p-4 px-6 rounded-xl">
+        <div className="flex items-center gap-4">
+          <Title level={4} style={{ margin: 0 }}>Result Hasil Belajar :</Title>
+          <Text style={{ fontSize: '18px', color: '#6b21a8', fontWeight: 600 }}>{data?.user?.name || 'Loading...'}</Text>
+        </div>
+        <Button
+          type="primary"
+          style={{ backgroundColor: '#1d4ed8', borderRadius: '8px' }}
+          icon={<ArrowLeftOutlined />}
+          onClick={() => router.back()}
+        >
+          Kembali
+        </Button>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="bg-white shadow-sm rounded-xl p-8 mb-6">
+
+        {/* Title Sub Lesson */}
+        <div className="flex justify-between items-start border-b pb-4 mb-6">
+          <div>
+            <Text type="secondary" className="text-base">Sub lesson</Text>
+            <Title level={3} style={{ margin: '4px 0 0 0', color: '#6b21a8' }}>{data?.sublesson?.title || 'Loading...'}</Title>
           </div>
-        </Descriptions.Item>
-        <Descriptions.Item label="Statistik Eksekusi Code" span={2}>
-          <Space>
-            <Tag color="green" className="text-sm px-2 py-1">Berhasil: {successCount} Kali</Tag>
-            <Tag color="red" className="text-sm px-2 py-1">Error: {errorCount} Kali</Tag>
-          </Space>
-        </Descriptions.Item>
-      </Descriptions>
+          <Tag color={statusColor} style={{ borderRadius: '12px', padding: '4px 16px', fontSize: '14px' }}>{statusText}</Tag>
+        </div>
 
-      <Form form={form} layout="vertical" onFinish={onSave}>
-        {/* Opsional jika kamu butuh input skor essay secara manual */}
-        {/* <Form.Item name="essay_score" label="Input Skor Essay" rules={[{required: true}]}>
-          <Input type="number" placeholder="0 - 100" style={{ width: 200 }} />
-        </Form.Item> */}
-        
-        <Form.Item name="status" label="Keputusan Penilaian" rules={[{required: true, message: 'Pilih status'}]}>
-          <Radio.Group>
-            <Radio value="approved">Approve</Radio>
-            <Radio value="rejected">Reject</Radio>
-          </Radio.Group>
-        </Form.Item>
-        
-        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.status !== curr.status}>
-          {({ getFieldValue }) => (
-             <Form.Item 
-               name="notes" 
-               label="Catatan Guru"
-               rules={[{ required: getFieldValue('status') === 'rejected', message: 'Catatan wajib diisi jika ditolak' }]}
-             >
-               <Input.TextArea rows={4} placeholder="Berikan feedback untuk murid..." />
-             </Form.Item>
+        {/* Summary Table */}
+        <div className="mb-8">
+          <Text className="text-gray-500 mb-2 block">Summary Penilaian</Text>
+          <Table
+            dataSource={summaryData}
+            columns={summaryColumns}
+            pagination={false}
+            bordered
+            size="middle"
+          />
+        </div>
+
+      </div>
+
+      <div className="bg-white shadow-sm rounded-xl p-8 mb-6">
+        {/* Soal Studi Kasus */}
+        <div className="mb-10">
+          <Text type="secondary" className="block mb-2">Soal</Text>
+          <Title level={4} style={{ color: '#6b21a8', marginTop: 0 }}>Studi Kasus</Title>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-6 my-4 shadow-sm">
+            <div dangerouslySetInnerHTML={{ __html: data?.codeQuestion?.code_question || 'Tidak ada soal studi kasus' }} />
+          </div>
+
+          <Text className="block mb-2 text-gray-500">Penilaian</Text>
+          <Table
+            dataSource={caseData}
+            columns={caseColumns}
+            pagination={false}
+            bordered
+            size="middle"
+          />
+        </div>
+      </div>
+
+      <Form form={form} layout="vertical" initialValues={{
+        konteks_penjelasan: data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[0]?.id)?.konteks_penjelasan || 0,
+        keruntutan: data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[1]?.id)?.keruntutan || 0,
+        kebenaran: data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[2]?.id)?.kebenaran || 0
+      }}>
+        <div className="bg-white shadow-sm rounded-xl p-8 mb-6">
+          <div>
+            <Text type="secondary" className="block mb-2">Soal</Text>
+            <Title level={4} style={{ color: '#6b21a8', marginTop: 0, marginBottom: 24 }}>Esai</Title>
+
+
+            <div className="space-y-6">
+              {/* Question 1: Konteks Penjelasan */}
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="mb-4">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Pertanyaan 1</Text>
+                  <div className="text-gray-800 font-medium text-base" dangerouslySetInnerHTML={{ __html: data?.essayQuestions?.[0]?.essay_question || 'Tidak ada pertanyaan' }} />
+                </div>
+                
+                <div className="mb-6 bg-white p-4 rounded border border-gray-200 shadow-sm">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Jawaban</Text>
+                  <Text className="text-gray-700">{data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[0]?.id)?.answer || 'Belum ada jawaban'}</Text>
+                </div>
+                
+                <div className="flex items-center justify-start gap-4 border-t border-gray-200 pt-4 mt-2">
+                  <Text className="text-gray-700 font-medium">Nilai Penjelasan Sesuai Konteks</Text>
+                  <Form.Item name="konteks_penjelasan" noStyle>
+                    <Input type="number" min={0} max={100} className="!w-20 text-center rounded-md font-semibold" size="large" />
+                  </Form.Item>
+                </div>
+              </div>
+
+              {/* Question 2: Keruntutan */}
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="mb-4">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Pertanyaan 2</Text>
+                  <div className="text-gray-800 font-medium text-base" dangerouslySetInnerHTML={{ __html: data?.essayQuestions?.[1]?.essay_question || 'Tidak ada pertanyaan' }} />
+                </div>
+                
+                <div className="mb-6 bg-white p-4 rounded border border-gray-200 shadow-sm">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Jawaban</Text>
+                  <Text className="text-gray-700">{data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[1]?.id)?.answer || 'Belum ada jawaban'}</Text>
+                </div>
+                
+                <div className="flex items-center justify-start gap-4 border-t border-gray-200 pt-4 mt-2">
+                  <Text className="text-gray-700 font-medium">Nilai Keruntutan Alur Berpikir</Text>
+                  <Form.Item name="keruntutan" noStyle>
+                    <Input type="number" min={0} max={100} className="!w-20 text-center rounded-md font-semibold" size="large" />
+                  </Form.Item>
+                </div>
+              </div>
+
+              {/* Question 3: Kebenaran */}
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="mb-4">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Pertanyaan 3</Text>
+                  <div className="text-gray-800 font-medium text-base" dangerouslySetInnerHTML={{ __html: data?.essayQuestions?.[2]?.essay_question || 'Tidak ada pertanyaan' }} />
+                </div>
+                
+                <div className="mb-6 bg-white p-4 rounded border border-gray-200 shadow-sm">
+                  <Text type="secondary" className="block text-xs uppercase tracking-wider mb-2">Jawaban</Text>
+                  <Text className="text-gray-700">{data?.essayAnswers?.find((ea: any) => ea.essay_question_id == data?.essayQuestions?.[2]?.id)?.answer || 'Belum ada jawaban'}</Text>
+                </div>
+                
+                <div className="flex items-center justify-start gap-4 border-t border-gray-200 pt-4 mt-2">
+                  <Text className="text-gray-700 font-medium">Nilai Kebenaran Jawaban</Text>
+                  <Form.Item name="kebenaran" noStyle>
+                    <Input type="number" min={0} max={100} className="!w-20 text-center rounded-md font-semibold" size="large" />
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+        </div>
+
+                  {/* Actions */}
+          {approvalStatus == null && (
+            <div className="flex justify-center gap-4 mt-8">
+              <Button
+                type="primary"
+                danger
+                size="large"
+                icon={<CloseOutlined />}
+                style={{ borderRadius: '8px', padding: '0 32px' }}
+                onClick={() => setIsRejectModalOpen(true)}
+              >
+                Reject
+              </Button>
+              <Button
+                type="primary"
+                size="large"
+                icon={<CheckOutlined />}
+                style={{ backgroundColor: '#22c55e', borderRadius: '8px', padding: '0 32px' }}
+                onClick={onApprove}
+              >
+                Approve
+              </Button>
+            </div>
           )}
-        </Form.Item>
 
-        <Space className="mt-4">
-          <Button onClick={() => router.back()}>Kembali</Button>
-          <Button type="primary" htmlType="submit">Simpan Penilaian</Button>
-        </Space>
       </Form>
-    </Card>
+
+      {/* Reject Modal */ }
+  <Modal
+    title="Reject Jawaban"
+    open={isRejectModalOpen}
+    onOk={onReject}
+    onCancel={() => setIsRejectModalOpen(false)}
+    okText="Konfirmasi Reject"
+    okButtonProps={{ danger: true }}
+  >
+    <div className="py-4">
+      <Text className="block mb-2 font-medium">Catatan / Feedback untuk Murid (Wajib)</Text>
+      <Input.TextArea
+        rows={4}
+        placeholder="Berikan alasan mengapa jawaban ditolak dan bagian mana yang perlu diperbaiki..."
+        value={rejectNotes}
+        onChange={(e) => setRejectNotes(e.target.value)}
+        status={rejectNotes.trim() === '' ? 'error' : ''}
+      />
+      {!rejectNotes.trim() && (
+        <Text type="danger" className="text-sm mt-1 block">Catatan wajib diisi agar murid dapat memperbaikinya.</Text>
+      )}
+    </div>
+  </Modal>
+
+    </div >
   );
 }

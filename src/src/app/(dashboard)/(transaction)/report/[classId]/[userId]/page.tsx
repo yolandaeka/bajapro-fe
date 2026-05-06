@@ -1,9 +1,10 @@
 import UserPorgress from '../../components/UserProgress';
 
-export default function UserProgressPage({ params }: { params: { classId: string, userId: string } }) {
+export default async function UserProgressPage({ params }: { params: Promise<{ classId: string, userId: string }> }) {
+  const resolvedParams = await params;
   return (
     <div className="p-6">
-      <UserPorgress classId={params.classId} userId={params.userId} />
+      <UserPorgress classId={resolvedParams.classId} userId={resolvedParams.userId} />
     </div>
   );
 }

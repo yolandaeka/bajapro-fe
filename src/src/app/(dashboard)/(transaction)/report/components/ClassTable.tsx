@@ -2,7 +2,7 @@
 
 import { Table, Button, Typography, Card, Tag, Alert } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useReport, FilteredStudent } from '../hooks/useReport'; // <-- Perhatikan path ini
+import { useClass, FilteredStudent } from '../hooks/useClass'; // <-- Perhatikan path ini
 import { ColumnsType } from 'antd/es/table';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 
@@ -20,10 +20,8 @@ export default function ClassTable({ classId }: ClassTableProps) {
   const courseName = searchParams.get('courseName') || courseId;
 
   // Menarik data pakai Hook yang sudah kita buat
-  const { data, loading, error } = useReport(classId, courseId);
+  const { students, loading, error } = useClass(classId, courseId);
 
-  // Pastikan data dikenali sebagai array murid (FilteredStudent)
-  const students = Array.isArray(data) ? (data as FilteredStudent[]) : [];
   console.log("Data Murid:", students); // Debugging: cek data yang diterima
   
 
@@ -49,9 +47,16 @@ export default function ClassTable({ classId }: ClassTableProps) {
     {
       title: 'Status',
       key: 'status',
-      render: () => (
-        <Tag color="blue">Terdaftar</Tag>
-      ),
+      render: (_, record: any) => {
+        let color = 'orange';
+        if (record.status === 'approve' || record.status === 'approved') color = 'green';
+        if (record.status === 'reject' || record.status === 'rejected') color = 'red';
+        return (
+          <Tag color={color} style={{ borderRadius: '12px', padding: '2px 10px', textTransform: 'capitalize' }}>
+            {record.status || 'Pending'}
+          </Tag>
+        )
+      },
     },
     {
       title: 'Aksi',
@@ -94,7 +99,7 @@ export default function ClassTable({ classId }: ClassTableProps) {
     <Card className="shadow-sm">
       <div className="mb-2 flex justify-between items-center">
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Daftar Murid Terdaftar
+          Daftar Murid
         </Typography.Title>
         <Typography.Text type="secondary">
           Total: {students.length} Murid
@@ -114,6 +119,7 @@ export default function ClassTable({ classId }: ClassTableProps) {
         loading={loading}
         locale={{ emptyText: 'Tidak ada murid yang mengambil course ini di kelas tersebut' }}
         pagination={{ pageSize: 10 }}
+        scroll={{ x: 900 }}
       />
     </Card>
 

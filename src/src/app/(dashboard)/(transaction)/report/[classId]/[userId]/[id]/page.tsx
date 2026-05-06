@@ -1,9 +1,10 @@
 import UserAnswerForm from '../../../components/UserAnswerForm';
 
-export default function DetailAnswerPage({ params }: { params: { classId: string, userId: string, id: string } }) {
+export default async function DetailAnswerPage({ params }: { params: Promise<{ classId: string, userId: string, id: string }> }) {
+  const resolvedParams = await params;
   return (
     <div className="p-6">
-      <UserAnswerForm userId={params.userId} subLessonId={params.id} />
+      <UserAnswerForm userId={resolvedParams.userId} subLessonId={resolvedParams.id} />
     </div>
   );
 }
