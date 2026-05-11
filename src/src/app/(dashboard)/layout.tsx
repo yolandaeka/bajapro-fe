@@ -48,7 +48,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
         {/* KONTEN UTAMA */}
         <div className="flex-1 overflow-y-auto flex flex-col">
-          <main className="flex-1 p-4 md:p-6">
+          <main className="flex-1 p-2 md:p-2">
             <Suspense fallback={<div className="p-4">Loading...</div>}>
               <div className="h-full">
                 {children}

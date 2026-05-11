@@ -201,6 +201,19 @@
       "updated_at": "2025-01-01",
       "user_create": 1,
       "user_update": 1
+    },
+    {
+      "role_id": 2,
+      "class_id": null,
+      "name": "Yolanda",
+      "email": "yolandaeka57@gmail.com",
+      "password": "12345678",
+      "is_approved_by_admin": 1,
+      "instansi_sekolah": "Sekolah",
+      "isactive": true,
+      "created_at": "2026-05-11",
+      "updated_at": "2026-05-11",
+      "id": "vtsOFxr8_AQ"
     }
   ],
   "badges": [
@@ -1141,7 +1154,7 @@
       "keruntutan": 0,
       "kebenaran": 0,
       "teacher_notes": "",
-      "is_approved_by_teacher": "true",
+      "is_approved_by_teacher": true,
       "isactive": true,
       "created_at": "2025-02-01",
       "updated_at": "2025-02-01",
@@ -1157,7 +1170,7 @@
       "keruntutan": 20,
       "kebenaran": 0,
       "teacher_notes": "",
-      "is_approved_by_teacher": "true",
+      "is_approved_by_teacher": true,
       "isactive": true,
       "created_at": "2025-02-01",
       "updated_at": "2025-02-01",

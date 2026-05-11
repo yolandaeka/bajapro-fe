@@ -42,13 +42,28 @@ export default function UserPage() {
   const selectedFormRole = Form.useWatch("role", form);
 
   // --- CONFIG USER ---
-  const currentUserRole: string = "Admin";
-  const currentUserId: string = "p1"; // 👈 Tambahkan ini agar tidak error
+  const [currentUserRole, setCurrentUserRole] = useState<string>("Admin");
+  const [currentUserId, setCurrentUserId] = useState<string | number>("p1");
+
+  React.useEffect(() => {
+    const userCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('user='))
+      ?.split('=')[1];
+      
+    if (userCookie) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userCookie));
+        setCurrentUserRole(user.role_id === 1 ? "Admin" : "Pengajar");
+        setCurrentUserId(user.id);
+      } catch (e) {}
+    }
+  }, []);
 
   // --- STATES ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
   const [viewData, setViewData] = useState<UserData | null>(null);
 
   const [searchText, setSearchText] = useState("");
@@ -100,7 +115,7 @@ export default function UserPage() {
       let success = false;
       if (modalMode === "add") success = await addUser(values);
       else if (modalMode === "edit" && selectedId)
-        success = await editUser(selectedId, values);
+        success = await editUser(selectedId.toString(), values);
       if (success) setIsModalOpen(false);
     } catch (error) {
       console.log("Validasi form gagal", error);

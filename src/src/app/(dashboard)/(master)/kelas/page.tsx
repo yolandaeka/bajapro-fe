@@ -39,9 +39,23 @@ export default function ClassPage() {
   
   const [form] = Form.useForm();
 
-  const currentUserRole = "Admin" as "Admin" | "Pengajar";
-  const currentUserId = "p1"; 
-  // const { role } = useAuth();
+  const [currentUserRole, setCurrentUserRole] = useState<"Admin" | "Pengajar">("Admin");
+  const [currentUserId, setCurrentUserId] = useState<string | number | null>("p1");
+
+  React.useEffect(() => {
+    const userCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('user='))
+      ?.split('=')[1];
+      
+    if (userCookie) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userCookie));
+        setCurrentUserRole(user.role_id === 1 ? "Admin" : "Pengajar");
+        setCurrentUserId(user.id);
+      } catch (e) {}
+    }
+  }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
@@ -85,7 +99,7 @@ export default function ClassPage() {
 
   const handleAction = (action: "add" | "edit" | "view", record?: ClassData) => {
     setModalMode(action);
-    setSelectedId(record?.id || null);
+    setSelectedId(record?.id.toString() || null);
     setIsModalOpen(true);
     
     if (action === "view" && record) {

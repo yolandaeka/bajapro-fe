@@ -20,8 +20,50 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
 
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const handleLogin = async (values: LoginValues) => {
+    setLoading(true);
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const res = await fetch(`${BASE_URL}/users?email=${values.email}&password=${values.password}`);
+      const data = await res.json();
+      
+      if (data && data.length > 0) {
+        const user = data[0];
+        
+        // Save user info to cookie for middleware
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/`;
+
+        messageApi.success("Login berhasil!");
+        
+        // Route based on role
+        if (user.role_id === 3) {
+          router.push("/home");
+        } else if (user.role_id === 2) {
+          if (user.is_approved_by_admin === 1) {
+            router.push("/dashboard");
+          } else {
+            router.push("/waiting-approval");
+          }
+        } else if (user.role_id === 1) {
+          router.push("/dashboard");
+        } else {
+          router.push("/");
+        }
+      } else {
+        messageApi.error("Email atau Password salah!");
+      }
+    } catch (err) {
+      messageApi.error("Terjadi kesalahan saat menghubungi server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
+      {contextHolder}
       <style>{`
         /* Memaksa background terang sejak HTML pertama kali dimuat */
         html, body {
@@ -159,9 +201,15 @@ export default function LoginPage() {
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <Text>
                 Dont have an account?{" "}
-                {/* Sesuaikan link ke /register jika router kamu di luar auth */}
                 <Link href="/register" style={{ color: "#EF4444" }}>
                   Sign up
+                </Link>
+              </Text>
+              <br />
+              <Text style={{ fontSize: 13, marginTop: 8, display: "inline-block" }}>
+                Sudah mendaftar sebagai Pengajar?{" "}
+                <Link href="/waiting-approval" style={{ color: "#5B21B6", fontWeight: "bold" }}>
+                  Cek Status
                 </Link>
               </Text>
             </div>

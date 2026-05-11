@@ -24,25 +24,58 @@ export default function RegisterPage() {
   const [role, setRole] = useState<"Student" | "Teacher">("Student");
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const handleRegister = (values: RegisterValues) => {
+  const handleRegister = async (values: RegisterValues) => {
     setLoading(true);
-    
-    // SIMULASI REGISTER
-    setTimeout(() => {
-      if (role === "Student") {
-        message.success("Registrasi Siswa Berhasil!");
-        router.push("/student/dashboard"); 
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      
+      const newUser = {
+        role_id: role === "Student" ? 3 : 2,
+        class_id: null, // Will be set later maybe using kode_kelas
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        is_approved_by_admin: role === "Student" ? 1 : 0, // Admin must approve Teacher
+        instansi_sekolah: role === "Student" ? "" : values.asal_instansi,
+        isactive: true,
+        created_at: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString().split('T')[0],
+      };
+
+      const res = await fetch(`${BASE_URL}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+
+      if (res.ok) {
+        const createdUser = await res.json();
+        
+        // Log user in automatically by setting cookie
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(createdUser))}; path=/`;
+
+        if (role === "Student") {
+          messageApi.success("Registrasi Siswa Berhasil!");
+          router.push("/home"); 
+        } else {
+          messageApi.success("Registrasi Pengajar Berhasil! Menunggu Persetujuan.");
+          router.push("/waiting-approval"); 
+        }
       } else {
-        message.success("Registrasi Pengajar Berhasil!");
-        router.push("/kelola-kelas"); 
+        messageApi.error("Gagal mendaftar. Silakan coba lagi.");
       }
+    } catch (err) {
+      messageApi.error("Terjadi kesalahan saat menghubungi server.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <>
+      {contextHolder}
       <style>{`
         /* Memaksa background terang sejak HTML pertama kali dimuat */
         html, body {
@@ -217,7 +250,7 @@ export default function RegisterPage() {
             </Form>
 
             <div style={{ textAlign: "center", marginTop: 24 }}>
-              <Text>Already have an account? <Link href="/auth/login" style={{ color: "#EF4444" }}>Login</Link></Text>
+              <Text>Already have an account? <Link href="/login" style={{ color: "#EF4444" }}>Login</Link></Text>
             </div>
             
           </div>

@@ -240,6 +240,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role = "ADMIN" }) => {
                   alt="Logo BAJAPRO"
                   width={32}
                   height={32}
+                  style={{ width: "auto", height: "auto" }}
                   priority
                 />
                 <div

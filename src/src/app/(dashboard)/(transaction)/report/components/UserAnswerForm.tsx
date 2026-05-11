@@ -138,8 +138,8 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
           <Text style={{ fontSize: '18px', color: '#6b21a8', fontWeight: 600 }}>{data?.user?.name || 'Loading...'}</Text>
         </div>
         <Button
-          type="primary"
-          style={{ backgroundColor: '#1d4ed8', borderRadius: '8px' }}
+          color="default"
+          variant="filled"
           icon={<ArrowLeftOutlined />}
           onClick={() => router.back()}
         >
