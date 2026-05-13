@@ -20,10 +20,17 @@ export const useDashboard = () => {
       
     if (userCookie) {
       try {
-        const user = JSON.parse(decodeURIComponent(userCookie));
-        setCurrentUserRole(user.role_id === 1 ? "Admin" : "Pengajar");
+        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
+        const user = JSON.parse(decoded);
+        setCurrentUserRole(user.role_id == 1 ? "Admin" : "Pengajar");
         setCurrentUserId(user.id);
-      } catch (e) {}
+      } catch (e) {
+        try {
+          const user = JSON.parse(userCookie.replace(/^"|"$/g, ''));
+          setCurrentUserRole(user.role_id == 1 ? "Admin" : "Pengajar");
+          setCurrentUserId(user.id);
+        } catch (e2) {}
+      }
     }
   }, []);
 

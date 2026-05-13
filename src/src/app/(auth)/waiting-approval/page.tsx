@@ -103,7 +103,15 @@ export default function WaitingApprovalPage() {
             </div>
           )}
 
-          <Button type="default" block onClick={() => router.push("/login")}>
+          <Button 
+            type="default" 
+            block 
+            onClick={() => {
+              // Hapus cookie agar tidak terjebak redirect loop oleh middleware
+              document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+              router.push("/login");
+            }}
+          >
             Kembali ke Login
           </Button>
         </div>

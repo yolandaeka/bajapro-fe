@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import type { TableColumnsType } from "antd";
 import { CourseRecord } from "../types";
 import { deleteCourseApi } from "../api/courseApi";
+import { useAuth } from "@/src/hooks/useAuth";
 const { Title } = Typography;
 
 export default function ListCourse({
@@ -28,21 +29,17 @@ export default function ListCourse({
   initialData: CourseRecord[];
 }) {
   const router = useRouter();
+  const { can } = useAuth(); // Hook Keamanan
   const [searchText, setSearchText] = useState("");
   const [courses, setCourses] = useState<CourseRecord[]>(initialData);
   const [loading] = useState(false);
 
-  //   fetching data
-  useEffect(() => {
-    if (initialData.length === 0) {
-    }
-  }, [initialData]);
-
-  const filteredCourses = courses.filter(
-    (course) =>
-      course.course_name.toLowerCase().includes(searchText.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchText.toLowerCase()),
+  const filteredCourses = courses.filter((item) =>
+    item.course_name.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  // ... (tetap sama)
 
   const columns: TableColumnsType<CourseRecord> = [
     {
@@ -63,7 +60,11 @@ export default function ListCourse({
       key: "description",
       sorter: (a, b) => a.description.localeCompare(b.description),
     },
-    {
+  ];
+
+  // HANYA TAMPILKAN KOLOM ACTION JIKA PUNYA IZIN UPDATE/DELETE/READ
+  if (can('course.update') || can('course.delete') || can('course.read')) {
+    columns.push({
       title: "Action",
       key: "action",
       width: 180,
@@ -75,37 +76,28 @@ export default function ListCourse({
             style={{ backgroundColor: "#1677ff" }}
             onClick={() => router.push(`/course/${record.id}`)}
           >
-            Detail
+            {can('course.update') ? "Edit" : "Detail"}
           </Button>
-          <Popconfirm
-            title="Hapus Course"
-            description="Apakah kamu yakin ingin menghapus course dan isinya ini?"
-            okText="Ya, Hapus"
-            cancelText="Batal"
-            onConfirm={() => {
-              deleteCourseApi(record.id).then(() => {
-                setCourses((prev) =>
-                  prev.filter((item) => item.id !== record.id),
-                );
-              });
-            }}
-          >
-            <Button
-              danger
-              icon={<DeleteFilled />}
+
+          {can('course.delete') && (
+            <Popconfirm
+              title="Hapus Course"
+              onConfirm={() => {
+                deleteCourseApi(record.id).then(() => {
+                  setCourses((prev) => prev.filter((item) => item.id !== record.id));
+                });
+              }}
             >
-              Hapus
-            </Button>
-          </Popconfirm>
+              <Button danger icon={<DeleteFilled />}>Hapus</Button>
+            </Popconfirm>
+          )}
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   return (
-    <div
-      style={{ padding: 24, minHeight: "100vh", backgroundColor: "#f8fafc" }}
-    >
+    <div style={{ padding: 24, minHeight: "100vh", backgroundColor: "#f8fafc" }}>
       <Card
         style={{
           borderRadius: 16,
@@ -120,25 +112,27 @@ export default function ListCourse({
           Kelola course, lesson, dan materi
         </p>
 
-        {/* Toolbar: Tombol Tambah & Search */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: can('course.create') ? "space-between" : "flex-start",
             alignItems: "center",
             flexWrap: "wrap",
             gap: "16px",
             marginBottom: 24,
           }}
         >
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => router.push("/course/add")}
-          >
-            Tambah Course
-          </Button>
+          {/* TOMBOL TAMBAH HANYA UNTUK YANG PUNYA IZIN CREATE */}
+          {can('course.create') && (
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => router.push("/course/add")}
+            >
+              Tambah Course
+            </Button>
+          )}
 
           <Input
             placeholder="Cari"

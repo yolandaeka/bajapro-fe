@@ -30,18 +30,19 @@ export const updateRolePermissionsApi = async (roleId: number, permissionIds: nu
 
   const updatePromises = allPermissions.map((perm) => {
     let currentRoleIds = (perm.role_ids || []).map(id => Number(id));
+    const targetRoleId = Number(roleId);
     
     const isCheckedDiLayar = permissionIds.includes(perm.id);
-    const hasRoleDiDatabase = currentRoleIds.includes(roleId);
+    const hasRoleDiDatabase = currentRoleIds.includes(targetRoleId);
 
     let needsUpdate = false;
 
     if (isCheckedDiLayar && !hasRoleDiDatabase) {
-      currentRoleIds.push(safeRoleId);
+      currentRoleIds.push(targetRoleId);
       needsUpdate = true;
     } 
     else if (!isCheckedDiLayar && hasRoleDiDatabase) {
-      currentRoleIds = currentRoleIds.filter(id => id !== roleId);
+      currentRoleIds = currentRoleIds.filter(id => id !== targetRoleId);
       needsUpdate = true;
     }
     if (needsUpdate) {

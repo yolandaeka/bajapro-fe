@@ -67,7 +67,8 @@ let dummyLessons: LessonRecord[] = [
 // ---------------------------------------------------------
 const handleFetch = async (url: string, options?: RequestInit) => {
   if (USE_REAL_API) {
-    const response = await fetch(url, options);
+    // Tambahkan cache: 'no-store' agar server component selalu mengambil data terbaru
+    const response = await fetch(url, { ...options, cache: 'no-store' });
     if (!response.ok) throw new Error("Gagal mengakses server materi");
     return response.json();
   } else {

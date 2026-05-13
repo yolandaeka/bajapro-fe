@@ -26,27 +26,39 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${BASE_URL}/users?email=${values.email}&password=${values.password}`);
+      const res = await fetch(`${BASE_URL}/users?email=${encodeURIComponent(values.email.toLowerCase())}`, { cache: 'no-store' });
       const data = await res.json();
       
       if (data && data.length > 0) {
         const user = data[0];
         
-        // Save user info to cookie for middleware
-        document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/`;
+        if (user.password !== values.password) {
+          messageApi.error("Password salah!");
+          setLoading(false);
+          return;
+        }
+        
+        // Simpan hanya data esensial agar cookie ringan dan tidak error di middleware
+        const sessionData = {
+          id: user.id,
+          role_id: user.role_id,
+          is_approved_by_admin: user.is_approved_by_admin
+        };
+        
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(sessionData))}; path=/; SameSite=Lax`;
 
         messageApi.success("Login berhasil!");
         
         // Route based on role
-        if (user.role_id === 3) {
+        if (user.role_id == 3) {
           router.push("/home");
-        } else if (user.role_id === 2) {
-          if (user.is_approved_by_admin === 1) {
+        } else if (user.role_id == 2) {
+          if (user.is_approved_by_admin == 1) {
             router.push("/dashboard");
           } else {
             router.push("/waiting-approval");
           }
-        } else if (user.role_id === 1) {
+        } else if (user.role_id == 1) {
           router.push("/dashboard");
         } else {
           router.push("/");

@@ -9,8 +9,12 @@ import {
   updateRolePermissionsApi 
 } from "../api/permissionApi";
 
-export const FEATURES = ["Course", "Users", "Kelas", "Leaderboard"];
-export const ACTIONS = ["create", "read", "update", "delete"];
+export const FEATURES = [
+  "Course", "Level", "Question", 
+  "Users", "Roles", "Kelas", "Approval", "Permission",
+  "Report", "Leaderboard", "Badge"
+];
+export const ACTIONS = ["create", "read", "update", "delete", "active"];
 
 export const usePermission = () => {
   const [messageApi, contextHolder] = message.useMessage();

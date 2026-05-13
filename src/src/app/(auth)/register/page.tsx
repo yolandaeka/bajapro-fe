@@ -31,13 +31,27 @@ export default function RegisterPage() {
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       
+      // 1. Cek apakah Permission 'approval.active' sedang aktif di database
+      let isApprovalNeeded = true;
+      try {
+        const permRes = await fetch(`${BASE_URL}/permissions?name=approval.active`);
+        const perms = await permRes.json();
+        // Jika tidak ada permission approval.active atau exists tapi isactive-nya false
+        if (perms.length === 0 || perms[0].isactive === false) {
+          isApprovalNeeded = false;
+        }
+      } catch (e) {
+        console.error("Gagal cek status approval, fallback ke default (approve needed)");
+      }
+
       const newUser = {
         role_id: role === "Student" ? 3 : 2,
-        class_id: null, // Will be set later maybe using kode_kelas
+        class_id: null,
         name: values.name,
         email: values.email,
         password: values.password,
-        is_approved_by_admin: role === "Student" ? 1 : 0, // Admin must approve Teacher
+        // LOGIKA BARU: Jika approval tidak dibutuhkan, langsung beri 1 (Approved)
+        is_approved_by_admin: role === "Student" ? 1 : (isApprovalNeeded ? 0 : 1), 
         instansi_sekolah: role === "Student" ? "" : values.asal_instansi,
         isactive: true,
         created_at: new Date().toISOString().split('T')[0],
@@ -52,16 +66,19 @@ export default function RegisterPage() {
 
       if (res.ok) {
         const createdUser = await res.json();
-        
-        // Log user in automatically by setting cookie
         document.cookie = `user=${encodeURIComponent(JSON.stringify(createdUser))}; path=/`;
 
         if (role === "Student") {
           messageApi.success("Registrasi Siswa Berhasil!");
           router.push("/home"); 
         } else {
-          messageApi.success("Registrasi Pengajar Berhasil! Menunggu Persetujuan.");
-          router.push("/waiting-approval"); 
+          if (isApprovalNeeded) {
+            messageApi.success("Registrasi Pengajar Berhasil! Menunggu Persetujuan.");
+            router.push("/waiting-approval"); 
+          } else {
+            messageApi.success("Registrasi Pengajar Berhasil! Langsung masuk.");
+            router.push("/dashboard"); // Langsung ke dashboard
+          }
         }
       } else {
         messageApi.error("Gagal mendaftar. Silakan coba lagi.");

@@ -12,8 +12,10 @@ import * as api from "../api/questionApi";
 // ✅ Tipe untuk option dropdown
 type SelectOption = { label: string; value: string | number };
 
+import { useAuth } from "@/src/hooks/useAuth";
 const QuestionTable = () => {
   const router = useRouter();
+  const { can } = useAuth();
   
   const { 
     fetching, questions, fetchQuestions, handleDeleteQuestion,
@@ -175,22 +177,34 @@ const QuestionTable = () => {
       key: "action",
       width: 130,
       fixed: "right" as const, 
-      // 🌟 Ini juga pastikan pakai tipe yang benar (sudah pakai QuestionRecord)
       render: (_: unknown, record: QuestionRecord) => (
         <Space>
-          <Button type="primary" 
-            icon={<EyeFilled />}  style={{ backgroundColor: "#1677ff" }}  onClick={() => router.push(`/code_question/${record.id}`)}></Button>
-          <Button type="primary" 
-            icon={<EditFilled />} 
-            style={{ backgroundColor: "#faad14", color: "black" }}  onClick={() => router.push(`/code_question/${record.id}`)}></Button>
-          <Popconfirm
-            title="Yakin hapus keseluruhan soal ini?"
-            onConfirm={() => handleDeleteQuestion(record.id)}
-            okText="Ya, Hapus"
-            cancelText="Batal"
+          <Button 
+            type="primary" 
+            icon={<EyeFilled />}  
+            style={{ backgroundColor: "#1677ff" }}  
+            onClick={() => router.push(`/code_question/${record.id}`)}
           >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+            {!can("question.update") && "Detail"}
+          </Button>
+
+          {can("question.update") && (
+            <Button 
+              type="primary" 
+              icon={<EditFilled />} 
+              style={{ backgroundColor: "#faad14", color: "black" }}  
+              onClick={() => router.push(`/code_question/${record.id}`)}
+            />
+          )}
+
+          {can("question.delete") && (
+            <Popconfirm
+              title="Yakin hapus keseluruhan soal ini?"
+              onConfirm={() => handleDeleteQuestion(record.id)}
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -207,15 +221,24 @@ const QuestionTable = () => {
         </p>
 
         <div style={{ background: "#fff", borderRadius: 8 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            gap: "16px", 
+            justifyContent: can("question.create") ? "space-between" : "flex-start", 
+            alignItems: "center", 
+            marginBottom: 16 
+          }}>
             
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => router.push("/code_question/add")}
-            >
-              + Tambah Pertanyaan
-            </Button>
+            {can("question.create") && (
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => router.push("/code_question/add")}
+              >
+                + Tambah Pertanyaan
+              </Button>
+            )}
 
             <Space wrap>
               {/* PERBAIKAN 3: Search Bar */}

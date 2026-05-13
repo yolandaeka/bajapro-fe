@@ -6,6 +6,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, MenuOutlined } from "@ant-d
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { SubLessonForm } from "./SubLessonForm";
 import { LessonRecord, SubLessonRecord, ReorderItem, MaterialRecord, SubLessonCreateData, MaterialsCreateData } from "../types";
+import { useAuth } from "@/src/hooks/useAuth";
 
 const { Text } = Typography;
 
@@ -15,6 +16,7 @@ interface Props {
   selectedLessonId: number | null;
   onSelectLesson: (id: number) => void;
   onSaveAll: (subLesson: SubLessonCreateData, materials: MaterialRecord[], editId?: number) => void;
+  // ... (tetap sama)
   onDeleteSub: (id: number) => void;
   onReorderSub: (updates: ReorderItem[]) => void;
   loading: boolean;
@@ -23,6 +25,10 @@ interface Props {
 export const SubLessonListTab: React.FC<Props> = ({
   lessons, subLessons, selectedLessonId, onSelectLesson, onSaveAll, onDeleteSub, onReorderSub, loading
 }) => {
+  const { can } = useAuth();
+  const canCreate = can('course.create');
+  const canUpdate = can('course.update');
+  const canDelete = can('course.delete');
   const [view, setView] = useState<"list" | "form">("list");
   const [editingData, setEditingData] = useState<SubLessonRecord | null>(null);
 
@@ -68,16 +74,18 @@ export const SubLessonListTab: React.FC<Props> = ({
             value={selectedLessonId}
             onChange={(val) => onSelectLesson(val)}
           />
-          <Button 
-            style={{marginTop: 4}}
-            type="primary" 
-            size="medium"
-            icon={<PlusOutlined />} 
-            disabled={!selectedLessonId}
-            onClick={() => { setEditingData(null); setView("form"); }}
-          >
-            Tambah Sub Lesson
-          </Button>
+          {canCreate && (
+            <Button 
+              style={{marginTop: 4}}
+              type="primary" 
+              size="medium"
+              icon={<PlusOutlined />} 
+              disabled={!selectedLessonId}
+              onClick={() => { setEditingData(null); setView("form"); }}
+            >
+              Tambah Sub Lesson
+            </Button>
+          )}
         </Space>
       </Card>
       <div style={{marginTop: 16}}>
@@ -85,31 +93,53 @@ export const SubLessonListTab: React.FC<Props> = ({
         {!selectedLessonId ? (
           <Empty description="Pilih Lesson terlebih dahulu" />
         ) : (
-          <DragDropContext onDragEnd={handleOnDragEnd}>
-            <Droppable droppableId="sublesson-list">
+          <DragDropContext onDragEnd={canUpdate ? handleOnDragEnd : () => {}}>
+            <Droppable droppableId="sublesson-list" isDropDisabled={!canUpdate}>
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                   {subLessons.map((sub, index) => (
-                    <Draggable key={sub.id} draggableId={String(sub.id)} index={index}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className="flex items-center justify-between p-4 bg-white border-1 border-black-300 rounded-lg shadow-sm"
+                    canUpdate ? (
+                      <Draggable key={sub.id} draggableId={String(sub.id)} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className="flex items-center justify-between p-4 bg-white border-1 border-black-300 rounded-lg shadow-sm"
+                          >
+                            <Space>
+                              <div {...provided.dragHandleProps} className="cursor-grab text-gray-400">
+                                <MenuOutlined />
+                              </div>
+                              <Text strong>{sub.title}</Text>
+                            </Space>
+                            <Space>
+                              <Button 
+                                icon={<EditOutlined style={{ color: "#1677ff" }} />} 
+                                onClick={() => { setEditingData(sub); setView("form"); }} 
+                              />
+                              {canDelete && (
+                                <Button danger icon={<DeleteOutlined />} onClick={() => onDeleteSub(sub.id)} />
+                              )}
+                            </Space>
+                          </div>
+                        )}
+                      </Draggable>
+                    ) : (
+                      /* VIEW ONLY SUB LESSON */
+                      <div
+                        key={sub.id}
+                        className="flex items-center justify-between p-4 bg-white border-1 border-black-300 rounded-lg shadow-sm"
+                      >
+                        <Text strong>{sub.title}</Text>
+                        <Button 
+                          type="primary" 
+                          size="small" 
+                          onClick={() => { setEditingData(sub); setView("form"); }}
                         >
-                          <Space>
-                            <div {...provided.dragHandleProps} className="cursor-grab text-gray-400">
-                              <MenuOutlined />
-                            </div>
-                            <Text strong>{sub.title}</Text>
-                          </Space>
-                          <Space>
-                            <Button icon={<EditOutlined />} onClick={() => { setEditingData(sub); setView("form"); }} />
-                            <Button danger icon={<DeleteOutlined />} onClick={() => onDeleteSub(sub.id)} />
-                          </Space>
-                        </div>
-                      )}
-                    </Draggable>
+                          Detail
+                        </Button>
+                      </div>
+                    )
                   ))}
                   {provided.placeholder}
                 </div>

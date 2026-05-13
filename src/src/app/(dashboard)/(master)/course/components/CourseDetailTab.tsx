@@ -5,6 +5,7 @@ import { Form, Input, Button, Upload, message, Image } from "antd";
 import { UploadOutlined, SaveOutlined } from "@ant-design/icons";
 import type { RcFile } from "antd/es/upload";
 import { CourseRecord, CourseFormData } from "../types";
+import { useAuth } from "@/src/hooks/useAuth";
 
 const { TextArea } = Input;
 
@@ -19,6 +20,8 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
   onSave,
   loading
 }) => {
+  const { can } = useAuth();
+  const canEdit = can('course.update');
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -69,74 +72,87 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
   return (
     <>
       {contextHolder}
+      <style>{`
+        .ant-input-disabled, 
+        .ant-select-disabled .ant-select-selection-item,
+        .ant-input-number-disabled input {
+          color: rgba(0, 0, 0, 0.85) !important;
+          background-color: #f5f5f5 !important;
+        }
+      `}</style>
+
       <Form
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        disabled={loading}
         size="large"
       >
-        <Form.Item
-          label="Nama Course"
-          name="course_name"
-          rules={[{ required: true, message: "Nama course wajib diisi!" }]}
-        >
-          <Input placeholder="Contoh: Java Basic 1" />
-        </Form.Item>
+        <fieldset disabled={!canEdit} style={{ border: "none", padding: 0, margin: 0 }}>
+          <Form.Item
+            label="Nama Course"
+            name="course_name"
+            rules={[{ required: true, message: "Nama course wajib diisi!" }]}
+          >
+            <Input placeholder="Contoh: Java Basic 1" />
+          </Form.Item>
 
-        <Form.Item
-          label="Deskripsi"
-          name="description"
-          rules={[{ required: true, message: "Deskripsi wajib diisi!" }]}
-        >
-          <TextArea placeholder="Tuliskan deskripsi..." rows={4} />
-        </Form.Item>
+          <Form.Item
+            label="Deskripsi"
+            name="description"
+            rules={[{ required: true, message: "Deskripsi wajib diisi!" }]}
+          >
+            <TextArea placeholder="Tuliskan deskripsi..." rows={4} />
+          </Form.Item>
 
-        <Form.Item label="Course Thumbnail">
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-start" }}>
-            
-            {/* BOX PREVIEW GAMBAR */}
-            {previewImage && (
-              <Image
-                src={previewImage}
-                alt="Preview"
-                style={{ width: 300, height: 300, objectFit: "cover", borderRadius: 8, border: "1px solid #d9d9d9" }}
-              />
-            )}
-
-            {/* TOMBOL UPLOAD & HAPUS */}
-            <div style={{ display: "flex", gap: "8px" }}>
-              <Upload
-                accept=".png,.jpg,.jpeg"
-                showUploadList={false}
-                beforeUpload={handleBeforeUpload}
-              >
-                <Button icon={<UploadOutlined />} size="medium">Pilih Gambar</Button>
-              </Upload>
-
-              {/* Tombol Hapus: Cukup kosongkan state previewImage */}
+          <Form.Item label="Course Thumbnail">
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-start" }}>
+              
+              {/* BOX PREVIEW GAMBAR */}
               {previewImage && (
-                <Button 
-                  danger 
-                  type="default"
-                  size="medium" 
-                  onClick={() => setPreviewImage("")}
-                >
-                  Hapus
-                </Button>
+                <Image
+                  src={previewImage}
+                  alt="Preview"
+                  style={{ width: 300, height: 300, objectFit: "cover", borderRadius: 8, border: "1px solid #d9d9d9" }}
+                />
+              )}
+
+              {/* TOMBOL UPLOAD & HAPUS HANYA JIKA BISA EDIT */}
+              {canEdit && (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Upload
+                    accept=".png,.jpg,.jpeg"
+                    showUploadList={false}
+                    beforeUpload={handleBeforeUpload}
+                  >
+                    <Button icon={<UploadOutlined />} size="medium">Pilih Gambar</Button>
+                  </Upload>
+
+                  {previewImage && (
+                    <Button 
+                      danger 
+                      type="default"
+                      size="medium" 
+                      onClick={() => setPreviewImage("")}
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
-          </div>
-        </Form.Item>
+          </Form.Item>
+        </fieldset>
 
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          loading={loading} 
-          icon={<SaveOutlined />}
-        >
-          Simpan
-        </Button>
+        {canEdit && (
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading} 
+            icon={<SaveOutlined />}
+          >
+            Simpan
+          </Button>
+        )}
       </Form>
     </>
   );

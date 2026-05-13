@@ -20,6 +20,7 @@ import { CodeFormData } from "../types";
 import TiptapEditor from "@/src/components/ui/TiptapEditor";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface QuestionFormProps {
   questionId?: number | string;
@@ -96,37 +97,64 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
     handleSaveQuestion(values, questionId);
   };
 
+  const { can, loading: authLoading } = useAuth();
+  const isEdit = !!questionId;
+  const canSave = isEdit ? can("question.update") : can("question.create");
+
   return (
-    <Form form={form} layout="vertical" onFinish={onFinish}>
-      <div
-        className="flex justify-between items-center mb-6"
-        style={{
-          backgroundColor: "white",
-          padding: "16px",
-          borderRadius: "8px",
-        }}
+    <div className="p-4">
+      {/* CSS untuk membuat teks disabled tetap hitam pekat */}
+      <style>{`
+        .ant-input-disabled, 
+        .ant-select-disabled .ant-select-selection-item,
+        .ant-input-number-disabled input {
+          color: rgba(0, 0, 0, 0.85) !important;
+          background-color: #f5f5f5 !important;
+        }
+      `}</style>
+      
+      <Form 
+        form={form} 
+        layout="vertical" 
+        onFinish={onFinish}
       >
-        <Button
-          color="default"
-          variant="filled"
-          size="large"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => router.push("/code_question")}
+        {/* HEADER: Selalu aktif agar tombol Kembali bisa diklik */}
+        <div
+          className="flex justify-between items-center mb-6"
+          style={{
+            backgroundColor: "white",
+            padding: "16px",
+            borderRadius: "8px",
+          }}
         >
-          Kembali
-        </Button>
-        <Space>
           <Button
-            type="primary"
-            icon={<SaveOutlined />}
+            color="default"
+            variant="filled"
             size="large"
-            htmlType="submit"
-            loading={loading}
+            icon={<ArrowLeftOutlined />}
+            onClick={() => router.push("/code_question")}
           >
-            Simpan
+            Kembali
           </Button>
-        </Space>
-      </div>
+          <Space>
+            {canSave && (
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                size="large"
+                htmlType="submit"
+                loading={loading}
+              >
+                Simpan
+              </Button>
+            )}
+          </Space>
+        </div>
+
+        {/* KONTEN: Baru di-disable di sini jika tidak punya izin simpan */}
+        <div style={{ pointerEvents: !canSave ? "none" : "auto", opacity: 1 }}>
+          <fieldset disabled={!canSave} style={{ border: "none", padding: 0, margin: 0 }}>
+
       <Card
         title="Pengaturan Soal"
         style={{
@@ -292,7 +320,10 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
           }}
         </Form.List>
       </Card>
+        </fieldset>
+      </div>
     </Form>
+    </div>
   );
 };
 

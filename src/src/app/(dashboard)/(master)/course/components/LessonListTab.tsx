@@ -28,6 +28,7 @@ import {
 } from "@hello-pangea/dnd";
 import { LessonRecord, LessonCreateData } from "../types";
 import { LevelData } from "@/src/app/(dashboard)/(master)/level/types";
+import { useAuth } from "@/src/hooks/useAuth";
 
 const { Text, Title } = Typography;
 
@@ -53,6 +54,11 @@ export const LessonListTab: React.FC<Props> = ({
   onUpdate,
   onDelete,
 }) => {
+  const { can } = useAuth();
+  const canCreate = can('course.create');
+  const canUpdate = can('course.update');
+  const canDelete = can('course.delete');
+
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -190,14 +196,16 @@ export const LessonListTab: React.FC<Props> = ({
                 {courseName || "Memuat Course..."}
               </Title>
             </div>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => showModal()}
-              style={{ borderRadius: "6px" }}
-            >
-              Tambah Lesson
-            </Button>
+            {canCreate && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => showModal()}
+                style={{ borderRadius: "6px" }}
+              >
+                Tambah Lesson
+              </Button>
+            )}
           </div>
         }
         style={{
@@ -209,7 +217,7 @@ export const LessonListTab: React.FC<Props> = ({
           <Empty description="Data Level tidak ditemukan. Pastikan API Level berjalan." />
         ) : (
           // ARENA DRAG & DROP UTAMA
-          <DragDropContext onDragEnd={handleDragEnd}>
+          <DragDropContext onDragEnd={canUpdate ? handleDragEnd : () => {}}>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
@@ -222,64 +230,30 @@ export const LessonListTab: React.FC<Props> = ({
                   );
 
                 return (
-                  // KOTAK LEVEL (Droppable)
-                  <Droppable key={level.id} droppableId={String(level.id)}>
+                  <Droppable key={level.id} droppableId={String(level.id)} isDropDisabled={!canUpdate}>
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         style={{
-                          backgroundColor: snapshot.isDraggingOver
-                            ? "#f0f7ff"
-                            : "#fcfcfc",
-                          border: snapshot.isDraggingOver
-                            ? "1px dashed #1677ff"
-                            : "1px solid #d9d9d9",
+                          backgroundColor: snapshot.isDraggingOver ? "#f0f7ff" : "#fcfcfc",
+                          border: snapshot.isDraggingOver ? "1px dashed #1677ff" : "1px solid #d9d9d9",
                           borderRadius: "8px",
                           padding: "16px",
                           minHeight: "130px",
                           transition: "all 0.3s ease",
                         }}
                       >
-                        <Title
-                          level={5}
-                          style={{ marginTop: 0, marginBottom: 16 }}
-                        >
-                          <Tag
-                            color="cyan"
-                            style={{ fontSize: 12, padding: "4px 12px" }}
-                          >
+                        <Title level={5} style={{ marginTop: 0, marginBottom: 16 }}>
+                          <Tag color="cyan" style={{ fontSize: 12, padding: "4px 12px" }}>
                             Level: {level.level_name}
                           </Tag>
                         </Title>
 
-                        {levelLessons.length === 0 &&
-                        !snapshot.isDraggingOver ? (
-                          <div
-                            style={{ textAlign: "center", padding: "20px 0" }}
-                          >
-                            <Text
-                              type="secondary"
-                              style={{ fontStyle: "italic" }}
-                            >
-                              Belum ada lesson. Tarik (drag) materi ke sini...
-                            </Text>
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "10px",
-                            }}
-                          >
-                            {levelLessons.map((lesson, index) => (
-                              // KOTAK LESSON (Draggable)
-                              <Draggable
-                                key={lesson.id}
-                                draggableId={String(lesson.id)}
-                                index={index}
-                              >
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                          {levelLessons.map((lesson, index) => (
+                            canUpdate ? (
+                              <Draggable key={lesson.id} draggableId={String(lesson.id)} index={index}>
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
@@ -288,60 +262,53 @@ export const LessonListTab: React.FC<Props> = ({
                                       display: "flex",
                                       alignItems: "center",
                                       padding: "12px 16px",
-                                      backgroundColor: snapshot.isDragging
-                                        ? "#fafafa"
-                                        : "#ffffff",
+                                      backgroundColor: snapshot.isDragging ? "#fafafa" : "#ffffff",
                                       border: "1px solid #f0f0f0",
                                       borderRadius: "6px",
-                                      boxShadow: snapshot.isDragging
-                                        ? "0 8px 16px rgba(0,0,0,0.1)"
-                                        : "0 1px 2px rgba(0,0,0,0.02)",
-                                      // Gabungkan style bawaan Pangea agar posisinya akurat
+                                      boxShadow: snapshot.isDragging ? "0 8px 16px rgba(0,0,0,0.1)" : "0 1px 2px rgba(0,0,0,0.02)",
                                       ...provided.draggableProps.style,
                                     }}
                                   >
-                                    {/* AREA PEGANGAN (Drag Handle) */}
                                     <div
                                       {...provided.dragHandleProps}
-                                      style={{
-                                        cursor: "grab",
-                                        marginRight: "16px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                      }}
+                                      style={{ cursor: "grab", marginRight: "16px", display: "flex", alignItems: "center" }}
                                     >
-                                      <MenuOutlined
-                                        style={{ color: "#bfbfbf" }}
-                                      />
+                                      <MenuOutlined style={{ color: "#bfbfbf" }} />
                                     </div>
-
-                                    <div style={{ flex: 1 }}>
-                                      <Text strong>{lesson.title}</Text>
-                                    </div>
+                                    <div style={{ flex: 1 }}><Text strong>{lesson.title}</Text></div>
                                     <Space>
                                       <Button
                                         type="text"
-                                        icon={
-                                          <EditOutlined
-                                            style={{ color: "#1677ff" }}
-                                          />
-                                        }
+                                        icon={<EditOutlined style={{ color: "#1677ff" }} />}
                                         onClick={() => showModal(lesson)}
                                       />
-                                      <Button
-                                        type="text"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                        onClick={() => onDelete(lesson.id)}
-                                      />
+                                      {canDelete && (
+                                        <Button type="text" danger icon={<DeleteOutlined />} onClick={() => onDelete(lesson.id)} />
+                                      )}
                                     </Space>
                                   </div>
                                 )}
                               </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
+                            ) : (
+                              /* VIEW ONLY ITEM (Tanpa Draggable) */
+                              <div
+                                key={lesson.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  padding: "12px 16px",
+                                  backgroundColor: "#ffffff",
+                                  border: "1px solid #f0f0f0",
+                                  borderRadius: "6px",
+                                }}
+                              >
+                                <div style={{ flex: 1 }}><Text strong>{lesson.title}</Text></div>
+                                <Button type="primary" size="small" onClick={() => showModal(lesson)}>Detail</Button>
+                              </div>
+                            )
+                          ))}
+                          {provided.placeholder}
+                        </div>
                       </div>
                     )}
                   </Droppable>

@@ -340,7 +340,7 @@
       "user_update": 1
     }
   ],
-  "level": [
+  "levels": [
     {
       "id": "1",
       "level_name": "Beginner",
@@ -1311,70 +1311,457 @@
       "id": "1",
       "name": "course.create",
       "role_ids": [
-        1,
-        2,
         1
-      ]
+      ],
+      "isactive": true
     },
     {
       "id": "2",
       "name": "course.read",
       "role_ids": [
         1,
-        2,
-        3,
-        1
-      ]
+        2
+      ],
+      "isactive": true
     },
     {
       "id": "3",
       "name": "course.update",
       "role_ids": [
-        1,
         1
-      ]
+      ],
+      "isactive": true
     },
     {
       "id": "4",
       "name": "course.delete",
       "role_ids": [
-        1,
         1
-      ]
+      ],
+      "isactive": true
     },
     {
       "id": "5",
-      "name": "users.create",
+      "name": "course.active",
       "role_ids": [
-        1,
         1
-      ]
+      ],
+      "isactive": true
     },
     {
       "id": "6",
-      "name": "users.read",
+      "name": "level.create",
       "role_ids": [
-        1,
-        2,
         1
-      ]
+      ],
+      "isactive": true
     },
     {
       "id": "7",
-      "name": "users.delete",
+      "name": "level.read",
       "role_ids": [
-        1
-      ]
+        1,
+        2
+      ],
+      "isactive": true
     },
     {
       "id": "8",
-      "name": "users.update",
+      "name": "level.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "9",
+      "name": "level.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "10",
+      "name": "level.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "11",
+      "name": "question.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "12",
+      "name": "question.read",
       "role_ids": [
         1,
-        2,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "13",
+      "name": "question.update",
+      "role_ids": [
         1
-      ]
+      ],
+      "isactive": true
+    },
+    {
+      "id": "14",
+      "name": "question.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "15",
+      "name": "question.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "16",
+      "name": "users.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "17",
+      "name": "users.read",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "18",
+      "name": "users.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "19",
+      "name": "users.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "20",
+      "name": "users.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "21",
+      "name": "roles.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "22",
+      "name": "roles.read",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "23",
+      "name": "roles.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "24",
+      "name": "roles.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "25",
+      "name": "roles.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "26",
+      "name": "kelas.create",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "27",
+      "name": "kelas.read",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "28",
+      "name": "kelas.update",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "29",
+      "name": "kelas.delete",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "30",
+      "name": "kelas.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "31",
+      "name": "approval.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "32",
+      "name": "approval.read",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "33",
+      "name": "approval.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "34",
+      "name": "approval.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "35",
+      "name": "approval.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "36",
+      "name": "permission.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "37",
+      "name": "permission.read",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "38",
+      "name": "permission.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "39",
+      "name": "permission.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "40",
+      "name": "permission.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "41",
+      "name": "report.create",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "42",
+      "name": "report.read",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "43",
+      "name": "report.update",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "44",
+      "name": "report.delete",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "45",
+      "name": "report.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "46",
+      "name": "leaderboard.create",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "47",
+      "name": "leaderboard.read",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "48",
+      "name": "leaderboard.update",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "49",
+      "name": "leaderboard.delete",
+      "role_ids": [
+        1,
+        2
+      ],
+      "isactive": true
+    },
+    {
+      "id": "50",
+      "name": "leaderboard.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "51",
+      "name": "badge.create",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "52",
+      "name": "badge.read",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "53",
+      "name": "badge.update",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "54",
+      "name": "badge.delete",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
+    },
+    {
+      "id": "55",
+      "name": "badge.active",
+      "role_ids": [
+        1
+      ],
+      "isactive": true
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

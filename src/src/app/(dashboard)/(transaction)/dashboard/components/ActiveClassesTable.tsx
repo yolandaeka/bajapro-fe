@@ -52,7 +52,7 @@ export const ActiveClassesTable: React.FC<ActiveClassesTableProps> = ({ data, lo
           percent={progress} 
           size="small" 
           strokeColor="#00E676" 
-          trailColor="#e6f7ff" 
+          railColor="#e6f7ff" 
           format={(percent) => <span style={{ fontSize: 12 }}>{percent}%</span>}
         />
       ),

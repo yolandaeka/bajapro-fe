@@ -35,7 +35,7 @@ export const DashboardApi = {
     
     const teachers = users.filter((u: any) => u.role_id == 2);
     const students = users.filter((u: any) => u.role_id == 3);
-    const pendingTeachers = teachers.filter((t: any) => t.is_approved_by_admin === 0);
+    const pendingTeachers = teachers.filter((t: any) => t.is_approved_by_admin == 0);
 
     return {
       pendingApproval: pendingTeachers.length,

@@ -81,7 +81,7 @@ export const allMenuItems: MenuItem[] = [
       },
       {
         key: "kelas",
-        label: <Link href="/kelas">Class</Link>,
+        label: <Link href="/kelas">Kelas</Link>,
         icon: <BankOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
       },
@@ -111,7 +111,7 @@ export const allMenuItems: MenuItem[] = [
     label: "Report",
     children: [
       {
-        key: "report",
+        key: "hasil-belajar",
         label: <Link href="/report">Hasil Belajar</Link>,
         icon: <BarChartOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
@@ -128,12 +128,13 @@ export const allMenuItems: MenuItem[] = [
     key: "g-gamifikasi",
     icon: <TrophyOutlined />,
     label: "Gamifikasi",
+    roles: ["ADMIN"],
     children: [
       {
         key: "badge",
         label: <Link href="/badge">Badge Settings</Link>,
         icon: <SettingOutlined />,
-        roles: ["ADMIN"],
+       
       },
     ],
   },
@@ -164,22 +165,75 @@ interface SidebarProps {
   role?: "ADMIN" | "PENGAJAR";
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ role = "ADMIN" }) => {
- const pathname = usePathname();
+const Sidebar: React.FC<SidebarProps> = () => {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const filteredItems = getFilteredMenu(allMenuItems, role);
+  const [userRole, setUserRole] = useState<string>("PENGAJAR");
 
-  // --- FUNGSI OTOMATIS ---
-  const getActiveKey = () => {
-    
-    const pathSegments = pathname.split("/").filter(Boolean); 
-    
-    const lastSegment = pathSegments[pathSegments.length - 1];
-
-    if (!lastSegment || lastSegment === "dashboard") {
-      return "dashboard";
+  // 1. Ambil Role Asli dari Cookie
+  React.useEffect(() => {
+    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='))?.split('=')[1];
+    if (userCookie) {
+      try {
+        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
+        const user = JSON.parse(decoded);
+        setUserRole(user.role_id == 1 ? "ADMIN" : "PENGAJAR");
+      } catch (e) {}
     }
-    return lastSegment; 
+  }, []);
+
+  const filteredItems = getFilteredMenu(allMenuItems, userRole);
+
+  // --- FUNGSI OTOMATIS: Mencari Key & Parent yang Aktif ---
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
+
+  // 1. Mencari menu mana yang paling cocok dengan URL saat ini (Berdasarkan Link)
+  const getActiveState = () => {
+    let activeKey = "dashboard";
+    let parentKey = "";
+
+    const findActive = (items: MenuItem[], parent?: string) => {
+      for (const item of items) {
+        // Cek apakah item ini punya Link yang cocok dengan awal pathname
+        // Misal: pathname /code_question/add cocok dengan Link /code_question
+        const itemHref = (item.label as any)?.props?.href;
+        
+        if (itemHref && pathname.startsWith(itemHref)) {
+          activeKey = item.key;
+          if (parent) parentKey = parent;
+        }
+
+        if (item.children) {
+          findActive(item.children, item.key);
+        }
+      }
+    };
+
+    findActive(allMenuItems);
+    
+    // Kasus khusus dashboard
+    if (pathname === "/dashboard") activeKey = "dashboard";
+    
+    return { activeKey, parentKey };
+  };
+
+  const { activeKey, parentKey } = getActiveState();
+
+  // 2. Efek untuk sinkronisasi folder (Accordion)
+  React.useEffect(() => {
+    if (parentKey && !collapsed) {
+      setOpenKeys([parentKey]); // Hanya buka satu parent (Accordion)
+    }
+  }, [parentKey, collapsed]);
+
+  const handleOpenChange = (keys: string[]) => {
+    // Logika Accordion: Ambil key terakhir yang diklik
+    const latestOpenKey = keys.find((key) => !openKeys.includes(key));
+    if (latestOpenKey) {
+      setOpenKeys([latestOpenKey]);
+    } else {
+      setOpenKeys([]);
+    }
   };
 
   return (
@@ -275,8 +329,9 @@ const Sidebar: React.FC<SidebarProps> = ({ role = "ADMIN" }) => {
           >
             <Menu
               mode="inline"
-              selectedKeys={[getActiveKey()]}
-              defaultOpenKeys={["g-materi", "g-pengguna", "g-report", "g-gamifikasi"]}
+              selectedKeys={[activeKey]}
+              openKeys={openKeys}
+              onOpenChange={handleOpenChange}
               items={filteredItems as MenuProps["items"]}
             />
           </div>

@@ -21,73 +21,106 @@ type BreadcrumbItem = GetProp<BreadcrumbProps, "items">[number];
 
 const Navbar = () => {
   const pathname = usePathname();
+  const [userInfo, setUserInfo] = React.useState<{ name: string; role: string }>({ name: "User", role: "Pengajar" });
+
+  // 1. Ambil Data User dari Cookie
+  React.useEffect(() => {
+    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='))?.split('=')[1];
+    if (userCookie) {
+      try {
+        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
+        const user = JSON.parse(decoded);
+        // Karena cookie kita ringkas (id, role_id), kita asumsikan labelnya di sini
+        // Jika Anda ingin nama asli, idealnya cookie menyimpan 'name' juga
+        setUserInfo({
+          name: user.role_id == 1 ? "Administrator" : "Pengajar",
+          role: user.role_id == 1 ? "ADMIN" : "PENGAJAR"
+        });
+      } catch (e) {}
+    }
+  }, []);
 
   const generateAutoBreadcrumbs = (): BreadcrumbItem[] => {
-    // 1. Ambil nama halaman dari URL paling ujung (misal: 'badge' atau 'role')
     const segments = pathname.split("/").filter(Boolean);
-    const lastSegment = segments[segments.length - 1];
+    
+    const breadcrumbData: { label: React.ReactNode; key: string }[] = [];
 
-    if (!lastSegment || lastSegment === "dashboard") return [];
+    // ATURAN 1: Jika di halaman dashboard, TAMPILKAN tulisan Dashboard
+    if (segments.length === 0 || (segments.length === 1 && segments[0] === "dashboard")) {
+      return [{ 
+        title: (
+          <span style={{ color: "#531DAB", fontWeight: 600 }}>
+            Dashboard
+          </span>
+        ), 
+        key: "dashboard" 
+      }];
+    }
 
-    const breadcrumbData: { label: React.ReactNode }[] = [];
+    // ATURAN 2: Jika di halaman lain, TIDAK PERLU diawali dengan Dashboard
+    // Langsung cari label berdasarkan segmen URL
 
-    // 2. FUNGSI PINTAR: Mencari Anak sekaligus Bapaknya
-    const findPath = (
-      items: MenuItem[],
-      targetKey: string,
-      parents: MenuItem[] = [],
-    ): boolean => {
+    // Helper: Mencari label berdasarkan segmen URL (Mengecek Link href)
+    const getMenuLabelByPath = (path: string, items: MenuItem[]): { label: React.ReactNode; parent?: string } | null => {
       for (const item of items) {
-        // Cek apakah key cocok (kita abaikan g- atau d- agar fleksibel)
-        const cleanKey = item.key.replace(/^[gd]-/, "");
-
-        if (cleanKey === targetKey || item.key === targetKey) {
-          // Ketemu! Masukkan semua bapaknya dulu, baru dirinya sendiri
-          parents.forEach((p) => breadcrumbData.push({ label: p.label }));
-          breadcrumbData.push({ label: item.label });
-          return true;
+        const itemHref = (item.label as any)?.props?.href;
+        if (itemHref === "/" + path) {
+          return { label: item.label };
         }
-
         if (item.children) {
-          // Cari ke dalam anak-anaknya, sambil bawa info "siapa bapaknya"
-          if (findPath(item.children, targetKey, [...parents, item]))
-            return true;
+          const found = getMenuLabelByPath(path, item.children);
+          if (found) return { label: found.label, parent: item.label as string };
         }
       }
-      return false;
+      return null;
     };
 
-    findPath(allMenuItems, lastSegment);
+    // Bangun breadcrumb segment demi segment
+    segments.forEach((seg) => {
+      // Kita abaikan 'dashboard' di sini karena jika ada segmen lain (misal /course), 
+      // kita tidak ingin 'dashboard' muncul di depannya sesuai permintaan.
+      if (seg === "dashboard") return;
+
+      const menuInfo = getMenuLabelByPath(seg, allMenuItems);
+      
+      if (menuInfo) {
+        if (menuInfo.parent) breadcrumbData.push({ label: menuInfo.parent, key: "p-" + seg });
+        breadcrumbData.push({ label: menuInfo.label, key: seg });
+      } else {
+        let label = seg;
+        if (seg === "add") label = "Tambah Baru";
+        else if (seg === "edit") label = "Edit Data";
+        else if (!isNaN(Number(seg)) || seg.length > 10) label = "Detail";
+
+        breadcrumbData.push({ 
+          label: <span style={{ textTransform: "capitalize" }}>{label}</span>, 
+          key: seg 
+        });
+      }
+    });
 
     return breadcrumbData.map((item, index) => {
       const isLast = index === breadcrumbData.length - 1;
+      
+      // Jika ini item terakhir, kita ingin ambil teks murninya saja 
+      // agar tidak terpengaruh warna link default dari Sidebar
+      let finalLabel = item.label;
+      if (isLast && React.isValidElement(item.label)) {
+        // @ts-ignore - Mengambil children dari Link jika label berupa React Element
+        finalLabel = item.label.props.children || item.label;
+      }
 
       return {
+        key: item.key,
         title: (
           <span
-            className="breadcrumb-item" // Tambahkan class agar mudah ditarget
+            className="breadcrumb-item"
             style={{
               color: isLast ? "#531DAB" : "#8c8c8c",
               fontWeight: isLast ? 600 : 400,
-              cursor: isLast ? "default" : "pointer",
             }}
           >
-            {}
-            <span style={{ color: "inherit", display: "inline-block" }}>
-              {item.label}
-            </span>
-
-            {/* Tambahkan CSS kecil khusus untuk Link di dalam Breadcrumb ini */}
-            <style jsx global>{`
-              .breadcrumb-item a {
-                color: inherit !important;
-                font-weight: inherit !important;
-                text-decoration: none;
-              }
-              .breadcrumb-item a:hover {
-                color: #531dab !important; /* Warna ungu saat di-hover agar interaktif */
-              }
-            `}</style>
+            {finalLabel}
           </span>
         ),
       };
@@ -101,6 +134,10 @@ const Navbar = () => {
       key: "logout",
       icon: <LogoutOutlined style={{ color: "#ff4d4f" }} />,
       label: <span style={{ color: "#ff4d4f" }}>Keluar</span>,
+      onClick: () => {
+        document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        window.location.href = "/login";
+      }
     },
   ];
 
@@ -130,15 +167,15 @@ const Navbar = () => {
         <Space style={{ cursor: "pointer", gap: "8px" }}>
           <Avatar
             style={{
-              backgroundColor: "#FAAD14",
+              backgroundColor: userInfo.role === "ADMIN" ? "#FAAD14" : "#52C41A",
               color: "#fff",
               fontWeight: "bold",
             }}
           >
-            A
+            {userInfo.name.charAt(0)}
           </Avatar>
           <Text style={{ color: "#531DAB", fontWeight: 600, fontSize: "14px" }}>
-            Admin
+            {userInfo.name}
           </Text>
           <DownOutlined
             style={{ fontSize: "12px", color: "#531DAB", marginLeft: "4px" }}
