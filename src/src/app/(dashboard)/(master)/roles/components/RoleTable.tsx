@@ -6,8 +6,8 @@ import { RoleData } from "../types";
 interface RoleTableProps {
   data: RoleData[];
   loading: boolean;
-  onAction: (action: "add" | "view" | "edit", id?: string) => void;
-  onDelete: (id: string) => void;
+  onAction: (action: "add" | "view" | "edit", id?: string | number) => void;
+  onDelete: (id: string | number) => void;
 }
 
 export const RoleTable: React.FC<RoleTableProps> = ({
@@ -30,17 +30,6 @@ export const RoleTable: React.FC<RoleTableProps> = ({
       dataIndex: "role_name",
       key: "role_name",
       sorter: (a: RoleData, b: RoleData) => a.role_name.localeCompare(b.role_name),
-    },
-    {
-      title: "Status",
-      dataIndex: "isactive",
-      key: "isactive",
-      sorter: (a: RoleData, b: RoleData) => (a.isactive || "").localeCompare(b.isactive || ""),
-      render: (status: string) => (
-        <Tag color={status?.toLowerCase() === "aktif" ? "green" : "red"}>
-          {status}
-        </Tag>
-      ),
     },
     {
       title: "Aksi",

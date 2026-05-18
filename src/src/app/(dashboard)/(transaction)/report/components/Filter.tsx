@@ -23,19 +23,31 @@ export default function Filter() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // =========================================================
-        // DUMMY LOGIN: Hardcode ID guru di sini untuk sementara.
-        // Nanti kalau fitur login sudah jadi, tinggal ganti angka ini 
-        // dengan data dari LocalStorage atau Context Auth.
-        // =========================================================
-        const loggedInTeacherId = 3; 
+        
+        let resClasses;
+        let isPengajar = false;
+        let userId = null;
+        
+        if (typeof window !== "undefined") {
+          const userStr = localStorage.getItem("user");
+          if (userStr) {
+            try {
+              const user = JSON.parse(userStr);
+              if (user.role_id === 2 || user.role === "Pengajar" || user.role_id === "2") {
+                isPengajar = true;
+                userId = user.id;
+              }
+            } catch (e) {}
+          }
+        }
 
-        // Jalankan fetch secara bersamaan agar lebih cepat
-        const [resClasses, resCourses] = await Promise.all([
-          // Gunakan fungsi getClassesByTeacher dan masukkan dummy ID
-          reportApi.getClassesByTeacher(loggedInTeacherId), 
-          reportApi.getCourses()
-        ]);
+        if (isPengajar && userId) {
+          resClasses = await reportApi.getClassesByTeacher(userId);
+        } else {
+          resClasses = await reportApi.getClasses();
+        }
+
+        const resCourses = await reportApi.getCourses();
         
         setClasses(resClasses || []);
         setCourses(resCourses || []);

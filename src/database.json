@@ -64,6 +64,12 @@
       "updated_at": "2025-01-01",
       "user_create": 1,
       "user_update": 1
+    },
+    {
+      "class_name": "coba",
+      "school_name": "SMA COBA",
+      "class_code": "S1V43G",
+      "id": "56UZdi530Ew"
     }
   ],
   "users": [
@@ -267,8 +273,8 @@
     },
     {
       "id": "5",
-      "name": "Diamond Master",
-      "image": "/assets/gamification/lv54.png",
+      "name": "Ruby Master",
+      "image": "/assets/gamification/lv 5.png",
       "min_score": 200,
       "max_score": 500,
       "isactive": true,
@@ -279,8 +285,8 @@
     },
     {
       "id": "6",
-      "name": "Diamond Master",
-      "image": "/assets/gamification/lv6.png",
+      "name": "Sapphire Master",
+      "image": "/assets/gamification/lv 6.png",
       "min_score": 500,
       "max_score": 1000,
       "isactive": true,
@@ -1763,5 +1769,6 @@
       ],
       "isactive": true
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

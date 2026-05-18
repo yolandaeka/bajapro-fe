@@ -7,8 +7,8 @@ import Image from "next/image";
 interface BadgeTableProps {
   data: BadgeData[];
   loading: boolean;
-  onAction: (action: "add" | "view" | "edit", id?: string) => void;
-  onDelete: (id: string) => void;
+  onAction: (action: "add" | "view" | "edit", id?: string | number) => void;
+  onDelete: (id: string | number) => void;
 }
 
 export const BadgeTable: React.FC<BadgeTableProps> = ({
@@ -18,7 +18,7 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
   onDelete,
 }) => {
   const [searchText, setSearchText] = useState("");
-  
+
   const columns = [
     {
       title: "No",
@@ -31,12 +31,12 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
       dataIndex: "image",
       key: "image",
       render: (imageUrl: string) => (
-        <Image 
-          src={imageUrl} 
-          alt="badge icon" 
-          width={40}  
-          height={40} 
-          style={{ objectFit: "contain", borderRadius: "8px" }} 
+        <Image
+          src={imageUrl}
+          alt="badge icon"
+          width={40}
+          height={40}
+          style={{ objectFit: "contain", borderRadius: "8px" }}
           onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/40?text=?" }}
         />
       ),
@@ -53,17 +53,6 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
       sorter: (a: BadgeData, b: BadgeData) => a.minScore - b.minScore,
       render: (_text: unknown, record: BadgeData) => (
         <span>{record.minScore} - {record.maxScore}</span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "isactive",
-      key: "isactive",
-      sorter: (a: BadgeData, b: BadgeData) => (a.isactive || "").localeCompare(b.isactive || ""),
-      render: (status: string) => (
-        <Tag color={status?.toLowerCase() === "aktif" ? "green" : "red"}>
-          {status}
-        </Tag>
       ),
     },
     {
@@ -99,7 +88,7 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
   ];
 
   const filteredData = data.filter((item) => {
-    const keyword = searchText.toLowerCase(); 
+    const keyword = searchText.toLowerCase();
     return (
       item.name.toLowerCase().includes(keyword) ||
       item.minScore.toString().includes(keyword) ||
@@ -145,8 +134,8 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
         dataSource={filteredData}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 5 }}
-        scroll={{ x: "max-content" }} 
+        pagination={{ pageSize: 10 }}
+        scroll={{ x: "max-content" }}
       />
     </>
   );

@@ -1,36 +1,69 @@
 import { BadgeData, BadgeFormData } from "../types";
 
 // Ambil alamat URL dari file .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-const USE_REAL_API = false; 
+const USE_REAL_API = true;
+
+const handleFetch = async (url: string, options?: RequestInit) => {
+  if (USE_REAL_API) {
+    try {
+      let token = "";
+      if (typeof window !== "undefined") {
+        token = localStorage.getItem("token") || ""; 
+      }
+
+      const customOptions: RequestInit = {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options?.headers || {}), 
+        },
+      };
+
+      const response = await fetch(url, customOptions);
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
+        }
+        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+      }
+      
+      return response.json();
+    } catch (err) {
+      console.error("Network Error:", err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve) => setTimeout(() => resolve(null), 300));
+  }
+};
 
 let dummyBadges: BadgeData[] = [
-  { id: "1", name: "Pemula Hebat", image: "/assets/gamification/lv 1.png", minScore: 0, maxScore: 50, isactive: "Aktif" },
-  { id: "2", name: "Si Jagoan", image: "/assets/gamification/lv 2.png", minScore: 51, maxScore: 100, isactive: "Aktif" },
+  { id: 1, name: "Pemula Hebat", image: "/assets/gamification/lv 1.png", minScore: 0, maxScore: 50, isactive: "Aktif" },
+  { id: 2, name: "Si Jagoan", image: "/assets/gamification/lv 2.png", minScore: 51, maxScore: 100, isactive: "Aktif" },
 ];
 
 // 1. GET ALL
 export const getBadgesApi = async (): Promise<BadgeData[]> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/badges`);
-    if (!response.ok) throw new Error("Gagal mengambil data badge");
-    return response.json();
+    return handleFetch(`${BASE_URL}/badges`);
   } else {
     return new Promise((resolve) => setTimeout(() => resolve([...dummyBadges]), 0));
   }
 };
 
 // 2. GET BY ID
-export const getBadgeByIdApi = async (id: string): Promise<BadgeData> => {
+export const getBadgeByIdApi = async (id: string | number): Promise<BadgeData> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/badges/${id}`);
-    if (!response.ok) throw new Error("Gagal mengambil detail badge");
-    return response.json();
+    return handleFetch(`${BASE_URL}/badges/${id}`);
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const found = dummyBadges.find(item => item.id === id);
+        const found = dummyBadges.find(item => item.id == id);
         resolve(found as BadgeData);
       }, 0);
     });
@@ -40,17 +73,15 @@ export const getBadgeByIdApi = async (id: string): Promise<BadgeData> => {
 // 3. POST (TAMBAH)
 export const createBadgeApi = async (data: BadgeFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/badges`, {
+    await handleFetch(`${BASE_URL}/badges`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal menyimpan data badge");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
         const newBadge: BadgeData = {
-          id: Math.random().toString(36).substring(7),
+          id: Math.random(),
           name: data.name,
           image: data.image || "https://via.placeholder.com/50",
           minScore: data.minScore,
@@ -65,14 +96,12 @@ export const createBadgeApi = async (data: BadgeFormData): Promise<void> => {
 };
 
 // 4. PUT (EDIT)
-export const updateBadgeApi = async (id: string, data: BadgeFormData): Promise<void> => {
+export const updateBadgeApi = async (id: string | number, data: BadgeFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/badges/${id}`, {
+    await handleFetch(`${BASE_URL}/badges/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal mengupdate data badge");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -92,16 +121,15 @@ export const updateBadgeApi = async (id: string, data: BadgeFormData): Promise<v
 };
 
 // 5. DELETE (HAPUS)
-export const deleteBadgeApi = async (id: string): Promise<void> => {
+export const deleteBadgeApi = async (id: string | number): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/badges/${id}`, {
+    await handleFetch(`${BASE_URL}/badges/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) throw new Error("Gagal menghapus data badge");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        dummyBadges = dummyBadges.filter(item => item.id !== id);
+        dummyBadges = dummyBadges.filter(item => item.id != id);
         resolve();
       }, 0);
     });

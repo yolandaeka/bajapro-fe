@@ -11,7 +11,7 @@ interface UserTableProps {
   loading: boolean;
   currentUserRole: string;
   onAction: (action: "view" | "edit", record: UserData) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string | number) => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({ 
@@ -71,17 +71,6 @@ export const UserTable: React.FC<UserTableProps> = ({
     ] : []),
 
     {
-      title: "Status", 
-      dataIndex: "isactive", 
-      key: "isactive", 
-      sorter: (a: UserData, b: UserData) => a.isactive - b.isactive,
-      render: (val: number) => (
-        <Tag color={val === 1 ? "green" : "red"}>
-          {val === 1 ? "Active" : "Nonactive"}
-        </Tag>
-      ),
-    },
-    {
       title: "Action", 
       key: "action",
       render: (_text: unknown, record: UserData) => (
@@ -130,7 +119,7 @@ export const UserTable: React.FC<UserTableProps> = ({
       columns={columns} 
       rowKey="id" 
       loading={loading} 
-      pagination={{ pageSize: 5 }} 
+      pagination={{ pageSize: 10 }} 
       scroll={{ x: 800 }} 
     />
   );

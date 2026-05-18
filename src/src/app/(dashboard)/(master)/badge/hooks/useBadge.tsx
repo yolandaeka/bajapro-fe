@@ -32,7 +32,7 @@ export const useBadge = () => {
     fetchBadges();
   }, []);
 
-  const fetchBadgeById = async (id: string) => {
+  const fetchBadgeById = async (id: string | number) => {
     try {
       return await getBadgeByIdApi(id);
     } catch (error) {
@@ -56,7 +56,7 @@ export const useBadge = () => {
     }
   };
 
-  const editBadge = async (id: string, data: BadgeFormData) => {
+  const editBadge = async (id: string | number, data: BadgeFormData) => {
     setLoading(true);
     try {
       await updateBadgeApi(id, data);
@@ -71,7 +71,7 @@ export const useBadge = () => {
     }
   };
 
-  const deleteBadge = async (id: string) => {
+  const deleteBadge = async (id: string | number) => {
     setLoading(true);
     try {
       await deleteBadgeApi(id);

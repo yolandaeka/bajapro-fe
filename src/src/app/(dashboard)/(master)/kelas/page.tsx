@@ -68,12 +68,14 @@ export default function ClassPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // MENDAPATKAN DAFTAR NAMA SEKOLAH UNIK DARI DATA UNTUK DROPDOWN
-  const uniqueSchools = Array.from(new Set(kelas.map((k) => k.school_name))).map((school) => ({
+  const safeKelas = Array.isArray(kelas) ? kelas : [];
+
+  const uniqueSchools = Array.from(new Set(safeKelas.map((k) => k.school_name))).map((school) => ({
     value: school,
     label: school,
   }));
 
-  const filteredKelas = kelas.filter((k) => {
+  const filteredKelas = safeKelas.filter((k) => {
     // 1. Jika Pengajar, hanya tampilkan kelas buatannya (berdasarkan teacher_id)
     if (currentUserRole === "Pengajar" && k.teacher_id !== currentUserId) {
       return false;
@@ -295,11 +297,6 @@ export default function ClassPage() {
               </Descriptions.Item>
               <Descriptions.Item label="Pembuat (Guru)">
                 {viewData.teacher_name || viewData.teacher_id}
-              </Descriptions.Item>
-              <Descriptions.Item label="Status">
-                <Tag color={viewData.isactive === 1 ? "green" : "red"}>
-                  {viewData.isactive === 1 ? "Active" : "Nonactive"}
-                </Tag>
               </Descriptions.Item>
             </Descriptions>
           ) : (

@@ -24,7 +24,7 @@ export const LevelModal = ({ open, mode, data, loading, onCancel, onSave }: Leve
     if (open) {
       if ((mode === "edit" || mode === "view") && data) {
         form.setFieldsValue({
-          levelName: data.level,
+          levelName: data.level_name,
           description: data.deskripsi,
         });
       } else {
@@ -61,11 +61,8 @@ export const LevelModal = ({ open, mode, data, loading, onCancel, onSave }: Leve
     >
       {mode === "view" && data ? (
         <Descriptions column={1} bordered style={{ marginTop: "24px" }}>
-          <Descriptions.Item label="Nama Level"><strong>{data.level}</strong></Descriptions.Item>
+          <Descriptions.Item label="Nama Level"><strong>{data.level_name}</strong></Descriptions.Item>
           <Descriptions.Item label="Deskripsi">{data.deskripsi}</Descriptions.Item>
-          <Descriptions.Item label="Status">
-            <Tag color={data?.isactive === "Active" ? "green" : "red"}>{data?.isactive}</Tag>
-          </Descriptions.Item>
         </Descriptions>
       ) : (
         <Form form={form} layout="vertical" style={{ marginTop: "24px" }}>

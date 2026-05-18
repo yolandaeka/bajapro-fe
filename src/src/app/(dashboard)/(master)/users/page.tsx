@@ -265,11 +265,6 @@ export default function UserPage() {
               {viewData.role === "Pelajar" && (
                 <Descriptions.Item label="Kelas">{viewData.class_name || "-"}</Descriptions.Item>
               )}
-              <Descriptions.Item label="Status">
-                <Tag color={viewData.isactive === 1 ? "green" : "red"}>
-                  {viewData.isactive === 1 ? "Active" : "Nonactive"}
-                </Tag>
-              </Descriptions.Item>
             </Descriptions>
           ) : (
             <p>Memuat data...</p>

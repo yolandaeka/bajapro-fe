@@ -321,45 +321,49 @@ export const LessonListTab: React.FC<Props> = ({
 
       {/* --- MODAL FORM --- */}
       <Modal
-        title={editingId ? "Edit Lesson" : "Tambah Lesson Baru"}
+        title={editingId ? (canUpdate ? "Edit Lesson" : "Detail Lesson") : "Tambah Lesson Baru"}
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={handleSave}
         okText="Simpan Data"
-        cancelText="Batal"
+        cancelText="Tutup"
         centered
         confirmLoading={loading}
+        footer={!canUpdate ? [
+          <Button key="back" onClick={() => setIsModalOpen(false)}>Tutup</Button>
+        ] : undefined}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
-          <Form.Item
-            name="level_id"
-            label="Pilih Level"
-            rules={[{ required: true, message: "Level wajib dipilih!" }]}
-          >
-            <Select
-              placeholder="-- Pilih Level --"
-              size="large"
-              // Lebih rapi dan performa lebih baik menggunakan prop 'options'
-              options={levels.map((level) => ({
-                label: level.level_name,
-                value: Number(level.id), // <-- KUNCINYA DI SINI: Paksa jadi Number
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
-            name="title"
-            label="Nama Lesson"
-            rules={[{ required: true, message: "Nama lesson wajib diisi!" }]}
-          >
-            <Input placeholder="Contoh: Pengenalan Tipe Data" size="large" />
-          </Form.Item>
+          <fieldset disabled={!canUpdate} style={{ border: "none", padding: 0, margin: 0 }}>
+            <Form.Item
+              name="level_id"
+              label="Pilih Level"
+              rules={[{ required: true, message: "Level wajib dipilih!" }]}
+            >
+              <Select
+                placeholder="-- Pilih Level --"
+                size="large"
+                options={levels.map((level) => ({
+                  label: level.level_name,
+                  value: Number(level.id),
+                }))}
+              />
+            </Form.Item>
+            <Form.Item
+              name="title"
+              label="Nama Lesson"
+              rules={[{ required: true, message: "Nama lesson wajib diisi!" }]}
+            >
+              <Input placeholder="Contoh: Pengenalan Tipe Data" size="large" />
+            </Form.Item>
 
-          <Form.Item name="description" label="Deskripsi Singkat">
-            <Input.TextArea
-              rows={3}
-              placeholder="Jelaskan secara singkat materi ini..."
-            />
-          </Form.Item>
+            <Form.Item name="description" label="Deskripsi Singkat">
+              <Input.TextArea
+                rows={3}
+                placeholder="Jelaskan secara singkat materi ini..."
+              />
+            </Form.Item>
+          </fieldset>
         </Form>
       </Modal>
     </div>

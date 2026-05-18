@@ -32,11 +32,11 @@ export default function LevelPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
   const [viewData, setViewData] = useState<LevelData | null>(null);
 
-  const handleAction = async (action: "add" | "edit" | "view", id?: string) => {
+  const handleAction = async (action: "add" | "edit" | "view", id?: string | number) => {
     setModalMode(action);
     setSelectedId(id || null);
     setViewData(null);
@@ -151,17 +151,6 @@ export default function LevelPage() {
               </Descriptions.Item>
               <Descriptions.Item label="Deskripsi">
                 {viewData.deskripsi}
-              </Descriptions.Item>
-              <Descriptions.Item label="Status">
-                <Tag
-                  color={
-                    viewData?.isactive === "Active"
-                      ? "green"
-                      : "red"
-                  }
-                >
-                  {viewData?.isactive}
-                </Tag>
               </Descriptions.Item>
             </Descriptions>
           ) : (

@@ -74,7 +74,7 @@ export const useUser = () => {
     }
   };
 
-  const editUser = async (id: string, values: UserFormData) => {
+  const editUser = async (id: string | number, values: UserFormData) => {
     setLoading(true);
     try {
       await updateUserApi(id, values);
@@ -89,7 +89,7 @@ export const useUser = () => {
     }
   };
 
-  const deleteUser = async (id: string) => {
+  const deleteUser = async (id: string | number) => {
     setLoading(true);
     try {
       await deleteUserApi(id);

@@ -19,7 +19,7 @@ export const useClass = () => {
     setLoading(true);
     try {
       const data = await getClassApi();
-      setKelas(data);
+      setKelas(Array.isArray(data) ? data : []);
     } catch (error) {
       messageApi.error("Gagal memuat data kelas");
     } finally {
@@ -56,7 +56,7 @@ export const useClass = () => {
     }
   };
 
-  const editKelas = async (id: string, values: ClassFormData) => {
+  const editKelas = async (id: string | number, values: ClassFormData) => {
     setLoading(true);
     try {
       await updateClassApi(id, values);
@@ -71,7 +71,7 @@ export const useClass = () => {
     }
   };
 
-  const deleteKelas = async (id: string) => {
+  const deleteKelas = async (id: string | number) => {
     setLoading(true);
     try {
       await deleteClassApi(id);

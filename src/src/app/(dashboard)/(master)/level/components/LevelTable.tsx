@@ -12,8 +12,8 @@ import { LevelData } from "../types";
 interface Props {
   data: LevelData[];
   loading: boolean;
-  onAction: (action: "add" | "edit" | "view", id?: string) => void;
-  onDelete: (id: string) => void;
+  onAction: (action: "add" | "edit" | "view", id?: string | number) => void;
+  onDelete: (id: string | number) => void;
 }
 
 export const LevelTable: React.FC<Props> = ({
@@ -25,15 +25,14 @@ export const LevelTable: React.FC<Props> = ({
   const [searchText, setSearchText] = useState("");
 
   const columns = [
-    { title: "No.", dataIndex: "no", key: "no", width: "10%" },
-    { title: "Level", dataIndex: "level", key: "level", width: "20%" },
+    { title: "No.", key: "no", width: "10%", render: (_: unknown, __: unknown, index: number) => index + 1 },
+    { title: "Level", dataIndex: "level_name", key: "level_name", width: "20%" },
     {
       title: "Deskripsi",
       dataIndex: "deskripsi",
       key: "deskripsi",
       width: "40%",
     },
-    { title: "isactive", dataIndex: "isactive", key: "isactive", width: "15%" },
     {
       title: "Action",
       key: "action",
@@ -67,7 +66,7 @@ export const LevelTable: React.FC<Props> = ({
   ];
 
   const filteredData = data.filter((item) =>
-    item.level.toLowerCase().includes(searchText.toLowerCase()),
+    item.level_name.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
@@ -105,7 +104,7 @@ export const LevelTable: React.FC<Props> = ({
         dataSource={filteredData}
         loading={loading}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 10 }}
         scroll={{ x: "max-content" }}
       />
     </>

@@ -1,35 +1,79 @@
 import { UserData, UserFormData } from "../types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-const USE_REAL_API = false; // Ubah ke true jika backend sudah siap
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const USE_REAL_API = true;
+
+const handleFetch = async (url: string, options?: RequestInit) => {
+  if (USE_REAL_API) {
+    try {
+      let token = "";
+      if (typeof window !== "undefined") {
+        token = localStorage.getItem("token") || ""; 
+      }
+
+      const customOptions: RequestInit = {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options?.headers || {}), 
+        },
+      };
+
+      const response = await fetch(url, customOptions);
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
+        }
+        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+      }
+      
+      return response.json();
+    } catch (err) {
+      console.error("Network Error:", err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve) => setTimeout(() => resolve(null), 300));
+  }
+};
 
 // --- DATA DUMMY ---
 let dummyUsers: UserData[] = [
-  { id: "1", name: "Yolanda Ekaputri S", role: "Admin", email: "yolanda@gmail.com", isactive: 1 },
-  { id: "2", name: "Fida Cahya", role: "Pengajar", email: "fida@gmail.com", isactive: 1, instansi: "Polinema" },
-  { id: "3", name: "Yovi Dwicho", role: "Pelajar", email: "yovi@gmail.com", isactive: 1, class_name: "12 IPA 1" },
-  { id: "4", name: "Budi Santoso", role: "Pelajar", email: "budi@gmail.com", isactive: 0, class_name: "12 IPA 2" },
+  { id: 1, name: "Yolanda Ekaputri S", role: "Admin", email: "yolanda@gmail.com", isactive: 1 },
+  { id: 2, name: "Fida Cahya", role: "Pengajar", email: "fida@gmail.com", isactive: 1, instansi: "Polinema" },
+  { id: 3, name: "Yovi Dwicho", role: "Pelajar", email: "yovi@gmail.com", isactive: 1, class_name: "12 IPA 1" },
+  { id: 4, name: "Budi Santoso", role: "Pelajar", email: "budi@gmail.com", isactive: 0, class_name: "12 IPA 2" },
 ];
 
 export const getUsersApi = async (): Promise<UserData[]> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/users`);
-    if (!response.ok) throw new Error("Gagal mengambil data user");
-    return response.json();
+    const users = await handleFetch(`${BASE_URL}/users`);
+    const roles = await handleFetch(`${BASE_URL}/roles`);
+    const classes = await handleFetch(`${BASE_URL}/class`);
+    return users.map((u: any) => {
+      const role = roles.find((r: any) => Number(r.id) === Number(u.role_id));
+      const userClass = classes.find((c: any) => Number(c.id) === Number(u.class_id));
+      return {
+        ...u,
+        role: role ? role.role_name : (u.role || "Belum diatur"),
+        class_name: userClass ? userClass.class_name : (u.class_name || "Tidak ada kelas")
+      };
+    });
   } else {
     return new Promise((resolve) => setTimeout(() => resolve([...dummyUsers]), 300));
   }
 };
 
-export const getUserByIdApi = async (id: string): Promise<UserData> => {
+export const getUserByIdApi = async (id: string | number): Promise<UserData> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/users/${id}`);
-    if (!response.ok) throw new Error("Gagal mengambil detail user");
-    return response.json();
+    return handleFetch(`${BASE_URL}/users/${id}`);
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const found = dummyUsers.find((item) => item.id === id);
+        const found = dummyUsers.find((item) => item.id == id);
         resolve(found as UserData);
       }, 300);
     });
@@ -38,12 +82,10 @@ export const getUserByIdApi = async (id: string): Promise<UserData> => {
 
 export const createUserApi = async (data: UserFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/users`, {
+    await handleFetch(`${BASE_URL}/users`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal menyimpan user");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -52,7 +94,7 @@ export const createUserApi = async (data: UserFormData): Promise<void> => {
           : 1;
 
         const newUser: UserData = {
-          id: nextId.toString(),
+          id: nextId,
           name: data.name,
           role: data.role,
           email: data.email,
@@ -67,19 +109,17 @@ export const createUserApi = async (data: UserFormData): Promise<void> => {
   }
 };
 
-export const updateUserApi = async (id: string, data: UserFormData): Promise<void> => {
+export const updateUserApi = async (id: string|number, data: UserFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/users/${id}`, {
+    await handleFetch(`${BASE_URL}/users/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal mengupdate user");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
         dummyUsers = dummyUsers.map((item) =>
-          item.id === id
+          item.id == id
             ? { ...item, name: data.name, role: data.role, email: data.email, instansi: data.instansi, class_name: data.class_name }
             : item
         );
@@ -89,14 +129,13 @@ export const updateUserApi = async (id: string, data: UserFormData): Promise<voi
   }
 };
 
-export const deleteUserApi = async (id: string): Promise<void> => {
+export const deleteUserApi = async (id: string | number): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
-    if (!response.ok) throw new Error("Gagal menghapus user");
+    await handleFetch(`${BASE_URL}/users/${id}`, { method: "DELETE" });
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        dummyUsers = dummyUsers.filter((item) => item.id !== id);
+        dummyUsers = dummyUsers.filter((item) => item.id != id);
         resolve();
       }, 500);
     });
@@ -106,11 +145,18 @@ export const deleteUserApi = async (id: string): Promise<void> => {
 
 export const getInstansiOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
   if (USE_REAL_API) {
-    // Nanti ganti endpoint sesuai buatan Backend
-    const response = await fetch(`${BASE_URL}/instansi-options`);
-    return response.json();
+    try {
+      const users = await handleFetch(`${BASE_URL}/users`);
+      const instansi = Array.from(new Set(users.map((u: any) => u.instansi_sekolah).filter(Boolean)));
+      return instansi.map((i) => ({ label: i as string, value: i as string }));
+    } catch (error) {
+      return [
+        { label: "Polinema", value: "Polinema" },
+        { label: "SMAN 1 Malang", value: "SMAN 1 Malang" },
+        { label: "Universitas Brawijaya", value: "Universitas Brawijaya" },
+      ];
+    }
   } else {
-    // Data Dummy Instansi
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve([
@@ -125,11 +171,17 @@ export const getInstansiOptionsApi = async (): Promise<{ label: string; value: s
 
 export const getKelasOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
   if (USE_REAL_API) {
-    // Nanti ganti endpoint sesuai buatan Backend
-    const response = await fetch(`${BASE_URL}/kelas-options`);
-    return response.json();
+    try {
+      const classes = await handleFetch(`${BASE_URL}/class`);
+      return classes.map((c: any) => ({ label: c.class_name, value: c.class_name }));
+    } catch (error) {
+      return [
+        { label: "10 IPA 1", value: "10 IPA 1" },
+        { label: "11 IPS 2", value: "11 IPS 2" },
+        { label: "12 Bahasa", value: "12 Bahasa" },
+      ];
+    }
   } else {
-    // Data Dummy Kelas
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve([
@@ -144,10 +196,17 @@ export const getKelasOptionsApi = async (): Promise<{ label: string; value: stri
 
 export const getRoleOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/role-options`);
-    return response.json();
+    try {
+      const roles = await handleFetch(`${BASE_URL}/roles`);
+      return roles.map((r: any) => ({ label: r.role_name, value: r.role_name }));
+    } catch (error) {
+      return [
+        { label: "Admin", value: "Admin" },
+        { label: "Pengajar", value: "Pengajar" },
+        { label: "Pelajar", value: "Pelajar" },
+      ];
+    }
   } else {
-    // Data Dummy Role
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve([

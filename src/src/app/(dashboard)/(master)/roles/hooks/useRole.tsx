@@ -32,7 +32,7 @@ export const useRole = () => {
     fetchBadges();
   }, []);
 
-  const fetchRoleById = async (id: string) => {
+  const fetchRoleById = async (id: string | number) => {
     try {
       return await getRoleByIdApi(id);
     } catch (error) {
@@ -56,7 +56,7 @@ export const useRole = () => {
     }
   };
 
-  const editRole = async (id: string, data: RoleFormData) => {
+  const editRole = async (id: string | number, data: RoleFormData) => {
     setLoading(true);
     try {
       await updateRoleApi(id, data);
@@ -71,7 +71,7 @@ export const useRole = () => {
     }
   };
 
-  const deleteRole = async (id: string) => {
+  const deleteRole = async (id: string | number) => {
     setLoading(true);
     try {
       await deleteRoleApi(id);

@@ -1,9 +1,46 @@
 import { RoleData, RoleFormData } from "../types";
 
 // Ambil alamat URL dari file .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-const USE_REAL_API = false; 
+const USE_REAL_API = true;
+
+const handleFetch = async (url: string, options?: RequestInit) => {
+  if (USE_REAL_API) {
+    try {
+      let token = "";
+      if (typeof window !== "undefined") {
+        token = localStorage.getItem("token") || ""; 
+      }
+
+      const customOptions: RequestInit = {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options?.headers || {}), 
+        },
+      };
+
+      const response = await fetch(url, customOptions);
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
+        }
+        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+      }
+      
+      return response.json();
+    } catch (err) {
+      console.error("Network Error:", err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve) => setTimeout(() => resolve(null), 300));
+  }
+};
 
 let dummyRoles: RoleData[] = [
   { id: 1, role_name: "Admin", isactive: "Aktif" },
@@ -14,20 +51,16 @@ let dummyRoles: RoleData[] = [
 // 1. GET ALL
 export const getRolesApi = async (): Promise<RoleData[]> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/roles`);
-    if (!response.ok) throw new Error("Gagal mengambil data role");
-    return response.json();
+    return handleFetch(`${BASE_URL}/roles`);
   } else {
     return new Promise((resolve) => setTimeout(() => resolve([...dummyRoles]), 0));
   }
 };
 
 // 2. GET BY ID
-export const getRoleByIdApi = async (id: number): Promise<RoleData> => {
+export const getRoleByIdApi = async (id: string | number): Promise<RoleData> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/roles/${id}`);
-    if (!response.ok) throw new Error("Gagal mengambil detail badge");
-    return response.json();
+    return handleFetch(`${BASE_URL}/roles/${id}`);
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -41,12 +74,10 @@ export const getRoleByIdApi = async (id: number): Promise<RoleData> => {
 // 3. POST (TAMBAH)
 export const createRoleApi = async (data: RoleFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/roles`, {
+    await handleFetch(`${BASE_URL}/roles`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal menyimpan data role");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -63,14 +94,12 @@ export const createRoleApi = async (data: RoleFormData): Promise<void> => {
 };
 
 // 4. PUT (EDIT)
-export const updateRoleApi = async (id: number, data: RoleFormData): Promise<void> => {
+export const updateRoleApi = async (id: string | number, data: RoleFormData): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/roles/${id}`, {
+    await handleFetch(`${BASE_URL}/roles/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Gagal mengupdate data role");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -87,12 +116,11 @@ export const updateRoleApi = async (id: number, data: RoleFormData): Promise<voi
 };
 
 // 5. DELETE (HAPUS)
-export const deleteRoleApi = async (id: number): Promise<void> => {
+export const deleteRoleApi = async (id: string | number): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/roles/${id}`, {
+    await handleFetch(`${BASE_URL}/roles/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) throw new Error("Gagal menghapus data role");
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {

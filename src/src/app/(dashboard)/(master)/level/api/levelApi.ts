@@ -3,13 +3,13 @@ import { LevelData, LevelFormData } from "../types";
 // Ambil alamat URL dari file .env.local
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
-const USE_REAL_API = false; 
+const USE_REAL_API = true; 
 
 // --- DATA DUMMY (Abaikan saja, ini untuk sementara) ---
 let dummyLevels: LevelData[] = [
-  { id: "1", no: 1, level: "Easy", deskripsi: "Materi dasar", isactive: "Active" },
-  { id: "2", no: 2, level: "Medium", deskripsi: "Materi lanjutan", isactive: "Active" },
-  { id: "3", no: 3, level: "Hard", deskripsi: "Materi sulit", isactive: "Nonactive" },
+  { id: 1, level_name: "Easy", deskripsi: "Materi dasar", isactive: "Active" },
+  { id: 2, level_name: "Medium", deskripsi: "Materi lanjutan", isactive: "Active" },
+  { id: 3, level_name: "Hard", deskripsi: "Materi sulit", isactive: "Nonactive" },
 ];
 
 
@@ -26,7 +26,7 @@ export const getLevelsApi = async (): Promise<LevelData[]> => {
 };
 
 // 2. GET BY ID
-export const getLevelByIdApi = async (id: string): Promise<LevelData> => {
+export const getLevelByIdApi = async (id: string | number): Promise<LevelData> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/levels/${id}`);
     if (!response.ok) throw new Error("Gagal mengambil detail data");
@@ -34,7 +34,7 @@ export const getLevelByIdApi = async (id: string): Promise<LevelData> => {
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const found = dummyLevels.find(item => item.id === id);
+        const found = dummyLevels.find(item => item.id == id);
         resolve(found as LevelData);
       }, 0);
     });
@@ -54,9 +54,8 @@ export const createLevelApi = async (data: LevelFormData): Promise<void> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const newLevel: LevelData = {
-          id: Math.random().toString(36).substring(7),
-          no: dummyLevels.length + 1,
-          level: data.levelName,
+          id: Math.random(),
+          level_name: data.levelName,
           deskripsi: data.description,
           isactive: "Aktif"
         };
@@ -68,7 +67,7 @@ export const createLevelApi = async (data: LevelFormData): Promise<void> => {
 };
 
 // 4. PUT (EDIT)
-export const updateLevelApi = async (id: string, data: LevelFormData): Promise<void> => {
+export const updateLevelApi = async (id: string | number, data: LevelFormData): Promise<void> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/levels/${id}`, {
       method: "PUT",
@@ -80,7 +79,7 @@ export const updateLevelApi = async (id: string, data: LevelFormData): Promise<v
     return new Promise((resolve) => {
       setTimeout(() => {
         dummyLevels = dummyLevels.map(item => 
-          item.id === id ? { ...item, level: data.levelName, deskripsi: data.description } : item
+          item.id == id ? { ...item, level: data.levelName, deskripsi: data.description } : item
         );
         resolve();
       }, 0);
@@ -89,7 +88,7 @@ export const updateLevelApi = async (id: string, data: LevelFormData): Promise<v
 };
 
 // 5. DELETE (HAPUS)
-export const deleteLevelApi = async (id: string): Promise<void> => {
+export const deleteLevelApi = async (id: string | number): Promise<void> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/levels/${id}`, {
       method: "DELETE",
@@ -98,7 +97,7 @@ export const deleteLevelApi = async (id: string): Promise<void> => {
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
-        dummyLevels = dummyLevels.filter(item => item.id !== id);
+        dummyLevels = dummyLevels.filter(item => item.id != id);
         resolve();
       }, 0);
     });

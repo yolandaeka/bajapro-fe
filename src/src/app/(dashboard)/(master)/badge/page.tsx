@@ -58,13 +58,13 @@ export default function BadgePage() {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
   const [viewData, setViewData] = useState<BadgeData | null>(null);
 
   // State khusus untuk menampung preview gambar saat di-upload
   const [imageUrl, setImageUrl] = useState<string>("");
 
-  const handleAction = async (action: "add" | "edit" | "view", id?: string) => {
+  const handleAction = async (action: "add" | "edit" | "view", id?: string | number) => {
     setModalMode(action);
     setSelectedId(id || null);
     setViewData(null);
@@ -189,17 +189,6 @@ export default function BadgePage() {
               </Descriptions.Item>
               <Descriptions.Item label="Rentang Skor">
                 {viewData.minScore} - {viewData.maxScore}
-              </Descriptions.Item>
-              <Descriptions.Item label="Status">
-                <Tag
-                  color={
-                    viewData?.isactive?.toLowerCase() === "aktif"
-                      ? "green"
-                      : "red"
-                  }
-                >
-                  {viewData?.isactive}
-                </Tag>
               </Descriptions.Item>
             </Descriptions>
           ) : (

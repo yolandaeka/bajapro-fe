@@ -239,23 +239,32 @@ export const checkQuestionReferencesApi = async (id: number) => {
 };
 
 export const deleteQuestionApi = async (codeId: number) => {
-  // 1. Nonaktifkan Code Question
-  await fetch(`${BASE_URL}/code_question/${codeId}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ isactive: false }),
-  });
+  // 1. Cek apakah ada essay (Wajib ada 3 di sistem ini biasanya, tapi kita cek keberadaannya sebagai data)
+  // Namun karena sistem ini menghapus code_question beserta essay-nya, kita cek referensi LUAR (log pengerjaan)
+  
+  const historyLogs = await handleFetch(`${BASE_URL}/t_code_history_logs?code_question_id=${codeId}`);
+  if (historyLogs && historyLogs.length > 0) {
+    throw new Error(`Gagal menghapus! Pertanyaan ini sudah dikerjakan oleh siswa (${historyLogs.length} riwayat).`);
+  }
 
-  // 2. Cari 3 essay miliknya, lalu nonaktifkan juga
+  const studentAnswers = await handleFetch(`${BASE_URL}/t_code_answer?code_question_id=${codeId}`);
+  if (studentAnswers && studentAnswers.length > 0) {
+    throw new Error(`Gagal menghapus! Pertanyaan ini sudah memiliki jawaban tersimpan.`);
+  }
+
+  // 2. Jika aman, hapus essay-nya dulu
   const oldEssays = await handleFetch(`${BASE_URL}/essay_question?code_question_id=${codeId}`);
   const deletePromises = oldEssays.map((essay: { id: number }) =>
     fetch(`${BASE_URL}/essay_question/${essay.id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isactive: false }),
     })
   );
   await Promise.all(deletePromises);
+
+  // 3. Baru hapus Code Question
+  await fetch(`${BASE_URL}/code_question/${codeId}`, {
+    method: "DELETE",
+  });
 };
 
 export const fetchSubLessonDetailApi = async (id: string | number) => handleFetch(`${BASE_URL}/sublessons/${id}`);

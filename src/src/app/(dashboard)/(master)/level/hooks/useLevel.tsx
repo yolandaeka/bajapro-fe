@@ -39,7 +39,7 @@ export const useLevel = () => {
   };
 
   // 3. Edit Data
-  const editLevel = async (id: string, values: LevelFormData) => {
+  const editLevel = async (id: string | number, values: LevelFormData) => {
     setLoading(true);
     try {
       await updateLevelApi(id, values);
@@ -55,7 +55,7 @@ export const useLevel = () => {
   };
 
   // 4. Ambil 1 Detail (Untuk ditaruh di form)
-  const fetchLevelById = async (id: string) => {
+  const fetchLevelById = async (id: string | number) => {
     setLoading(true);
     try {
       return await getLevelByIdApi(id); // Langsung lempar datanya
@@ -67,7 +67,7 @@ export const useLevel = () => {
     }
   };
 
-  const deleteLevel = async (id: string) => {
+  const deleteLevel = async (id: string | number) => {
     setLoading(true);
     try {
       await deleteLevelApi(id);

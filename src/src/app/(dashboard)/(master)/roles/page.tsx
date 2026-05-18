@@ -31,11 +31,11 @@ export default function RolePage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
   const [viewData, setViewData] = useState<RoleData | null>(null);
 
-  const handleAction = async (action: "add" | "edit" | "view", id?: string) => {
+  const handleAction = async (action: "add" | "edit" | "view", id?: string | number) => {
     setModalMode(action);
     setSelectedId(id || null);
     setViewData(null);
@@ -146,17 +146,6 @@ export default function RolePage() {
             <Descriptions column={1} bordered style={{ marginTop: "24px" }}>
               <Descriptions.Item label="Nama Role">
                 <strong>{viewData.role_name}</strong>
-              </Descriptions.Item>
-              <Descriptions.Item label="Status">
-                <Tag
-                  color={
-                    viewData?.isactive === "Active"
-                      ? "green"
-                      : "red"
-                  }
-                >
-                  {viewData?.isactive}
-                </Tag>
               </Descriptions.Item>
             </Descriptions>
           ) : (

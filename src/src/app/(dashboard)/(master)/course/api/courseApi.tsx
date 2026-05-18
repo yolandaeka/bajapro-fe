@@ -141,6 +141,12 @@ export const updateCourseApi = async (
 
 export const deleteCourseApi = async (id: number): Promise<void> => {
   if (USE_REAL_API) {
+    // 1. Cek apakah ada Lesson yang merujuk ke Course ini
+    const lessons = await handleFetch(`${BASE_URL}/lessons?course_id=${id}`);
+    if (lessons && lessons.length > 0) {
+      throw new Error(`Gagal menghapus! Course ini masih memiliki ${lessons.length} Lesson (materi). Hapus semua Lesson terlebih dahulu.`);
+    }
+
     await fetch(`${BASE_URL}/courses/${id}`, { method: "DELETE" });
   } else {
     dummyCourses = dummyCourses.filter((item) => item.id != id);
@@ -226,6 +232,12 @@ export const reorderLessonsApi = async (
 
 export const deleteLessonApi = async (id: number): Promise<void> => {
   if (USE_REAL_API) {
+    // 1. Cek apakah ada Sub-Lesson yang merujuk ke Lesson ini
+    const subLessons = await handleFetch(`${BASE_URL}/sublessons?lesson_id=${id}`);
+    if (subLessons && subLessons.length > 0) {
+      throw new Error(`Gagal menghapus! Lesson ini masih memiliki ${subLessons.length} Sub-Lesson. Hapus semua Sub-Lesson terlebih dahulu.`);
+    }
+
     await fetch(`${BASE_URL}/lessons/${id}`, {
       method: "DELETE",
     });
@@ -265,10 +277,6 @@ export const updateSubLessonApi = async (
     body: JSON.stringify(data),
   });
 };
-
-// DELETE Sublesson
-export const deleteSubLessonApi = (id: number) =>
-  handleFetch(`${BASE_URL}/sublessons/${id}`, { method: "DELETE" });
 
 // REORDER POSISI Sublessons DI LIST TAB
 export const reorderSubLessonsApi = (
@@ -320,6 +328,23 @@ export const updateMaterialsApi = async (
 };
 
 // DELETE Sublesson
+export const deleteSubLessonApi = async (id: number): Promise<void> => {
+  // 1. Cek apakah ada Materials
+  const materials = await handleFetch(`${BASE_URL}/materials?sub_lesson_id=${id}`);
+  if (materials && materials.length > 0) {
+    throw new Error(`Gagal menghapus! Sub-Lesson ini masih memiliki ${materials.length} Konten Materi.`);
+  }
+
+  // 2. Cek apakah ada Question (code_question)
+  const questions = await handleFetch(`${BASE_URL}/code_question?sub_lesson_id=${id}`);
+  if (questions && questions.length > 0) {
+    throw new Error(`Gagal menghapus! Sub-Lesson ini masih memiliki ${questions.length} Pertanyaan.`);
+  }
+
+  return handleFetch(`${BASE_URL}/sublessons/${id}`, { method: "DELETE" });
+};
+
+// DELETE Material
 export const deleteMaterialApi = (id: number) =>
   handleFetch(`${BASE_URL}/materials/${id}`, { method: "DELETE" });
 

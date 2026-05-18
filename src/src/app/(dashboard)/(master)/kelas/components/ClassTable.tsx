@@ -9,7 +9,7 @@ interface ClassTableProps {
   loading: boolean;
   role: "Admin" | "Pengajar"; 
   onAction: (action: "view" | "edit", record: ClassData) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string | number) => void;
 }
 
 export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onAction, onDelete }) => {
@@ -51,17 +51,6 @@ export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onA
       : []),
 
     {
-      title: "Status",
-      dataIndex: "isactive",
-      key: "isactive",
-      sorter: (a: ClassData, b: ClassData) => a.isactive - b.isactive,
-      render: (isactive: number) => (
-        <Tag color={isactive === 1 ? "green" : "red"}>
-          {isactive === 1 ? "Active" : "Nonactive"}
-        </Tag>
-      ),
-    },
-    {
       title: "Action",
       key: "action",
       width: 150,
@@ -98,7 +87,7 @@ export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onA
       dataSource={data} 
       rowKey="id" 
       loading={loading} 
-      pagination={{ pageSize: 5 }} 
+      pagination={{ pageSize: 10 }} 
       scroll={{ x: 800 }} 
     />
   );

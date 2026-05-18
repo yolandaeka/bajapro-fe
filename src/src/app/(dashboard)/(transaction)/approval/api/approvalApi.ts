@@ -2,9 +2,46 @@ import { TeacherRecord } from "../types";
 import React from "react";
 
 // Ambil alamat URL dari file .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-const USE_REAL_API = false; 
+const USE_REAL_API = true; 
+
+const handleFetch = async (url: string, options?: RequestInit) => {
+  if (USE_REAL_API) {
+    try {
+      let token = "";
+      if (typeof window !== "undefined") {
+        token = localStorage.getItem("token") || ""; 
+      }
+
+      const customOptions: RequestInit = {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options?.headers || {}), 
+        },
+      };
+
+      const response = await fetch(url, customOptions);
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
+        }
+        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+      }
+      
+      return response.json();
+    } catch (err) {
+      console.error("Network Error:", err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve) => setTimeout(() => resolve(null), 300));
+  }
+};
 
 // Gunakan let agar data dummy bisa diubah saat simulasi
 let dummyData: TeacherRecord[] = [
@@ -17,9 +54,22 @@ let dummyData: TeacherRecord[] = [
 // 1. GET ALL (Ambil List Pengajar)
 export const fetchPengajarApi = async (): Promise<TeacherRecord[]> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/admin/approval-pengajar`);
-    if (!response.ok) throw new Error("Gagal mengambil data pengajar");
-    return response.json();
+    const isJsonServer = BASE_URL.includes("3001");
+    const endpoint = isJsonServer ? "/users?role_id=2" : "/admin/approval-pengajar";
+    const data = await handleFetch(`${BASE_URL}${endpoint}`);
+    
+    if (isJsonServer) {
+      return data.map((u: any, index: number) => ({
+        key: u.id,
+        no: index + 1,
+        nama: u.name,
+        email: u.email,
+        instansi: u.instansi_sekolah || "-",
+        nip: u.nip || "-",
+        is_approved_by_admin: u.is_approved_by_admin ?? 0,
+      }));
+    }
+    return data;
   } else {
     return new Promise((resolve) => setTimeout(() => resolve([...dummyData]), 500)); // Simulasi loading 0.5s
   }
@@ -28,12 +78,19 @@ export const fetchPengajarApi = async (): Promise<TeacherRecord[]> => {
 // 2. POST / PUT (APPROVE PENGAJAR)
 export const approvePengajarApi = async (keys: React.Key[]): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/admin/approval-pengajar/approve`, {
-      method: "POST", 
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keys }),
-    });
-    if (!response.ok) throw new Error("Gagal meng-approve data pengajar");
+    if (BASE_URL.includes("3001")) {
+      await Promise.all(keys.map(key => 
+        handleFetch(`${BASE_URL}/users/${String(key)}`, {
+          method: "PATCH",
+          body: JSON.stringify({ is_approved_by_admin: 1 })
+        })
+      ));
+    } else {
+      await handleFetch(`${BASE_URL}/admin/approval-pengajar/approve`, {
+        method: "POST", 
+        body: JSON.stringify({ keys }),
+      });
+    }
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -49,12 +106,19 @@ export const approvePengajarApi = async (keys: React.Key[]): Promise<void> => {
 // 3. POST / PUT (REJECT PENGAJAR)
 export const rejectPengajarApi = async (keys: React.Key[]): Promise<void> => {
   if (USE_REAL_API) {
-    const response = await fetch(`${BASE_URL}/admin/approval-pengajar/reject`, {
-      method: "POST", 
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keys }), 
-    });
-    if (!response.ok) throw new Error("Gagal menolak data pengajar");
+    if (BASE_URL.includes("3001")) {
+      await Promise.all(keys.map(key => 
+        handleFetch(`${BASE_URL}/users/${String(key)}`, {
+          method: "PATCH",
+          body: JSON.stringify({ is_approved_by_admin: 2 })
+        })
+      ));
+    } else {
+      await handleFetch(`${BASE_URL}/admin/approval-pengajar/reject`, {
+        method: "POST", 
+        body: JSON.stringify({ keys }), 
+      });
+    }
   } else {
     return new Promise((resolve) => {
       setTimeout(() => {
