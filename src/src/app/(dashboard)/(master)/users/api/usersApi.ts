@@ -43,7 +43,7 @@ const handleFetch = async (url: string, options?: RequestInit) => {
 // --- DATA DUMMY ---
 let dummyUsers: UserData[] = [
   { id: 1, name: "Yolanda Ekaputri S", role: "Admin", email: "yolanda@gmail.com", isactive: 1 },
-  { id: 2, name: "Fida Cahya", role: "Pengajar", email: "fida@gmail.com", isactive: 1, instansi: "Polinema" },
+  { id: 2, name: "Fida Cahya", role: "Pengajar", email: "fida@gmail.com", isactive: 1, instansi_sekolah: "Polinema" },
   { id: 3, name: "Yovi Dwicho", role: "Pelajar", email: "yovi@gmail.com", isactive: 1, class_name: "12 IPA 1" },
   { id: 4, name: "Budi Santoso", role: "Pelajar", email: "budi@gmail.com", isactive: 0, class_name: "12 IPA 2" },
 ];
@@ -99,7 +99,7 @@ export const createUserApi = async (data: UserFormData): Promise<void> => {
           role: data.role,
           email: data.email,
           isactive: 1, 
-          instansi: data.instansi,
+          instansi_sekolah: data.instansi_sekolah,
           class_name: data.class_name,
         };
         dummyUsers.push(newUser);
@@ -120,7 +120,7 @@ export const updateUserApi = async (id: string|number, data: UserFormData): Prom
       setTimeout(() => {
         dummyUsers = dummyUsers.map((item) =>
           item.id == id
-            ? { ...item, name: data.name, role: data.role, email: data.email, instansi: data.instansi, class_name: data.class_name }
+            ? { ...item, name: data.name, role: data.role, email: data.email, instansi_sekolah: data.instansi_sekolah, class_name: data.class_name }
             : item
         );
         resolve();
@@ -172,7 +172,28 @@ export const getInstansiOptionsApi = async (): Promise<{ label: string; value: s
 export const getKelasOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
   if (USE_REAL_API) {
     try {
-      const classes = await handleFetch(`${BASE_URL}/class`);
+      let isPengajar = false;
+      let userId = null;
+      if (typeof window !== "undefined") {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (user.role_id == 2 || user.role === "Pengajar" || user.role_id === "2") {
+              isPengajar = true;
+              userId = user.id;
+            }
+          } catch (e) {}
+        }
+      }
+
+      let classes;
+      
+      if (isPengajar && userId) {
+        classes = await handleFetch(`${BASE_URL}/class?teacher_id=${userId}`);
+      } else {
+        classes = await handleFetch(`${BASE_URL}/class`);
+      }
       return classes.map((c: any) => ({ label: c.class_name, value: c.class_name }));
     } catch (error) {
       return [

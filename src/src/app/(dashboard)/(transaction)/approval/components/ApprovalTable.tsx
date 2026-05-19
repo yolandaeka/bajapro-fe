@@ -111,6 +111,7 @@ export const ApprovalTable = () => {
         loading={loading}
         pagination={{ pageSize: 5, showSizeChanger: false }}
         style={{ border: "1px solid #f0f0f0", borderRadius: 8, overflow: "hidden" }}
+        scroll={{ x: 'max-content' }}
       />
 
       <style>{`

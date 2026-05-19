@@ -4,7 +4,7 @@ export interface UserData {
   role: string;
   email: string;
   isactive: number; // 1 untuk aktif, 0 untuk nonaktif
-  instansi?: string;
+  instansi_sekolah?: string;
   class_name?: string;
 }
 
@@ -13,6 +13,6 @@ export interface UserFormData {
   role: string;
   email: string;
   password?: string; // Opsional saat edit
-  instansi?: string; // Opsional (hanya Pengajar)
+  instansi_sekolah?: string; // Opsional (hanya Pengajar)
   class_name?: string;    // Opsional (hanya Pelajar)
 }

@@ -51,12 +51,14 @@ export const UserTable: React.FC<UserTableProps> = ({
     },
     
     // 👇 KONDISI 1: JIKA ADMIN, TAMPILKAN KOLOM INSTANSI
-    ...(currentUserRole === "Admin" ? [
+    ...(currentUserRole == "Admin" ? [
       {
         title: "Instansi",
-        dataIndex: "instansi", // Pastikan key-nya sesuai dengan API/Database (misal: school_name)
-        key: "instansi",
-        sorter: (a: UserData, b: UserData) => (a.instansi || "").localeCompare(b.instansi || "")
+        dataIndex: "instansi_sekolah",
+        key: "instansi_sekolah",
+        sorter: (a: UserData, b: UserData) => (a.instansi_sekolah || "").localeCompare(b.instansi_sekolah || ""),
+     
+       
       }
     ] : []),
 
@@ -98,7 +100,7 @@ export const UserTable: React.FC<UserTableProps> = ({
           </Popconfirm>
           
           {/* Tombol Lihat Murid khusus Admin ke Pengajar */}
-          {currentUserRole === "Admin" && record.role === "Pengajar" && (
+          {/* {currentUserRole === "Admin" && record.role === "Pengajar" && (
             <Button 
               type="primary" 
               icon={<TeamOutlined />}
@@ -107,7 +109,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             >
               Lihat Murid
             </Button>
-          )}
+          )} */}
         </Space>
       ),
     },

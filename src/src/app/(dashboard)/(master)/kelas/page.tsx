@@ -175,7 +175,7 @@ export default function ClassPage() {
         />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "8px" }}>
         <Button 
           type="dashed" 
           onClick={() => {

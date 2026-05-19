@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ padding: "24px", minHeight: "100vh" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
         {/* The top bar (Navbar) in your design shows "Dashboard" and User profile.
             Assuming the top bar is handled in layout.tsx, we can hide the title here if it's redundant.
             But we'll keep it just in case. */}

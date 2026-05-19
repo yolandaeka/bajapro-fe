@@ -186,6 +186,8 @@ export const LessonListTab: React.FC<Props> = ({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px",
             }}
           >
             <div style={{ marginTop: "8px", marginBottom: "8px" }}>

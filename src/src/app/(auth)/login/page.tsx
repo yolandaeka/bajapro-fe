@@ -41,6 +41,7 @@ export default function LoginPage() {
         // Simpan hanya data esensial agar cookie ringan dan tidak error di middleware
         const sessionData = {
           id: user.id,
+          name: user.name,
           role_id: user.role_id,
           is_approved_by_admin: user.is_approved_by_admin
         };
@@ -51,7 +52,7 @@ export default function LoginPage() {
         
         // Route based on role
         if (user.role_id == 3) {
-          router.push("/home");
+          router.push("/student/dashboard");
         } else if (user.role_id == 2) {
           if (user.is_approved_by_admin == 1) {
             router.push("/dashboard");
@@ -186,7 +187,7 @@ export default function LoginPage() {
               >
                 <Input.Password
                   size="large"
-                  placeholder="••••••••••••••••"
+                  placeholder="••••••••"
                   iconRender={(visible) =>
                     visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                   }

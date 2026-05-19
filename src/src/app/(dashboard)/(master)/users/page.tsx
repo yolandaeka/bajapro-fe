@@ -85,7 +85,7 @@ export default function UserPage() {
 
     // 3. Filter Dropdown
     if (filterRole && u.role !== filterRole) return false;
-    if (filterInstansi && u.instansi !== filterInstansi) return false;
+    if (filterInstansi && u.instansi_sekolah !== filterInstansi) return false;
     if (filterKelas && u.class_name !== filterKelas) return false;
 
     return true;
@@ -165,7 +165,7 @@ export default function UserPage() {
         </div>
       )}
       
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "8px" }}>
         <Button type="dashed" onClick={() => {
             setFilterRole(null);
             setFilterInstansi(null);
@@ -191,7 +191,7 @@ export default function UserPage() {
           Kelola pengguna dan profilnya
         </p>
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -260,7 +260,7 @@ export default function UserPage() {
               <Descriptions.Item label="Role">{viewData.role}</Descriptions.Item>
               <Descriptions.Item label="Email">{viewData.email}</Descriptions.Item>
               {viewData.role === "Pengajar" && (
-                <Descriptions.Item label="Instansi">{viewData.instansi || "-"}</Descriptions.Item>
+                <Descriptions.Item label="Instansi">{viewData.instansi_sekolah || "-"}</Descriptions.Item>
               )}
               {viewData.role === "Pelajar" && (
                 <Descriptions.Item label="Kelas">{viewData.class_name || "-"}</Descriptions.Item>
@@ -281,13 +281,13 @@ export default function UserPage() {
             </div>
             
             {selectedFormRole === "Pengajar" && (
-              <Form.Item label="Nama Instansi/Sekolah" name="instansi" rules={[{ required: true }]}>
+              <Form.Item label="Nama Instansi/Sekolah" name="instansi_sekolah" rules={[{ required: true }]}>
                 <Select placeholder="Pilih Instansi" size="large" options={instansiOptions} />
               </Form.Item>
             )}
             
             {selectedFormRole === "Pelajar" && (
-              <Form.Item label="Kelas" name="kelas" rules={[{ required: true }]}>
+              <Form.Item label="Kelas" name="class_name" rules={[{ required: true }]}>
                 <Select placeholder="Pilih Kelas" size="large" options={kelasOptions} />
               </Form.Item>
             )}

@@ -127,6 +127,8 @@ export const ManageCourseMateri = () => {
           display: "flex",
           justifyContent: "space-between",
           marginBottom: "16px",
+          flexWrap: "wrap",
+          gap: "16px",
         }}
       >
         {/* <Button
