@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Typography, Progress, Spin, Button, Empty, Modal, List, Avatar } from "antd";
+import { Row, Col, Card, Typography, Progress, Spin, Button, Empty, Modal, Avatar } from "antd";
 import { PlayCircleOutlined, BookOutlined, ClockCircleOutlined, TrophyOutlined, RightOutlined, FireFilled } from "@ant-design/icons";
 import { getStudentDashboardApi } from "../api/studentApi";
 import { useRouter } from "next/navigation";
@@ -288,19 +288,16 @@ export default function StudentDashboard() {
                 <TrophyOutlined style={{ color: "#FAAD14", fontSize: "20px" }} />
                 <Title level={4} style={{ margin: 0, fontWeight: 700 }}>Top 5 Leaderboard</Title>
               </div>
-              <List
-                itemLayout="horizontal"
-                dataSource={[
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {[
                     { name: "Siti Aminah", score: 450, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Siti" },
                     { name: "Budi Santoso", score: 420, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" },
                     { name: "Citra Lestari", score: 380, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Citra" },
                     { name: "Eko Purnomo", score: 310, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Eko" },
                     { name: "Galih Santosa", score: 290, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Galih" },
-                ]}
-                renderItem={(item, index) => (
-                  <List.Item style={{ padding: "12px 0", borderBottom: index === 4 ? "none" : "1px solid #f0f0f0" }}>
-                    <List.Item.Meta
-                      avatar={
+                ].map((item, index) => (
+                  <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: index === 4 ? "none" : "1px solid #f0f0f0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                         <div style={{ position: "relative" }}>
                             <Avatar src={item.avatar} size="large" />
                             {index < 3 && (
@@ -308,20 +305,22 @@ export default function StudentDashboard() {
                                     position: "absolute", top: -8, right: -8, 
                                     background: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : "#CD7F32",
                                     color: "#fff", borderRadius: "50%", width: "20px", height: "20px", 
-                                    display: "flex", justifyContent: "center", alignItems: "center", fontSize: "10px", fontWeight: "bold" 
+                                    display: "flex", justifyContent: "center", alignItems: "center", fontSize: "10px", fontWeight: "bold",
+                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                 }}>
                                     {index + 1}
                                 </div>
                             )}
                         </div>
-                      }
-                      title={<Text style={{ fontWeight: 600 }}>{item.name}</Text>}
-                      description={<Text type="secondary" style={{ fontSize: "12px" }}>Total Score</Text>}
-                    />
-                    <div style={{ fontWeight: 800, color: "#531DAB" }}>{item.score}</div>
-                  </List.Item>
-                )}
-              />
+                        <div>
+                            <Text style={{ fontWeight: 600, display: "block" }}>{item.name}</Text>
+                            <Text type="secondary" style={{ fontSize: "12px" }}>Total Score</Text>
+                        </div>
+                    </div>
+                    <div style={{ fontWeight: 800, color: "#531DAB", fontSize: "16px" }}>{item.score}</div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </motion.div>
         </Col>

@@ -19,8 +19,8 @@ export default function StudentLayout({
         style={{
           width: "100%",
           maxWidth: "1440px",
-          margin: "48px auto",
-          padding: "0 48px",
+          margin: "36px auto",
+          padding: "0 36px",
           flex: 1,
         }}
       >

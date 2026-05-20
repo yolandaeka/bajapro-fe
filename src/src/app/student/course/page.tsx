@@ -92,7 +92,7 @@ export default function BrowseCourse() {
             const isEnrolled = enrolledMap[course.id];
             
             return (
-              <Col xs={24} sm={12} md={8} key={course.id}>
+              <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
                 <motion.div variants={itemVariants} whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} style={{ height: "100%" }}>
                   <Card 
                     hoverable
@@ -108,32 +108,32 @@ export default function BrowseCourse() {
                         background: course.img_thumbnail ? `url(/assets/courses/${course.img_thumbnail}) center/cover no-repeat` : "linear-gradient(135deg, #F093FB 0%, #F5576C 100%)", 
                         backgroundColor: "#f5f5f5",
                         borderRadius: "8px", 
-                        marginBottom: "16px" 
+                        marginBottom: "12px" 
                       }}
                     />
                     
-                    <Title level={4} style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#262626" }}>{course.course_name}</Title>
-                    <Paragraph type="secondary" style={{ display: "block", margin: "0 0 16px 0", minHeight: "44px", fontSize: "13px" }} ellipsis={{ rows: 2 }}>
+                    <Title level={4} style={{ margin: "0 0 4px 0", fontSize: "16px", color: "#262626" }}>{course.course_name}</Title>
+                    <Paragraph type="secondary" style={{ display: "block", margin: "0 0 6px 0", minHeight: "34px", fontSize: "12px", lineHeight: "1.4" }} ellipsis={{ rows: 2 }}>
                       {course.description}
                     </Paragraph>
                     
-                    <div style={{ display: "flex", gap: "16px", marginBottom: "20px", color: "#bfbfbf" }}>
+                    <div style={{ display: "flex", gap: "12px", marginBottom: "10px", color: "#bfbfbf" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <BookOutlined /> <Text type="secondary" style={{ fontSize: "12px" }}>15 Bab</Text>
+                        <BookOutlined /> <Text type="secondary" style={{ fontSize: "11px" }}>{course.lessonCount || 0} Bab</Text>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <BookOutlined /> <Text type="secondary" style={{ fontSize: "12px" }}>25 Sub Bab</Text>
+                        <BookOutlined /> <Text type="secondary" style={{ fontSize: "11px" }}>{course.subLessonCount || 0} Sub Bab</Text>
                       </div>
                     </div>
 
                     <div style={{ marginTop: "auto" }}>
                       {isEnrolled ? (
                         <>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                             <Text style={{ fontWeight: 600, fontSize: "13px" }}>Progress</Text>
                             <Text style={{ fontWeight: 600, color: "#531DAB", fontSize: "13px" }}>{isEnrolled.total_score || 5}%</Text>
                           </div>
-                          <Progress percent={isEnrolled.total_score || 5} showInfo={false} strokeColor="#531DAB" style={{ marginBottom: "16px" }} size="small" />
+                          <Progress percent={isEnrolled.total_score || 5} showInfo={false} strokeColor="#531DAB" style={{ marginBottom: "10px" }} size="small" />
                           <div style={{ display: "flex", gap: "8px" }}>
                             <Button 
                               type="primary" 
