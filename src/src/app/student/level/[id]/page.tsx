@@ -256,12 +256,13 @@ export default function CourseLevelSelection() {
                               loading={!ui.locked && enrolling}
                               onClick={() => handleStartLesson(level.id, ui.locked)}
                               style={{
-                                backgroundColor: ui.locked ? "#f5f5f5" : "#531DAB",
-                                borderColor: ui.locked ? "#d9d9d9" : "#531DAB",
-                                color: ui.locked ? "#bfbfbf" : "#fff",
+                                background: ui.locked ? "#f5f5f5" : "linear-gradient(135deg, #FFD700 0%, #FDB931 100%)",
+                                borderColor: ui.locked ? "#d9d9d9" : "#FDB931",
+                                color: ui.locked ? "#bfbfbf" : "#1F2937",
                                 borderRadius: "10px",
-                                fontWeight: 600,
-                                height: "44px"
+                                fontWeight: 700,
+                                height: "44px",
+                                boxShadow: ui.locked ? "none" : "0 4px 12px rgba(253, 185, 49, 0.3)"
                               }}
                             >
                               {ui.locked ? "Locked" : "Start"}

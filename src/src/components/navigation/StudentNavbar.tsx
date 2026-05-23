@@ -39,7 +39,12 @@ const StudentNavbar = () => {
   }, []);
 
   const userMenu: MenuProps["items"] = [
-    { key: "profile", icon: <UserOutlined />, label: "Profil Saya" },
+    { 
+      key: "profile", 
+      icon: <UserOutlined />, 
+      label: "Profil Saya",
+      onClick: () => router.push("/student/profile")
+    },
     { type: "divider" },
     {
       key: "logout",
@@ -70,8 +75,11 @@ const StudentNavbar = () => {
         alignItems: "center",
         borderBottom: "1px solid #f0f0f0",
         height: "72px",
-        position: "sticky",
+        position: "fixed",
         top: 0,
+        left: 0,
+        right: 0,
+        width: "100%",
         zIndex: 1000,
       }}
     >
@@ -118,7 +126,11 @@ const StudentNavbar = () => {
               fontWeight: "bold",
             }}
           >
-            {userInfo.name.charAt(0)}
+            {(() => {
+              const parts = userInfo.name.trim().split(" ");
+              if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+              return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            })()}
           </Avatar>
           <Text style={{ color: "#531DAB", fontWeight: 600, fontSize: "14px" }}>
             {userInfo.name}

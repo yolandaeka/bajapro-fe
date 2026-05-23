@@ -144,6 +144,7 @@ export default function BrowseCourse() {
                             </Button>
                             <Button 
                               style={{ flex: 1, borderRadius: "6px", borderColor: "#531DAB", color: "#531DAB", fontSize: "13px" }}
+                              onClick={() => router.push(`/student/report/${course.id}`)}
                             >
                               Report
                             </Button>

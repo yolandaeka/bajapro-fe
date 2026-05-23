@@ -411,7 +411,7 @@ export default function StudentMaterialPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", paddingBottom: "100px" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", paddingBottom: "24px" }}>
       
       {/* SUCCESS MODAL POPUP */}
       <AnimatePresence>
@@ -422,7 +422,7 @@ export default function StudentMaterialPage() {
             closable={false}
             centered
             width={480}
-            bodyStyle={{ padding: "40px 32px", textAlign: "center", borderRadius: "24px" }}
+            styles={{ body: { padding: "40px 32px", textAlign: "center", borderRadius: "24px" } }}
           >
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "24px" }}>
@@ -547,15 +547,17 @@ export default function StudentMaterialPage() {
                   </div>
 
                   {currentMaterial.url_video ? (
-                    <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", borderRadius: "16px", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", marginBottom: "28px", border: "1px solid #e2e8f0" }}>
-                      <iframe 
-                        src={getYouTubeEmbedUrl(currentMaterial.url_video) || ""}
-                        title="Video Pembelajaran"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-                      />
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: "28px" }}>
+                      <div style={{ position: "relative", width: "100%", maxWidth: "640px", aspectRatio: "16/9", borderRadius: "16px", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid #e2e8f0", backgroundColor: "#000" }}>
+                        <iframe 
+                          src={getYouTubeEmbedUrl(currentMaterial.url_video) || ""}
+                          title="Video Pembelajaran"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
@@ -828,15 +830,15 @@ export default function StudentMaterialPage() {
                 variant="borderless" 
                 style={{ 
                   borderRadius: "20px", 
-                  background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", 
+                  background: "linear-gradient(135deg, #FA8B7C 0%, #FF6B8B 100%)", 
                   color: "#ffffff",
-                  boxShadow: "0 10px 25px rgba(99, 102, 241, 0.2)",
+                  boxShadow: "0 10px 25px rgba(255, 107, 139, 0.2)",
                   marginBottom: "24px"
                 }}
                 styles={{ body: { padding: "24px" } }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                  <ThunderboltOutlined style={{ fontSize: "20px", color: "#FFE58F" }} />
+                  <ThunderboltOutlined style={{ fontSize: "20px", color: "#fff" }} />
                   <Text style={{ fontWeight: 800, color: "#ffffff", fontSize: "16px" }}>Your Progress</Text>
                 </div>
                 
@@ -844,14 +846,27 @@ export default function StudentMaterialPage() {
                   percent={progressPercent} 
                   strokeColor={{
                     "0%": "#ffe58f",
-                    "100%": "#52c41a",
+                    "100%": "#fff",
                   }}
-                  railColor="rgba(255,255,255,0.2)"
+                  railColor="rgba(255,255,255,0.3)"
                   status="active"
                   style={{ marginBottom: "24px" }}
                   format={(p) => <span style={{ color: "#fff", fontWeight: 800 }}>{p}%</span>}
                 />
 
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "12px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
+                    <Text style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Current Badge</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <TrophyOutlined style={{ color: "#FFE58F", fontSize: "16px" }} />
+                      <Text style={{ fontWeight: 800, color: "#fff", fontSize: "14px" }}>{courseProgress?.badge?.name || "Pemula"}</Text>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "12px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
+                    <Text style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Total Score</Text>
+                    <Text style={{ fontWeight: 800, color: "#fff", fontSize: "16px" }}>{courseProgress?.total_score || "0"}</Text>
+                  </div>
+                </div>
 
               </Card>
             </motion.div>
@@ -960,18 +975,16 @@ export default function StudentMaterialPage() {
           )}
         </div>
 
-      {/* STICKY FOOTER NAVIGATION */}
+      {/* SECTION NAVIGATION - inline, not fixed */}
       <div style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 20,
-        background: "rgba(255,255,255,0.98)",
-        backdropFilter: "blur(20px)",
+        marginTop: "24px",
+        background: "#ffffff",
         borderTop: "1px solid #e2e8f0",
-        padding: "0",
-        boxShadow: "0 -4px 24px rgba(0,0,0,0.06)"
+        borderRadius: "16px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        maxWidth: "1440px",
+        margin: "24px auto 0",
+        padding: "0"
       }}>
         {/* Progress Bar at top of footer */}
         <div style={{ width: "100%", height: "3px", background: "#f1f5f9" }}>
@@ -983,7 +996,7 @@ export default function StudentMaterialPage() {
             borderRadius: "0 2px 2px 0"
           }} />
         </div>
-        <div style={{ maxWidth: "1440px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 32px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px" }}>
           <Button 
             icon={<LeftOutlined />} 
             onClick={handlePrevSection}
@@ -1018,13 +1031,13 @@ export default function StudentMaterialPage() {
             disabled={currentIndex === subLessonsSequence.length - 1 && activeView === "practice"}
             style={{ 
               borderRadius: "12px", 
-              fontWeight: 700,
+              fontWeight: 800,
               height: "44px",
               paddingInline: "24px",
-              background: "linear-gradient(135deg, #7c3aed 0%, #531DAB 100%)", 
-              borderColor: "#531DAB", 
-              color: "#fff",
-              boxShadow: "0 4px 12px rgba(83, 29, 171, 0.2)"
+              background: "linear-gradient(135deg, #FFD700 0%, #FDB931 100%)", 
+              borderColor: "#FDB931", 
+              color: "#1F2937",
+              boxShadow: "0 4px 12px rgba(253, 185, 49, 0.3)"
             }}
           >
             {activeView === "material" && activeMaterialIndex === currentMaterials.length - 1 && activeSubLesson?.codeQuestion 

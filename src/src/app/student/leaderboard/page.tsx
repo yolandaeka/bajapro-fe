@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
   } = useLeaderboard();
 
   return (
-    <div style={{ padding: "24px", minHeight: "100vh"}}>
+    <div style={{ minHeight: "100vh"}}>
       <div style={{ 
         display: "flex", 
         justifyContent: "space-between", 
