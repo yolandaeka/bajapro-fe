@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card, Typography, Progress, Spin, Button, Empty, Modal, Avatar } from "antd";
-import { PlayCircleOutlined, BookOutlined, ClockCircleOutlined, TrophyOutlined, RightOutlined, FireFilled } from "@ant-design/icons";
+import { PlayCircleOutlined, BookOutlined, ClockCircleOutlined, TrophyOutlined, RightOutlined, FireFilled, SafetyOutlined } from "@ant-design/icons";
 import { getStudentDashboardApi } from "../api/studentApi";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -71,6 +71,12 @@ export default function StudentDashboard() {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><Spin size="large" /></div>;
   }
 
+  // Formatting for number commas
+  const formatScore = (num: number) => {
+    if (!num) return "0";
+    return num.toLocaleString("id-ID");
+  };
+
   return (
     <>
     <AnimatePresence>
@@ -93,7 +99,7 @@ export default function StudentDashboard() {
               type="primary" 
               size="large" 
               block 
-              style={{ backgroundColor: "#531DAB", borderRadius: "8px", fontWeight: 600 }}
+              style={{ backgroundColor: "#5B21B6", borderRadius: "8px", fontWeight: 600, border: "none" }}
               onClick={() => {
                 setShowWelcomeModal(false);
                 router.push("/student/course");
@@ -110,189 +116,278 @@ export default function StudentDashboard() {
       variants={containerVariants} 
       initial="hidden" 
       animate="visible" 
-      style={{ padding: '0 12px 24px' }}
+      style={{ maxWidth: "1200px", margin: "0 auto" }}
     >
-      <motion.div variants={itemVariants}>
-        <Row justify="space-between" align="middle" style={{ marginBottom: "24px", gap: "16px" }}>
-          <Col xs={24} sm={16}>
-            <Title level={3} style={{ margin: 0, fontWeight: 800 }}>
-              Selamat Datang, {user?.name ? user.name.split(" ")[0] : "Pelajar"}! <span className="wave-animation" role="img" aria-label="wave" style={{ display: "inline-block" }}>👋</span>
-            </Title>
-            <Text style={{ color: "#8c8c8c", fontSize: "14px" }}>Lanjutkan belajar Anda dan raih target hari ini!</Text>
-          </Col>
-        </Row>
+      {/* Title / Greeting */}
+      <motion.div variants={itemVariants} style={{ marginBottom: "28px" }}>
+        <Title level={2} style={{ margin: 0, fontWeight: 800, fontSize: "28px", color: "#1F2937" }}>
+          Selamat Datang, {user?.name ? user.name.split(" ")[0] : "Pelajar"}! <span className="wave-animation" role="img" aria-label="wave" style={{ display: "inline-block" }}>👋</span>
+        </Title>
+        <Text style={{ color: "#6B7280", fontSize: "14px" }}>Lanjutkan belajar Anda dan raih target hari ini!</Text>
       </motion.div>
 
       <Row gutter={[24, 24]}>
-        {/* Kiri */}
+        {/* Left Side: Stats and History */}
         <Col xs={24} lg={16}>
           {/* Stats Row */}
-          <motion.div variants={itemVariants} style={{ marginBottom: "24px" }}>
-            <Row gutter={[16, 16]} align="stretch">
-              <Col xs={24} sm={8} style={{ display: 'flex' }}>
-                <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300 }} style={{ width: '100%' }}>
-                  <Card variant="borderless" style={{ width: '100%', borderRadius: "16px", background: "linear-gradient(145deg, #ffffff, #f0f5ff)", boxShadow: "0 4px 12px rgba(47, 84, 235, 0.05)", height: '100%' }} styles={{ body: { padding: "20px", display: 'flex', flexDirection: 'column', height: '100%' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
-                        <Text type="secondary" style={{ fontSize: "13px", fontWeight: 600, color: "#595959" }}>Enrolled Course</Text>
-                        <div style={{ backgroundColor: "#D6E4FF", padding: "8px", borderRadius: "10px", color: "#2F54EB", display: 'flex' }}>
-                            <BookOutlined />
-                        </div>
+          <motion.div variants={itemVariants} style={{ marginBottom: "28px" }}>
+            <Row gutter={[16, 16]}>
+              {/* Enrolled Course */}
+              <Col xs={24} sm={8}>
+                <Card 
+                  variant="borderless" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    backgroundColor: "#EDE9FE", 
+                    boxShadow: "0 4px 12px rgba(91, 33, 182, 0.03)", 
+                    height: '100%' 
+                  }} 
+                  styles={{ body: { padding: "20px" } }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
+                    <Text style={{ fontSize: "13px", fontWeight: 700, color: "#5B21B6" }}>Enrolled Course</Text>
+                    <div style={{ backgroundColor: "#FFFFFF", padding: "8px", borderRadius: "10px", color: "#5B21B6", display: 'flex' }}>
+                      <BookOutlined style={{ fontSize: "16px" }} />
                     </div>
-                    <Title level={3} style={{ margin: "auto 0 0", fontWeight: 800, color: "#1D39C4" }}>
-                      {data?.enrolledCount || 0} <span style={{ fontSize: "12px", fontWeight: 500, color: "#8c8c8c" }}>active</span>
-                    </Title>
-                  </Card>
-                </motion.div>
+                  </div>
+                  <Title level={3} style={{ margin: 0, fontWeight: 800, color: "#5B21B6" }}>
+                    {data?.enrolledCount || 0} <span style={{ fontSize: "12px", fontWeight: 500, color: "#6B7280" }}>active</span>
+                  </Title>
+                </Card>
               </Col>
-              <Col xs={24} sm={8} style={{ display: 'flex' }}>
-                <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300 }} style={{ width: '100%' }}>
-                  <Card variant="borderless" style={{ width: '100%', borderRadius: "16px", background: "linear-gradient(145deg, #ffffff, #fff0f6)", boxShadow: "0 4px 12px rgba(235, 47, 150, 0.05)", height: '100%' }} styles={{ body: { padding: "20px", display: 'flex', flexDirection: 'column', height: '100%' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
-                        <Text type="secondary" style={{ fontSize: "13px", fontWeight: 600, color: "#595959" }}>Materials Done</Text>
-                        <div style={{ backgroundColor: "#FFD8BF", padding: "8px", borderRadius: "10px", color: "#FA541C", display: 'flex' }}>
-                            <FireFilled />
-                        </div>
+
+              {/* Materials Done */}
+              <Col xs={24} sm={8}>
+                <Card 
+                  variant="borderless" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    backgroundColor: "#D1FAE5", 
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.03)", 
+                    height: '100%' 
+                  }} 
+                  styles={{ body: { padding: "20px" } }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
+                    <Text style={{ fontSize: "13px", fontWeight: 700, color: "#065F46" }}>Materials Done</Text>
+                    <div style={{ backgroundColor: "#FFFFFF", padding: "8px", borderRadius: "10px", color: "#10B981", display: 'flex' }}>
+                      <FireFilled style={{ fontSize: "16px" }} />
                     </div>
-                    <Title level={3} style={{ margin: "auto 0 0", fontWeight: 800, color: "#C41D7F" }}>
-                      {data?.materialsCompleted || 0} <span style={{ fontSize: "13px", fontWeight: 500, color: "#8c8c8c" }}>/ {data?.materialsTotal || 0}</span>
-                    </Title>
-                  </Card>
-                </motion.div>
+                  </div>
+                  <Title level={3} style={{ margin: 0, fontWeight: 800, color: "#065F46" }}>
+                    {data?.materialsCompleted || 0} <span style={{ fontSize: "13px", fontWeight: 500, color: "#6B7280" }}>/ {data?.materialsTotal || 0}</span>
+                  </Title>
+                </Card>
               </Col>
-              <Col xs={24} sm={8} style={{ display: 'flex' }}>
-                <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300 }} style={{ width: '100%' }}>
-                  <Card variant="borderless" style={{ width: '100%', borderRadius: "16px", background: "linear-gradient(145deg, #ffffff, #e6fffb)", boxShadow: "0 4px 12px rgba(19, 194, 194, 0.05)", height: '100%' }} styles={{ body: { padding: "20px", display: 'flex', flexDirection: 'column', height: '100%' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
-                        <Text type="secondary" style={{ fontSize: "13px", fontWeight: 600, color: "#595959" }}>Overall Progress</Text>
-                        <div style={{ backgroundColor: "#B5F5EC", padding: "8px", borderRadius: "10px", color: "#08979C", display: 'flex' }}>
-                            <ClockCircleOutlined />
-                        </div>
+
+              {/* Overall Progress */}
+              <Col xs={24} sm={8}>
+                <Card 
+                  variant="borderless" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    backgroundColor: "#E0F2FE", 
+                    boxShadow: "0 4px 12px rgba(3, 105, 161, 0.03)", 
+                    height: '100%' 
+                  }} 
+                  styles={{ body: { padding: "20px" } }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "16px" }}>
+                    <Text style={{ fontSize: "13px", fontWeight: 700, color: "#0369A1" }}>Overall Progress</Text>
+                    <div style={{ backgroundColor: "#FFFFFF", padding: "8px", borderRadius: "10px", color: "#0284C7", display: 'flex' }}>
+                      <ClockCircleOutlined style={{ fontSize: "16px" }} />
                     </div>
-                    <div style={{ marginTop: 'auto' }}>
-                        <Progress percent={data?.overallProgress || 0} strokeColor="#13C2C2" railColor="#E6FFFB" style={{ margin: 0 }} />
-                    </div>
-                  </Card>
-                </motion.div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                    <Progress 
+                      percent={data?.overallProgress || 0} 
+                      strokeColor="#0284C7" 
+                      railColor="#E5E7EB" 
+                      showInfo={false} 
+                      style={{ margin: 0, flex: 1 }} 
+                    />
+                    <Text style={{ fontSize: "14px", fontWeight: 800, color: "#0369A1" }}>
+                      {data?.overallProgress || 0}%
+                    </Text>
+                  </div>
+                </Card>
               </Col>
             </Row>
           </motion.div>
 
-          {/* Lesson History */}
+          {/* Lesson History Section */}
           <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', marginBottom: "16px", gap: "8px" }}>
-            <PlayCircleOutlined style={{ color: "#531DAB", fontSize: "18px" }} />
-            <Title level={4} style={{ margin: 0, fontWeight: 700 }}>Lesson History</Title>
+            <PlayCircleOutlined style={{ color: "#5B21B6", fontSize: "18px" }} />
+            <Title level={4} style={{ margin: 0, fontWeight: 700, color: "#1F2937" }}>Lesson History</Title>
           </motion.div>
           
           <motion.div variants={containerVariants}>
             {data?.lessonHistory?.length > 0 ? (
-                data.lessonHistory.map((history: any) => (
+                data.lessonHistory.map((history: any) => {
+                  const progressPct = history.total_score > 100 ? 100 : history.total_score || 0;
+                  return (
                     <motion.div variants={itemVariants} key={history.id} whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400 }}>
-                      <Card variant="borderless" style={{ borderRadius: "16px", marginBottom: "16px", boxShadow: "0 4px 16px rgba(0,0,0,0.03)", border: "1px solid #f0f0f0" }} styles={{ body: { padding: "20px" } }}>
-                          <Row gutter={24} align="middle">
-                              <Col xs={24} sm={8}>
-                                  {history.course?.img_thumbnail ? (
-                                     <div style={{ 
-                                        width: '100%', 
-                                        height: '120px', 
-                                        borderRadius: '12px', 
-                                        background: `url(/assets/courses/${history.course.img_thumbnail}) center/cover no-repeat`,
-                                        backgroundColor: '#f5f5f5' 
-                                     }} />
-                                  ) : (
-                                     <div style={{ width: '100%', height: '120px', background: 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)', borderRadius: '12px' }} />
-                                  )}
-                              </Col>
-                              <Col xs={24} sm={16} style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
-                                  <div>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                                          <span style={{ background: '#FFF7E6', color: '#FAAD14', padding: '2px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700 }}>COURSE</span>
-                                      </div>
-                                      <Title level={4} style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#262626" }}>{history.course?.course_name}</Title>
-                                      <Paragraph type="secondary" style={{ display: 'block', margin: '0 0 16px 0', fontSize: "13px", lineHeight: "1.5" }} ellipsis={{ rows: 2 }}>{history.course?.description}</Paragraph>
-                                  </div>
-                                  
-                                  <div>
-                                      <Progress percent={history.total_score > 100 ? 100 : history.total_score || 0} strokeColor="#531DAB" size="small" style={{ marginBottom: "16px" }} />
-                                      <Button 
-                                        type="primary" 
-                                        onClick={() => router.push(`/student/level/${history.course_id}`)}
-                                      >
-                                          Lanjutkan Belajar
-                                      </Button>
-                                  </div>
-                              </Col>
-                          </Row>
+                      <Card 
+                        variant="borderless" 
+                        style={{ 
+                          borderRadius: "16px", 
+                          marginBottom: "16px", 
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.02)", 
+                          border: "1px solid #E5E7EB",
+                          backgroundColor: "#FFFFFF"
+                        }} 
+                        styles={{ body: { padding: "20px" } }}
+                      >
+                        <Row gutter={24} align="middle">
+                          <Col xs={24} sm={6}>
+                            {history.course?.img_thumbnail ? (
+                              <div style={{ 
+                                 width: '100%', 
+                                 height: '110px', 
+                                 borderRadius: '12px', 
+                                 background: `url(/assets/courses/${history.course.img_thumbnail}) center/cover no-repeat`,
+                                 backgroundColor: '#F3F4F6' 
+                              }} />
+                            ) : (
+                              <div style={{ 
+                                width: '100%', 
+                                height: '110px', 
+                                background: 'linear-gradient(135deg, #FFB75E 0%, #FF6B8B 100%)', 
+                                borderRadius: '12px' 
+                              }} />
+                            )}
+                          </Col>
+                          <Col xs={24} sm={18}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+                              <div style={{ flex: 1, minWidth: "200px" }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                  <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>
+                                    Intermediate
+                                  </span>
+                                </div>
+                                <Title level={4} style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "#1F2937" }}>
+                                  {history.course?.course_name || "Java Programming"}
+                                </Title>
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", maxWidth: "300px", marginTop: "12px" }}>
+                                  <Progress 
+                                    percent={progressPct} 
+                                    strokeColor="#5B21B6" 
+                                    railColor="#E5E7EB" 
+                                    showInfo={false} 
+                                    size="small" 
+                                    style={{ margin: 0, flex: 1 }} 
+                                  />
+                                  <Text style={{ fontSize: "12px", fontWeight: 700, color: "#6B7280" }}>
+                                    {progressPct}% Progress
+                                  </Text>
+                                </div>
+                              </div>
+                              
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                <Button 
+                                  type="primary" 
+                                  size="large"
+                                  style={{
+                                    backgroundColor: "#5B21B6", 
+                                    borderRadius: "8px", 
+                                    fontWeight: 600, 
+                                    border: "none",
+                                    padding: "0 24px",
+                                    height: "40px"
+                                  }}
+                                  onClick={() => router.push(`/student/level/${history.course_id}`)}
+                                >
+                                  Lanjutkan
+                                </Button>
+                              </div>
+                            </div>
+                          </Col>
+                        </Row>
                       </Card>
                     </motion.div>
-                ))
+                  );
+                })
             ) : (
                 <Empty description="No lesson history" image={Empty.PRESENTED_IMAGE_SIMPLE} />
             )}
           </motion.div>
         </Col>
 
-        {/* Kanan */}
+        {/* Right Side: Achievement and Leaderboard */}
         <Col xs={24} lg={8}>
-          {/* Achievement */}
+          {/* Achievement Card */}
           <motion.div variants={itemVariants} whileHover={{ y: -4 }} style={{ marginBottom: "24px" }}>
             <Card 
               variant="borderless" 
               style={{ 
-                  borderRadius: "16px", 
-                  background: "linear-gradient(135deg, #FFB75E 0%, #FF6B8B 100%)", 
-                  color: "#fff",
-                  boxShadow: "0 8px 24px rgba(255, 107, 139, 0.3)",
+                borderRadius: "16px", 
+                background: "linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)", 
+                color: "#fff",
+                boxShadow: "0 8px 24px rgba(245, 158, 11, 0.25)",
               }}
               styles={{ body: { padding: "24px" } }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                  <motion.div animate={{ rotate: [0, -10, 10, -10, 10, 0] }} transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}>
-                    <div style={{ background: "rgba(255,255,255,0.2)", padding: "12px", borderRadius: "50%", display: "flex" }}>
-                        <TrophyOutlined style={{ fontSize: "28px", color: "#FFE58F" }} />
-                    </div>
-                  </motion.div>
-                  <div>
-                    <Text style={{ fontWeight: 700, fontSize: "18px", color: "#fff", display: "block" }}>Achievement</Text>
-                    <Text style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)" }}>Kamu luar biasa! Pertahankan.</Text>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <motion.div animate={{ rotate: [0, -10, 10, -10, 10, 0] }} transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}>
+                  <div style={{ background: "rgba(255,255,255,0.2)", padding: "10px", borderRadius: "50%", display: "flex" }}>
+                    <TrophyOutlined style={{ fontSize: "24px", color: "#FFE58F" }} />
                   </div>
+                </motion.div>
+                <div>
+                  <Text style={{ fontWeight: 800, fontSize: "16px", color: "#fff", display: "block" }}>Achievement</Text>
+                  <Text style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Kamu luar biasa! Pertahankan.</Text>
                 </div>
-                <Row gutter={8}>
-                    <Col span={8}>
-                        <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px 4px", borderRadius: "12px", textAlign: "center", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-                            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: "10px", display: 'block', marginBottom: '2px', textTransform: "uppercase", letterSpacing: "0.5px" }}>Badge</Text>
-                            <Text style={{ color: "#fff", fontWeight: 800, fontSize: "12px" }}>{data?.achievement?.badge || "-"}</Text>
-                        </div>
-                    </Col>
-                    <Col span={8}>
-                        <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px 4px", borderRadius: "12px", textAlign: "center", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-                            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: "10px", display: 'block', marginBottom: '2px', textTransform: "uppercase", letterSpacing: "0.5px" }}>Rank</Text>
-                            <Text style={{ color: "#fff", fontWeight: 800, fontSize: "13px" }}>{data?.achievement?.rank || "-"}</Text>
-                        </div>
-                    </Col>
-                    <Col span={8}>
-                        <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px 4px", borderRadius: "12px", textAlign: "center", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-                            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: "10px", display: 'block', marginBottom: '2px', textTransform: "uppercase", letterSpacing: "0.5px" }}>Score</Text>
-                            <Text style={{ color: "#fff", fontWeight: 800, fontSize: "13px" }}>{data?.achievement?.totalScore || "0"}</Text>
-                        </div>
-                    </Col>
-                </Row>
+              </div>
+
+              {/* Badge Display */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(255,255,255,0.1)", padding: "14px 18px", borderRadius: "14px", marginBottom: "20px", border: "1px solid rgba(255,255,255,0.15)" }}>
+                <div>
+                  <Text style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", display: "block", textTransform: "uppercase" }}>Badge</Text>
+                  <Text style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF" }}>
+                    {data?.achievement?.badge || "Warrior"}
+                  </Text>
+                </div>
+                {/* Simulated Badge Icon */}
+                <div style={{ width: "42px", height: "42px", background: "rgba(255,255,255,0.2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #FFE58F" }}>
+                  <SafetyOutlined style={{ fontSize: "20px", color: "#FFE58F" }} />
+                </div>
+              </div>
+
+              <Row gutter={12}>
+                <Col span={12}>
+                  <div style={{ background: "rgba(255,255,255,0.15)", padding: "10px 4px", borderRadius: "12px", textAlign: "center", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "10px", display: 'block', marginBottom: '2px', textTransform: "uppercase", letterSpacing: "0.5px" }}>Rank</Text>
+                    <Text style={{ color: "#fff", fontWeight: 800, fontSize: "15px" }}>
+                      {data?.achievement?.rank || "10"}
+                    </Text>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ background: "rgba(255,255,255,0.15)", padding: "10px 4px", borderRadius: "12px", textAlign: "center", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "10px", display: 'block', marginBottom: '2px', textTransform: "uppercase", letterSpacing: "0.5px" }}>Score</Text>
+                    <Text style={{ color: "#fff", fontWeight: 800, fontSize: "15px" }}>
+                      {formatScore(data?.achievement?.totalScore || 14250)}
+                    </Text>
+                  </div>
+                </Col>
+              </Row>
             </Card>
           </motion.div>
 
-          {/* Top 5 Leaderboard */}
+          {/* Leaderboard Card */}
           <motion.div variants={itemVariants}>
             <Card 
               variant="borderless" 
-              style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}
-              styles={{ body: { padding: "16px" } }}
+              style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", border: "1px solid #E5E7EB" }}
+              styles={{ body: { padding: "20px" } }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <TrophyOutlined style={{ color: "#FAAD14", fontSize: "18px" }} />
-                <Title level={5} style={{ margin: 0, fontWeight: 700 }}>Top 5 Leaderboard</Title>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: "18px" }}>
+                <TrophyOutlined style={{ color: "#F59E0B", fontSize: "18px" }} />
+                <Title level={5} style={{ margin: 0, fontWeight: 700, color: "#1F2937" }}>Leaderboard</Title>
               </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {data?.top5Leaderboard && data.top5Leaderboard.length > 0 ? (
-                  data.top5Leaderboard.map((item: any, index: number) => {
+                  data.top5Leaderboard.slice(0, 3).map((item: any, index: number) => {
                     const getInitials = (name: string) => {
                       if (!name) return "";
                       const parts = name.trim().split(" ");
@@ -300,35 +395,54 @@ export default function StudentDashboard() {
                       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
                     };
                     const isMe = item.id === user.id;
+                    const trophyColors = ["#F59E0B", "#9CA3AF", "#D97706"];
                     return (
-                      <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMe ? "8px" : "8px 0", borderBottom: index === 4 ? "none" : "1px solid #f0f0f0", backgroundColor: isMe ? '#F0F5FF' : 'transparent', borderRadius: isMe ? '8px' : '0', transition: 'all 0.3s' }}>
+                      <div 
+                        key={item.id} 
+                        style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "space-between", 
+                          padding: "8px 12px",
+                          borderRadius: '12px',
+                          border: isMe ? '1px solid #5B21B630' : '1px solid #F3F4F6',
+                          backgroundColor: isMe ? '#EDE9FE40' : '#FFFFFF',
+                          transition: 'all 0.3s' 
+                        }}
+                      >
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <div style={{ position: "relative" }}>
-                                <Avatar size="default" style={{ backgroundColor: isMe ? '#531DAB' : '#FAAD14', color: '#fff', fontWeight: 'bold' }}>{getInitials(item.name)}</Avatar>
-                                {index < 3 && (
-                                    <div style={{ 
-                                        position: "absolute", top: -6, right: -6, 
-                                        background: index === 0 ? "linear-gradient(135deg, #FFD700 0%, #FDB931 100%)" : index === 1 ? "linear-gradient(135deg, #E2E2E2 0%, #9F9F9F 100%)" : "linear-gradient(135deg, #FFB75E 0%, #ED8F03 100%)",
-                                        color: "#fff", borderRadius: "50%", width: "16px", height: "16px", 
-                                        display: "flex", justifyContent: "center", alignItems: "center", fontSize: "9px", fontWeight: "bold",
-                                        boxShadow: "0 2px 4px rgba(0,0,0,0.15)", border: "1px solid #fff", zIndex: 2
-                                    }}>
-                                        {index + 1}
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <Text style={{ fontWeight: 600, fontSize: "13px", display: "block", color: isMe ? '#531DAB' : '#1F2937', marginBottom: '-2px' }}>{item.name} {isMe && <span style={{ fontSize: '10px', background: '#D6E4FF', color: '#1D39C4', padding: '2px 6px', borderRadius: '6px', marginLeft: 4 }}>You</span>}</Text>
-                                <Text type="secondary" style={{ fontSize: "11px" }}>Total Score</Text>
-                            </div>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "22px", fontWeight: 800, color: trophyColors[index] || "#6B7280" }}>
+                            {index + 1}
+                          </div>
+                          <Avatar size="default" style={{ backgroundColor: isMe ? '#5B21B6' : '#F59E0B', color: '#fff', fontWeight: 'bold' }}>
+                            {getInitials(item.name)}
+                          </Avatar>
+                          <div>
+                            <Text style={{ fontWeight: 700, fontSize: "13px", display: "block", color: "#1F2937" }}>
+                              {item.name}
+                            </Text>
+                          </div>
                         </div>
-                        <div style={{ fontWeight: 800, color: "#531DAB", fontSize: "14px" }}>{item.score}</div>
+                        <div style={{ fontWeight: 800, color: "#5B21B6", fontSize: "14px" }}>
+                          {formatScore(item.score)}
+                        </div>
                       </div>
                     );
                   })
                 ) : (
-                  <Empty description="Belum ada data leaderboard" />
+                  <Empty description="Belum ada data leaderboard" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 )}
+              </div>
+
+              {/* View Leaderboard Link */}
+              <div style={{ textAlign: "center", marginTop: "18px", borderTop: "1px solid #F3F4F6", paddingTop: "14px" }}>
+                <Button 
+                  type="link" 
+                  onClick={() => router.push("/student/leaderboard")} 
+                  style={{ color: "#5B21B6", fontWeight: 700, fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                >
+                  See Leaderboard <RightOutlined style={{ fontSize: "10px" }} />
+                </Button>
               </div>
             </Card>
           </motion.div>

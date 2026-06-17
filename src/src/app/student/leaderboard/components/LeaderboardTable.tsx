@@ -106,17 +106,13 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, loadin
 
   return (
     <div style={{ backgroundColor: "white", padding: 16, borderRadius: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center",
-        marginBottom: 24,
-      }}>
-        <Text strong style={{ fontSize: '16px', color: '#374151' }}>Other Rankings</Text>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <Text strong style={{ fontSize: '16px', color: '#374151' }}>Other Rankings 👥</Text>
         <Input 
           placeholder="Cari nama siswa..." 
           prefix={<SearchOutlined style={{ color: '#9CA3AF' }} />} 
-          style={{ width: 280, borderRadius: 12, padding: '8px 16px' }} 
+          className="w-full sm:w-72"
+          style={{ borderRadius: 12, padding: '8px 16px' }} 
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />

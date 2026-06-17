@@ -13,12 +13,6 @@ const StudentFooter: React.FC = () => {
         textAlign: 'center',
         background: '#ffffff',
         padding: '24px 0',
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        width: '100%',
-        zIndex: 1000,
         borderTop: '1px solid #f0f0f0'
       }}
     >

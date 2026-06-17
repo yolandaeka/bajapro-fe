@@ -1,7 +1,7 @@
 import { BadgeData, BadgeFormData } from "../types";
 
 // Ambil alamat URL dari file .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const USE_REAL_API = true;
 

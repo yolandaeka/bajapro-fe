@@ -5,6 +5,7 @@ import { ConfigProvider } from 'antd';
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { App } from 'antd';
+import Script from 'next/script';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ConfigProvider theme={{ token: { colorPrimary: '#531DAB', fontFamily: poppins.style.fontFamily || 'sans-serif' } }}>
             <App>
             {children}
-              </App>
+            </App>
+            {process.env.NODE_ENV === 'development' && (
+              <Script src="/figma-capture.js" strategy="afterInteractive" />
+            )}
           </ConfigProvider>
         
         </AntdRegistry>

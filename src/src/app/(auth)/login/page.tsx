@@ -25,7 +25,7 @@ export default function LoginPage() {
   const handleLogin = async (values: LoginValues) => {
     setLoading(true);
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${BASE_URL}/users?email=${encodeURIComponent(values.email.toLowerCase())}`, { cache: 'no-store' });
       const data = await res.json();
       

@@ -29,7 +29,7 @@ export default function RegisterPage() {
   const handleRegister = async (values: RegisterValues) => {
     setLoading(true);
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
       
       // 1. Cek apakah Permission 'approval.active' sedang aktif di database
       let isApprovalNeeded = true;

@@ -24,7 +24,7 @@ export default function WaitingApprovalPage() {
     setLoading(true);
     setStatusMessage(null);
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
       // Gunakan email karena email pasti unik
       const response = await fetch(`${BASE_URL}/users?email=${encodeURIComponent(searchQuery)}&role_id=2`);
       if (response.ok) {

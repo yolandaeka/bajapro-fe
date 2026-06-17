@@ -1,7 +1,7 @@
 import {Permission } from "../types";
 import {RoleData} from "@/src/app/(dashboard)/(master)/roles/types"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = "/api/permission";
 const USE_REAL_API = true; 
 
 const handleFetch = async (url: string, options?: RequestInit) => {

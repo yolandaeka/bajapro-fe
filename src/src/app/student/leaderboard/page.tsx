@@ -10,6 +10,7 @@ const { Title, Text } = Typography;
 
 export default function LeaderboardPage() {
   const [loggedInUserId, setLoggedInUserId] = useState<number | undefined>();
+  const [studentName, setStudentName] = useState<string>("Pelajar");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -18,6 +19,7 @@ export default function LeaderboardPage() {
         try {
           const userObj = JSON.parse(lsUser);
           setLoggedInUserId(Number(userObj.id));
+          setStudentName(userObj.name || "Pelajar");
         } catch (e) {
           console.error(e);
         }
@@ -35,58 +37,92 @@ export default function LeaderboardPage() {
   } = useLeaderboard();
 
   return (
-    <div style={{ minHeight: "100vh"}}>
+    <div style={{ minHeight: "100vh", maxWidth: "1200px", margin: "0 auto" }}>
+      {/* Header section with heading */}
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0, fontWeight: 800, fontSize: "32px", color: "#5B21B6", display: 'flex', alignItems: 'center', gap: '8px' }}>
+          Leaderboard 🏆
+        </Title>
+        <Text style={{ fontSize: "14px", color: "#4B5563" }}>
+          In this page, you will see your position and overall rankings among other students.
+        </Text>
+      </div>
+
+      {/* Motivation Banner */}
       <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
+        backgroundColor: "#CCFBF1", 
+        color: "#0F766E", 
+        padding: "12px 20px", 
+        borderRadius: "9999px", 
         marginBottom: 32,
-        flexWrap: "wrap",
-        gap: 16
+        fontWeight: 600,
+        fontSize: "13px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px"
       }}>
-        
-        {/* Kiri: Judul */}
-        <div style={{ flex: 1, minWidth: "200px" }}>
-          <Title level={3} style={{ margin: 0, fontWeight: "bold" }}>Leaderboard</Title>
-          <Text type="secondary" style={{ fontSize: 14 }}>In this page, you will see your position</Text>
+        🎉 You're doing great, {studentName}! The top is within reach!
+      </div>
+
+      {/* Rankings Toggle Bar & Filter */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
+        {/* Toggle */}
+        <div style={{ backgroundColor: "#ffffff", padding: "6px", borderRadius: "14px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
+          <style>{`
+            .ranking-toggle-btn .ant-radio-button-wrapper-checked {
+              background-color: #5B21B6 !important;
+              border-color: #5B21B6 !important;
+              color: #FFFFFF !important;
+              font-weight: 700 !important;
+            }
+            .ranking-toggle-btn .ant-radio-button-wrapper {
+              border: none !important;
+              background-color: transparent !important;
+              color: #4B5563 !important;
+              font-weight: 600;
+              height: 38px;
+              line-height: 38px;
+              border-radius: 10px !important;
+              padding: 0 24px;
+              transition: all 0.3s;
+            }
+            .ranking-toggle-btn .ant-radio-button-wrapper:not(:first-child)::before {
+              display: none !important;
+            }
+            .ranking-toggle-btn .ant-radio-button-wrapper:hover {
+              color: #5B21B6 !important;
+            }
+          `}</style>
+          <Radio.Group 
+            className="ranking-toggle-btn"
+            optionType="button" 
+            buttonStyle="solid"
+            value={rankingType}
+            onChange={(e) => {
+              setRankingType(e.target.value);
+            }}
+          >
+            <Radio.Button value="global">Global Rankings</Radio.Button>
+            <Radio.Button value="class">My Class</Radio.Button>
+          </Radio.Group>
         </div>
 
-        {/* Tengah: Toggle */}
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", minWidth: "200px" }}>
-          <div style={{ backgroundColor: "#e6e6e6", padding: 4, borderRadius: 8 }}>
-            <Radio.Group 
-              optionType="button" 
-              buttonStyle="solid"
-              value={rankingType}
-              onChange={(e) => {
-                setRankingType(e.target.value);
-              }}
-              style={{
-                borderRadius: 8,
-              }}
-            >
-              <Radio.Button value="global" style={{ borderRadius: "8px 0 0 8px", border: "none", boxShadow: "none" }}>Global Rankings</Radio.Button>
-              <Radio.Button value="class" style={{ borderRadius: "0 8px 8px 0", border: "none", boxShadow: "none" }}>My Class</Radio.Button>
-            </Radio.Group>
-          </div>
-        </div>
-
-        {/* Kanan: Filter Course & Class */}
-        <div style={{  display: "flex", gap: 16, alignItems: "flex-end", justifyContent: "flex-end", minWidth: "250px", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <Text strong>Filter Course <span style={{ color: "red" }}>*</span></Text>
-            <Select
-              style={{ width: 200 }}
-              placeholder="Pilih Course"
-              value={selectedCourse}
-              onChange={setSelectedCourse}
-              options={courses.map(c => ({ label: c.course_name, value: c.id }))}
-            />
-          </div>
-
+        {/* Filter Course */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <Text style={{ fontSize: "11px", fontWeight: 700, color: "#4B5563", textTransform: 'uppercase' }}>
+            Filter Course <span style={{ color: "red" }}>*</span>
+          </Text>
+          <Select
+            style={{ width: 240, height: "42px" }}
+            placeholder="Pilih Course"
+            value={selectedCourse}
+            onChange={setSelectedCourse}
+            options={courses.map(c => ({ label: c.course_name, value: c.id }))}
+          />
         </div>
       </div>
 
+      {/* Podium and Table */}
       <div style={{ marginTop: 24 }}>
         {studentsRank.length > 0 && (
           <Top3Cards data={studentsRank} loggedInUserId={loggedInUserId} />

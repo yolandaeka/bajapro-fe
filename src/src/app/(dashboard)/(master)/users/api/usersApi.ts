@@ -1,6 +1,6 @@
 import { UserData, UserFormData } from "../types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const USE_REAL_API = true;
 
 const handleFetch = async (url: string, options?: RequestInit) => {

@@ -24,7 +24,8 @@ import {
   ThunderboltOutlined,
   LeftOutlined,
   RightOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  SendOutlined
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
@@ -410,8 +411,69 @@ export default function StudentMaterialPage() {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><Spin size="large" /></div>;
   }
 
+  const renderStepIndicator = () => {
+    let currentStep = 0;
+    if (activeView === "practice") {
+      currentStep = 2;
+    } else if (currentMaterial) {
+      if (currentMaterial.url_video) {
+        currentStep = 0;
+      } else {
+        currentStep = 1;
+      }
+    }
+
+    const steps = [
+      { label: "Video Tutorial", type: "video" },
+      { label: "Reading Material", type: "reading" },
+      { label: "Practice Quiz", type: "practice" }
+    ];
+
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "32px", width: "100%" }}>
+        {steps.map((step, idx) => {
+          const isCompleted = idx < currentStep;
+          const isActive = idx === currentStep;
+          
+          return (
+            <React.Fragment key={idx}>
+              {/* Step node */}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {isCompleted ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "#10b981", color: "#fff", fontSize: "14px" }}>
+                    <CheckCircleFilled style={{ color: "#fff", fontSize: "14px" }} />
+                  </div>
+                ) : isActive ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "24px", height: "24px", borderRadius: "50%", border: "2px solid #7c3aed", color: "#7c3aed", fontWeight: "bold", fontSize: "12px" }}>
+                    {idx + 1}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "24px", height: "24px", borderRadius: "50%", border: "2px solid #cbd5e1", color: "#94a3b8", fontWeight: "bold", fontSize: "12px" }}>
+                    {idx + 1}
+                  </div>
+                )}
+                <Text style={{ 
+                  fontWeight: isActive ? 700 : 500, 
+                  color: isActive ? "#7c3aed" : isCompleted ? "#10b981" : "#94a3b8",
+                  fontSize: "13px"
+                }}>
+                  {step.label}
+                </Text>
+              </div>
+
+              {/* Connecting line */}
+              {idx < steps.length - 1 && (
+                <div style={{ flex: "0 1 80px", height: "2px", backgroundColor: idx < currentStep ? "#10b981" : "#e2e8f0" }} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f8fafc", paddingBottom: "24px" }}>
+    <div style={{ display: "flex", width: "100%", minHeight: "calc(100vh - 72px)", position: "relative", backgroundColor: "#f8fafc" }}>
       
       {/* SUCCESS MODAL POPUP */}
       <AnimatePresence>
@@ -446,8 +508,6 @@ export default function StudentMaterialPage() {
                 Kamu telah menyelesaikan materi <span style={{ fontWeight: 700, color: "#531DAB" }}>{activeSubLesson?.title}</span> dengan nilai sempurna!
               </Paragraph>
 
-
-
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Button 
                   type="primary" 
@@ -480,574 +540,592 @@ export default function StudentMaterialPage() {
         )}
       </AnimatePresence>
 
-      {/* TOP HEADER */}
-      <div style={{ backgroundColor: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "0", marginBottom: "24px", position: "sticky", top: 0, zIndex: 10, backdropFilter: "blur(12px)", background: "rgba(255,255,255,0.97)" }}>
-        {/* Gradient accent line */}
-        <div style={{ width: "100%", height: "3px", background: "linear-gradient(90deg, #7c3aed, #4f46e5, #06b6d4)" }} />
-        <div style={{ padding: "12px 24px", maxWidth: "1440px", margin: "0 auto" }}>
-          <Row align="middle" justify="space-between">
-            <Col>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {/* Breadcrumb */}
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
-                  <Text style={{ color: "#94a3b8", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    {activeLesson?.title || "Lesson"}
-                  </Text>
-                  <span style={{ color: "#cbd5e1", fontSize: "11px" }}>›</span>
-                  <Text style={{ color: "#7c3aed", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    {activeView === "practice" ? "Latihan" : `Section ${activeMaterialIndex + 1}`}
-                  </Text>
-                </div>
-                <Text style={{ fontWeight: 800, color: "#1e293b", fontSize: "18px", lineHeight: 1.2 }}>
-                  {activeSubLesson?.title || "Sub Lesson"}
-                </Text>
+      {/* FLOATING SIDEBAR TOGGLE BUTTON (WHEN COLLAPSED) */}
+      {!sidebarOpen && (
+        <div style={{ position: "fixed", left: "16px", top: "92px", zIndex: 1000 }}>
+          <Button 
+            type="primary"
+            shape="circle"
+            icon={<RightOutlined />}
+            onClick={() => setSidebarOpen(true)}
+            style={{
+              backgroundColor: "#F59E0B",
+              borderColor: "#F59E0B",
+              color: "#ffffff",
+              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.4)",
+              width: "36px",
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          />
+        </div>
+      )}
+
+      {/* LEFT COLLAPSIBLE SIDEBAR */}
+      {activeView !== "practice" && (
+      <div style={{ 
+        width: sidebarOpen ? "320px" : "0px",
+        minWidth: sidebarOpen ? "320px" : "0px",
+        transition: "all 0.3s ease",
+        overflow: "hidden",
+        borderRight: sidebarOpen ? "1px solid #e2e8f0" : "none",
+        backgroundColor: "#ffffff",
+        position: "sticky",
+        top: "72px",
+        height: "calc(100vh - 72px)",
+        display: "flex",
+        flexDirection: "column",
+        zIndex: 900
+      }}>
+        {/* Sidebar Header */}
+        <div style={{ padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #f1f5f9" }}>
+          <div>
+            <Text style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600, display: "block" }}>Course</Text>
+            <Title level={3} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>{activeLesson?.title || "Java"}</Title>
+          </div>
+          <Button 
+            type="primary"
+            shape="circle"
+            icon={<LeftOutlined />}
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              backgroundColor: "#F59E0B",
+              borderColor: "#F59E0B",
+              color: "#ffffff",
+              boxShadow: "0 2px 8px rgba(245, 158, 11, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "28px",
+              height: "28px"
+            }}
+          />
+        </div>
+
+        {/* Sidebar Scrollable Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "24px", scrollbarWidth: "none", minHeight: 0 }}>
+          
+          {/* PROGRESS CARD */}
+          <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
+            <Card 
+              variant="borderless" 
+              style={{ 
+                borderRadius: "20px", 
+                background: "linear-gradient(135deg, #FA8B7C 0%, #FF6B8B 100%)", 
+                color: "#ffffff",
+                boxShadow: "0 10px 25px rgba(255, 107, 139, 0.2)"
+              }}
+              styles={{ body: { padding: "20px" } }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                <ThunderboltOutlined style={{ fontSize: "16px", color: "#fff" }} />
+                <Text style={{ fontWeight: 800, color: "#ffffff", fontSize: "14px" }}>Your Progress</Text>
               </div>
-            </Col>
-            <Col>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Button 
-                  type="text" 
-                  icon={<ArrowLeftOutlined />} 
-                  onClick={() => router.push(`/student/level/${courseId}`)}
-                  style={{ padding: "6px 20px", fontWeight: 700, color: "#531DAB", borderRadius: "12px", border: "1px solid #e8d5ff", background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)", height: "40px", boxShadow: "0 2px 6px rgba(83, 29, 171, 0.08)" }}
-                >
-                  Kembali ke Level
-                </Button>
-              </motion.div>
-            </Col>
-          </Row>
+              
+              <Progress 
+                percent={progressPercent} 
+                strokeColor="#ffffff"
+                railColor="rgba(255,255,255,0.3)"
+                status="active"
+                style={{ marginBottom: "16px" }}
+                format={(p) => <span style={{ color: "#fff", fontWeight: 800 }}>{p}%</span>}
+              />
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
+                  <Text style={{ fontSize: "9px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Current Badge</Text>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <TrophyOutlined style={{ color: "#FFE58F", fontSize: "12px" }} />
+                    <Text style={{ fontWeight: 800, color: "#fff", fontSize: "12px" }}>{courseProgress?.badge?.name || "Warrior"}</Text>
+                  </div>
+                </div>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
+                  <Text style={{ fontSize: "9px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Total Score</Text>
+                  <Text style={{ fontWeight: 800, color: "#fff", fontSize: "12px" }}>{courseProgress?.total_score || "0"}</Text>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* LIST MATERIAL Section */}
+          <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+              <BookOutlined style={{ color: "#7c3aed", fontSize: "16px" }} />
+              <Title level={5} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>List Material</Title>
+            </div>
+
+            <Collapse 
+              ghost 
+              defaultActiveKey={courseTree.map(l => String(l.id))}
+              expandIconPlacement="end"
+              style={{ padding: 0 }}
+              items={courseTree.map((lesson) => {
+                const allCompleted = lesson.sublessons.every((sl: any) => 
+                  studentProgress.some((p: any) => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed")
+                );
+                const completedCount = lesson.sublessons.filter((sl: any) => 
+                  studentProgress.some((p: any) => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed")
+                ).length;
+
+                return {
+                  key: String(lesson.id),
+                  label: (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                      <Text style={{ fontWeight: 700, color: "#334155", fontSize: "13px" }}>
+                        {lesson.title}
+                      </Text>
+                      {allCompleted ? (
+                        <CheckCircleFilled style={{ color: "#52c41a", fontSize: "14px" }} />
+                      ) : (
+                        <Text style={{ color: "#94a3b8", fontSize: "10px", fontWeight: 600 }}>
+                          {completedCount}/{lesson.sublessons.length}
+                        </Text>
+                      )}
+                    </div>
+                  ),
+                  children: (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", paddingLeft: "4px" }}>
+                      {lesson.sublessons.map((sl: any) => {
+                        const isCompleted = studentProgress.some(p => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed");
+                        const isActive = Number(sl.id) === Number(activeSubLessonId);
+                        const isLocked = isSubLessonLocked(sl.id);
+
+                        return (
+                          <div 
+                            key={sl.id}
+                            onClick={() => !isLocked && handleSelectSubLesson(sl)}
+                            style={{ 
+                              display: "flex", 
+                              alignItems: "center", 
+                              justifyContent: "space-between",
+                              padding: "10px 12px", 
+                              borderRadius: "10px",
+                              cursor: isLocked ? "not-allowed" : "pointer",
+                              transition: "all 0.2s ease",
+                              background: isActive ? "#f5f3ff" : "#ffffff",
+                              border: isActive ? "1px solid #c084fc" : "1px solid transparent",
+                              opacity: isLocked ? 0.6 : 1
+                            }}
+                            className="sublesson-item-hover"
+                          >
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+                              {isCompleted ? (
+                                <CheckCircleFilled style={{ color: "#52c41a", fontSize: "14px" }} />
+                              ) : isActive ? (
+                                <div style={{ width: "14px", height: "14px", borderRadius: "50%", border: "2px solid #7c3aed" }} />
+                              ) : isLocked ? (
+                                <LockOutlined style={{ color: "#94a3b8", fontSize: "14px" }} />
+                              ) : (
+                                <div style={{ width: "14px", height: "14px", borderRadius: "50%", border: "2px solid #cbd5e1" }} />
+                              )}
+                              <Text style={{ 
+                                fontSize: "12px", 
+                                fontWeight: isActive ? 700 : 500, 
+                                color: isActive ? "#5b21b6" : isLocked ? "#94a3b8" : "#475569" 
+                              }}>
+                                {sl.title}
+                              </Text>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )
+                };
+              })}
+            />
+          </motion.div>
+        </div>
+
+        {/* Sidebar Footer */}
+        <div style={{ padding: "16px 24px", borderTop: "1px solid #f1f5f9", backgroundColor: "#ffffff" }}>
+          <Button 
+            type="text" 
+            icon={<ArrowLeftOutlined style={{ color: "#7c3aed" }} />} 
+            onClick={() => router.push(`/student/level/${courseId}`)}
+            style={{ fontWeight: 700, color: "#4b5563", padding: 0 }}
+          >
+            Kembali ke Level
+          </Button>
         </div>
       </div>
+      )}
 
-      <div style={{ maxWidth: "1440px", margin: "0 auto", padding: "0 24px", display: "flex", gap: "32px" }}>
-        {/* MAIN CONTENT */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          
-          {/* LEFT MAIN CONTENT PANEL */}
-            
-            {/* MATERIAL VIEW - loops by content_position */}
-            {activeView === "material" && currentMaterial && (
-              <motion.div key={`mat-${currentMaterial.id}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.35 }}>
-                <Card 
-                  variant="borderless" 
-                  style={{ borderRadius: "20px", boxShadow: "0 4px 24px rgba(0,0,0,0.04)", overflow: "hidden", marginBottom: "24px", border: "1px solid #f1f5f9" }}
-                  styles={{ body: { padding: "28px" } }}
-                >
-                  {/* Section indicator */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ background: "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)", padding: "10px", borderRadius: "12px", color: "#4f46e5", display: "flex" }}>
-                        {currentMaterial.url_video ? <PlayCircleOutlined style={{ fontSize: "20px" }} /> : <BookOutlined style={{ fontSize: "20px" }} />}
-                      </div>
-                      <div>
-                        <Text style={{ color: "#94a3b8", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", display: "block" }}>Section {activeMaterialIndex + 1} of {totalSections}</Text>
-                        <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>{currentMaterial.title || "Materi Pembelajaran"}</Title>
-                      </div>
-                    </div>
-                  </div>
+      {/* RIGHT MAIN CONTENT AREA */}
+      <div style={{ flex: 1, minWidth: 0, padding: "32px 40px", display: "flex", flexDirection: "column", gap: "24px", paddingBottom: "140px" }}>
+        
+        {/* STEP PROGRESS INDICATOR HEADER */}
+        {activeSubLesson && renderStepIndicator()}
 
-                  {currentMaterial.url_video ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: "28px" }}>
-                      <div style={{ position: "relative", width: "100%", maxWidth: "640px", aspectRatio: "16/9", borderRadius: "16px", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid #e2e8f0", backgroundColor: "#000" }}>
-                        <iframe 
-                          src={getYouTubeEmbedUrl(currentMaterial.url_video) || ""}
-                          title="Video Pembelajaran"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
+        {/* MATERIAL VIEW */}
+        {activeView === "material" && currentMaterial && (
+          <motion.div key={`mat-${currentMaterial.id}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <Card 
+              variant="borderless" 
+              style={{ borderRadius: "20px", boxShadow: "0 4px 24px rgba(0,0,0,0.03)", overflow: "hidden", border: "1px solid #f1f5f9" }}
+              styles={{ body: { padding: "32px" } }}
+            >
+              {/* Card Header with Icon & Title */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px", borderBottom: "1px solid #f1f5f9", paddingBottom: "16px" }}>
+                <div style={{ background: "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)", width: "40px", height: "40px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "#7c3aed" }}>
+                  {currentMaterial.url_video ? <PlayCircleOutlined style={{ fontSize: "20px" }} /> : <BookOutlined style={{ fontSize: "20px" }} />}
+                </div>
+                <div>
+                  <Text style={{ color: "#94a3b8", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", display: "block" }}>
+                    Section {activeMaterialIndex + 1} of {totalSections}
+                  </Text>
+                  <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>
+                    {currentMaterial.title || "Materi Pembelajaran"}
+                  </Title>
+                </div>
+              </div>
 
-                  {currentMaterial.materials && (
-                    <div 
-                      className="material-content-body"
-                      style={{ fontSize: "15px", lineHeight: "1.8", color: "#475569" }}
-                      dangerouslySetInnerHTML={{ __html: currentMaterial.materials }}
+              {/* Video Player */}
+              {currentMaterial.url_video && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: "28px" }}>
+                  <div style={{ position: "relative", width: "100%", maxWidth: "800px", aspectRatio: "16/9", borderRadius: "16px", overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.06)", border: "1px solid #e2e8f0", backgroundColor: "#000" }}>
+                    <iframe 
+                      src={getYouTubeEmbedUrl(currentMaterial.url_video) || ""}
+                      title="Video Pembelajaran"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
                     />
-                  )}
-                </Card>
-              </motion.div>
-            )}
-
-            {/* MATERIAL VIEW - No materials fallback */}
-            {activeView === "material" && !currentMaterial && activeSubLesson && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-                <Card 
-                  variant="borderless" 
-                  style={{ borderRadius: "20px", boxShadow: "0 4px 24px rgba(0,0,0,0.04)", marginBottom: "24px", border: "1px solid #f1f5f9" }}
-                  styles={{ body: { padding: "48px", textAlign: "center" } }}
-                >
-                  <div style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", height: "200px", borderRadius: "16px", display: "flex", justifyContent: "center", alignItems: "center", color: "#fff", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
-                    <PlayCircleFilled style={{ fontSize: "54px", color: "rgba(255,255,255,0.7)" }} />
-                    <Text style={{ color: "#fff", fontWeight: 600 }}>Tidak ada konten untuk materi ini</Text>
-                  </div>
-                </Card>
-              </motion.div>
-            )}
-            {/* PRACTICE VIEW (LATIHAN SOAL) */}
-            {activeView === "practice" && activeSubLesson && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                {/* Section indicator for practice */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                  <div style={{ background: "linear-gradient(135deg, #fde68a 0%, #f59e0b 100%)", padding: "10px", borderRadius: "12px", color: "#78350f", display: "flex" }}>
-                    <ThunderboltOutlined style={{ fontSize: "20px" }} />
-                  </div>
-                  <div>
-                    <Text style={{ color: "#94a3b8", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", display: "block" }}>Section {totalSections} of {totalSections}</Text>
-                    <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>Latihan & Soal</Title>
                   </div>
                 </div>
-                <Row gutter={[24, 24]}>
-                  
-                  {/* Left: Code Editor and Run Box - Only show if code question exists */}
-                  {activeSubLesson?.codeQuestion && (
-                    <Col xs={24} md={13}>
-                      {/* Code Editor Card */}
-                      <Card
-                        variant="borderless"
-                        style={{ 
-                          borderRadius: "20px", 
-                          backgroundColor: "#1e293b", 
-                          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-                          marginBottom: "20px" 
-                        }}
-                        styles={{ body: { padding: "20px" } }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                          <Text style={{ color: "#ffffff", fontWeight: 700, fontSize: "15px" }}>Code Editor</Text>
-                          <Button 
-                            type="primary"
-                            icon={<PlayCircleFilled />}
-                            loading={isRunning}
-                            onClick={handleRunCode}
-                            style={{ 
-                              backgroundColor: "#FAAD14", 
-                              borderColor: "#FAAD14", 
-                              color: "#fff", 
-                              fontWeight: 700, 
-                              borderRadius: "8px" 
-                            }}
-                          >
-                            Run
-                          </Button>
-                        </div>
+              )}
 
-                        <div style={{ position: "relative" }}>
-                          <textarea
-                            value={codeContent}
-                            onChange={(e) => setCodeContent(e.target.value)}
-                            style={{
-                              width: "100%",
-                              height: "360px",
-                              backgroundColor: "#0f172a",
-                              color: "#38bdf8",
-                              fontFamily: "'Courier New', Courier, monospace",
-                              fontSize: "14px",
-                              padding: "16px",
-                              borderRadius: "12px",
-                              border: "1px solid #334155",
-                              resize: "none",
-                              lineHeight: "1.6",
-                              outline: "none",
-                            }}
-                            spellCheck={false}
+              {/* Text content */}
+              {currentMaterial.materials && (
+                <div 
+                  className="material-content-body"
+                  style={{ fontSize: "15px", lineHeight: "1.8", color: "#475569" }}
+                  dangerouslySetInnerHTML={{ __html: currentMaterial.materials }}
+                />
+              )}
+            </Card>
+          </motion.div>
+        )}
+
+        {/* MATERIAL VIEW - No materials fallback */}
+        {activeView === "material" && !currentMaterial && activeSubLesson && (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <Card 
+              variant="borderless" 
+              style={{ borderRadius: "20px", boxShadow: "0 4px 24px rgba(0,0,0,0.03)", marginBottom: "24px", border: "1px solid #f1f5f9" }}
+              styles={{ body: { padding: "48px", textAlign: "center" } }}
+            >
+              <div style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", height: "200px", borderRadius: "16px", display: "flex", justifyContent: "center", alignItems: "center", color: "#fff", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+                <PlayCircleFilled style={{ fontSize: "54px", color: "rgba(255,255,255,0.7)" }} />
+                <Text style={{ color: "#fff", fontWeight: 600 }}>Tidak ada konten untuk materi ini</Text>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* PRACTICE VIEW (LATIHAN SOAL) */}
+        {activeView === "practice" && activeSubLesson && (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            
+            {/* Purple Header Banner */}
+            <div style={{ 
+              backgroundColor: "#5B21B6", 
+              borderRadius: "16px", 
+              padding: "20px 24px", 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: "center",
+              marginBottom: "24px",
+              boxShadow: "0 10px 25px rgba(91, 33, 182, 0.2)"
+            }}>
+              <div>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "14px", fontWeight: 600, display: "block", marginBottom: "4px" }}>
+                  Course : {activeLesson?.title || "Java"}
+                </Text>
+                <Title level={3} style={{ color: "#ffffff", margin: 0, fontWeight: 700 }}>
+                  {activeSubLesson?.title}
+                </Title>
+              </div>
+              <Button 
+                type="text" 
+                icon={<ArrowLeftOutlined />} 
+                onClick={() => setActiveView("material")}
+                style={{ 
+                  color: "#ffffff", 
+                  fontWeight: 600, 
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                  padding: "8px 16px",
+                  height: "auto"
+                }}
+              >
+                Kembali
+              </Button>
+            </div>
+
+            <Row gutter={[24, 24]}>
+              
+              {/* Left Column: Studi Kasus and Essays */}
+              <Col xs={24} md={activeSubLesson?.codeQuestion ? 11 : 16} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                
+                {/* Studi Kasus */}
+                {activeSubLesson?.codeQuestion && (
+                  <Card 
+                    variant="borderless" 
+                    style={{ 
+                      borderRadius: "20px", 
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                      background: "linear-gradient(135deg, #ffffff 0%, #faf8ff 100%)",
+                      border: "1px solid #ede9fe"
+                    }}
+                    styles={{ body: { padding: "24px" } }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", borderBottom: "1px solid #eef2f6", paddingBottom: "12px" }}>
+                      <ThunderboltOutlined style={{ color: "#7c3aed", fontSize: "20px" }} />
+                      <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>Exploring - Studi Kasus</Title>
+                    </div>
+
+                    <div 
+                      style={{ fontSize: "14px", lineHeight: "1.7", color: "#475569" }}
+                      dangerouslySetInnerHTML={{ __html: activeSubLesson?.codeQuestion?.code_question || "<p>Tidak ada studi kasus.</p>" }}
+                    />
+                  </Card>
+                )}
+
+                {/* Explaining (Essay) */}
+                <Card 
+                  variant="borderless" 
+                  style={{ 
+                    borderRadius: "20px", 
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                    border: "1px solid #f1f5f9"
+                  }}
+                  styles={{ body: { padding: "24px" } }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <BookOutlined style={{ color: "#059669", fontSize: "20px" }} />
+                      <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>Explaining</Title>
+                    </div>
+                  </div>
+
+                  <div>
+                    {activeSubLesson?.essayQuestions && activeSubLesson.essayQuestions.length > 0 ? (
+                      activeSubLesson.essayQuestions.map((eq: any, index: number) => (
+                        <div key={eq.id} style={{ marginBottom: "20px" }}>
+                          <Text style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 700, marginBottom: "8px" }}>
+                            {index + 1}. <span dangerouslySetInnerHTML={{ __html: eq.essay_question }} style={{ display: "inline" }} />
+                          </Text>
+                          <TextArea
+                            rows={3}
+                            placeholder="Type your answer here"
+                            value={essayAnswers[eq.id] || ""}
+                            onChange={(e) => setEssayAnswers({
+                              ...essayAnswers,
+                              [eq.id]: e.target.value
+                            })}
+                            style={{ borderRadius: "10px", fontSize: "13px", border: "1px solid #cbd5e1" }}
                           />
                         </div>
-                      </Card>
-
-                      {/* Run Output Box */}
-                      <Card
-                        variant="borderless"
-                        style={{ 
-                          borderRadius: "16px", 
-                          backgroundColor: "#0f172a", 
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
-                        }}
-                        styles={{ body: { padding: "16px" } }}
-                      >
-                        <Text style={{ color: "#94a3b8", display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>
-                          Run Output
-                        </Text>
-                        <pre style={{ 
-                          margin: 0, 
-                          color: runOutput.includes("failed") || runOutput.includes("Error") ? "#ef4444" : "#10b981", 
-                          fontFamily: "'Courier New', Courier, monospace", 
-                          fontSize: "13px", 
-                          whiteSpace: "pre-wrap",
-                          height: "140px",
-                          overflowY: "auto"
-                        }}>
-                          {runOutput}
-                        </pre>
-                      </Card>
-                    </Col>
-                  )}
-
-                  {/* Right: Studi Kasus and Essays */}
-                  <Col xs={24} md={activeSubLesson?.codeQuestion ? 11 : 16} offset={activeSubLesson?.codeQuestion ? 0 : 4} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    
-                    {/* Card 1: Exploring (Studi Kasus) - Only show if code question exists */}
-                    {activeSubLesson?.codeQuestion && (
-                      <Card 
-                        variant="borderless" 
-                        style={{ 
-                          borderRadius: "20px", 
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-                          background: "linear-gradient(135deg, #ffffff 0%, #faf8ff 100%)",
-                          border: "1px solid #ede9fe"
-                        }}
-                        styles={{ body: { padding: "24px" } }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", borderBottom: "1px solid #eef2f6", paddingBottom: "12px" }}>
-                          <ThunderboltOutlined style={{ color: "#7c3aed", fontSize: "20px" }} />
-                          <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>Exploring - Studi Kasus</Title>
-                        </div>
-
-                        <div 
-                          style={{ fontSize: "14px", lineHeight: "1.7", color: "#475569" }}
-                          dangerouslySetInnerHTML={{ __html: activeSubLesson?.codeQuestion?.code_question || "<p>Tidak ada studi kasus.</p>" }}
-                        />
-                      </Card>
+                      ))
+                    ) : (
+                      <Paragraph type="secondary" style={{ fontSize: "13px" }}>Tidak ada pertanyaan essay untuk materi ini.</Paragraph>
                     )}
+                  </div>
+                </Card>
+              </Col>
 
-                    {/* Card 2: Explaining (Essay) */}
-                    <Card 
-                      variant="borderless" 
-                      style={{ 
-                        borderRadius: "20px", 
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-                        border: "1px solid #f1f5f9"
-                      }}
-                      styles={{ body: { padding: "24px" } }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <BookOutlined style={{ color: "#059669", fontSize: "20px" }} />
-                          <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>Explaining</Title>
-                        </div>
-                        <Button 
-                          type="primary" 
-                          loading={isSubmitting}
-                          onClick={handleSubmitTest}
-                          style={{ 
-                            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", 
-                            borderColor: "#059669", 
-                            borderRadius: "10px", 
-                            fontWeight: 700, 
-                            height: "40px",
-                            paddingInline: "20px",
-                            boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)"
-                          }}
-                        >
-                          Submit Test
-                        </Button>
-                      </div>
-
-                      <div>
-                        {activeSubLesson?.essayQuestions && activeSubLesson.essayQuestions.length > 0 ? (
-                          activeSubLesson.essayQuestions.map((eq: any, index: number) => (
-                            <div key={eq.id} style={{ marginBottom: "20px" }}>
-                              <Text style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 700, marginBottom: "8px" }}>
-                                {index + 1}. <span dangerouslySetInnerHTML={{ __html: eq.essay_question }} style={{ display: "inline" }} />
-                              </Text>
-                              <TextArea
-                                rows={3}
-                                placeholder="Tulis penjelasanmu di sini..."
-                                value={essayAnswers[eq.id] || ""}
-                                onChange={(e) => setEssayAnswers({
-                                  ...essayAnswers,
-                                  [eq.id]: e.target.value
-                                })}
-                                style={{ borderRadius: "10px", fontSize: "13px", border: "1px solid #cbd5e1" }}
-                              />
-                            </div>
-                          ))
-                        ) : (
-                          <Paragraph type="secondary" style={{ fontSize: "13px" }}>Tidak ada pertanyaan essay untuk materi ini.</Paragraph>
-                        )}
-                      </div>
-                    </Card>
-
-                  </Col>
-
-                </Row>
-              </motion.div>
-            )}
-
-
-          </div>
-
-          {/* RIGHT SIDEBAR - only during material, collapsible */}
-          {activeView === "material" && (
-          <div style={{ 
-            position: "relative",
-            display: "flex",
-            alignItems: "flex-start",
-            zIndex: 10
-          }}>
-            {/* Sleek Attached Toggle Button */}
-            <motion.div 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              whileHover={{ scale: 1.05, x: -2 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                position: "absolute",
-                left: "-28px",
-                top: "140px",
-                width: "28px",
-                height: "64px",
-                background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                zIndex: 15,
-                borderRadius: "10px 0 0 10px",
-                boxShadow: "-4px 0 12px rgba(124, 58, 237, 0.15)",
-                transition: "all 0.2s ease",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRight: "none"
-              }}
-            >
-              {sidebarOpen ? <RightOutlined style={{ fontSize: "11px", fontWeight: "bold" }} /> : <LeftOutlined style={{ fontSize: "11px", fontWeight: "bold" }} />}
-            </motion.div>
-
-            {/* Sliding Sidebar Panel */}
-            <div style={{ 
-              width: sidebarOpen ? "340px" : "0px", 
-              minWidth: sidebarOpen ? "340px" : "0px",
-              overflow: "hidden",
-              transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}>
-            
-            {/* PROGRESS & BADGE STATUS BOARD */}
-            <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
-              <Card 
-                variant="borderless" 
-                style={{ 
-                  borderRadius: "20px", 
-                  background: "linear-gradient(135deg, #FA8B7C 0%, #FF6B8B 100%)", 
-                  color: "#ffffff",
-                  boxShadow: "0 10px 25px rgba(255, 107, 139, 0.2)",
-                  marginBottom: "24px"
-                }}
-                styles={{ body: { padding: "24px" } }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                  <ThunderboltOutlined style={{ fontSize: "20px", color: "#fff" }} />
-                  <Text style={{ fontWeight: 800, color: "#ffffff", fontSize: "16px" }}>Your Progress</Text>
-                </div>
-                
-                <Progress 
-                  percent={progressPercent} 
-                  strokeColor={{
-                    "0%": "#ffe58f",
-                    "100%": "#fff",
-                  }}
-                  railColor="rgba(255,255,255,0.3)"
-                  status="active"
-                  style={{ marginBottom: "24px" }}
-                  format={(p) => <span style={{ color: "#fff", fontWeight: 800 }}>{p}%</span>}
-                />
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "12px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
-                    <Text style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Current Badge</Text>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                      <TrophyOutlined style={{ color: "#FFE58F", fontSize: "16px" }} />
-                      <Text style={{ fontWeight: 800, color: "#fff", fontSize: "14px" }}>{courseProgress?.badge?.name || "Pemula"}</Text>
+              {/* Right Column: Code Editor and Run Box */}
+              {activeSubLesson?.codeQuestion && (
+                <Col xs={24} md={13} className="sticky-code-editor">
+                  <Card
+                    variant="borderless"
+                    style={{ 
+                      borderRadius: "20px", 
+                      backgroundColor: "#1e293b", 
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                      marginBottom: "20px" 
+                    }}
+                    styles={{ body: { padding: "20px" } }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                      <Text style={{ color: "#ffffff", fontWeight: 700, fontSize: "15px" }}>Code Editor</Text>
+                      <Button 
+                        type="primary"
+                        icon={<PlayCircleFilled />}
+                        loading={isRunning}
+                        onClick={handleRunCode}
+                        style={{ 
+                          backgroundColor: "#FAAD14", 
+                          borderColor: "#FAAD14", 
+                          color: "#1e293b", 
+                          fontWeight: 700, 
+                          borderRadius: "9999px",
+                          paddingInline: "16px"
+                        }}
+                      >
+                        Run
+                      </Button>
                     </div>
-                  </div>
-                  <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "12px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.3)" }}>
-                    <Text style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Total Score</Text>
-                    <Text style={{ fontWeight: 800, color: "#fff", fontSize: "16px" }}>{courseProgress?.total_score || "0"}</Text>
-                  </div>
-                </div>
 
-              </Card>
-            </motion.div>
+                    <div style={{ position: "relative" }}>
+                      <textarea
+                        value={codeContent}
+                        onChange={(e) => setCodeContent(e.target.value)}
+                        style={{
+                          width: "100%",
+                          height: "360px",
+                          backgroundColor: "#0f172a",
+                          color: "#38bdf8",
+                          fontFamily: "'Courier New', Courier, monospace",
+                          fontSize: "14px",
+                          padding: "16px",
+                          borderRadius: "12px",
+                          border: "1px solid #334155",
+                          resize: "none",
+                          lineHeight: "1.6",
+                          outline: "none",
+                        }}
+                        spellCheck={false}
+                      />
+                    </div>
+                  </Card>
 
-            {/* LIST MATERIAL PANEL */}
-            <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-              <Card 
-                variant="borderless" 
-                style={{ borderRadius: "20px", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
-                styles={{ body: { padding: "20px" } }}
+                  <Card
+                    variant="borderless"
+                    style={{ 
+                      borderRadius: "16px", 
+                      backgroundColor: "#0f172a", 
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+                    }}
+                    styles={{ body: { padding: "16px" } }}
+                  >
+                    <Text style={{ color: "#94a3b8", display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>
+                      Run Output
+                    </Text>
+                    <pre style={{ 
+                      margin: 0, 
+                      color: runOutput.includes("failed") || runOutput.includes("Error") ? "#ef4444" : "#10b981", 
+                      fontFamily: "'Courier New', Courier, monospace", 
+                      fontSize: "13px", 
+                      whiteSpace: "pre-wrap",
+                      height: "140px",
+                      overflowY: "auto"
+                    }}>
+                      {runOutput}
+                    </pre>
+                  </Card>
+                </Col>
+              )}
+            </Row>
+
+            {/* Bottom Submit Test Button specific to practice view */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "32px", width: "100%" }}>
+              <Button
+                type="primary"
+                loading={isSubmitting}
+                onClick={handleSubmitTest}
+                icon={<SendOutlined />}
+                style={{
+                  background: "#0F766E",
+                  border: "none",
+                  borderRadius: "9999px",
+                  fontWeight: 700,
+                  height: "44px",
+                  paddingInline: "28px",
+                  boxShadow: "0 4px 12px rgba(15, 118, 110, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
-                  <BookOutlined style={{ color: "#7c3aed", fontSize: "18px" }} />
-                  <Title level={4} style={{ margin: 0, fontWeight: 800, color: "#1e293b" }}>List Material</Title>
-                </div>
+                Submit Test
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
-                <Collapse 
-                  ghost 
-                  defaultActiveKey={courseTree.map(l => String(l.id))}
-                  expandIconPlacement="end"
-                  style={{ padding: 0 }}
-                  items={courseTree.map((lesson) => {
-                    // Check if all sublessons in this lesson are completed
-                    const allCompleted = lesson.sublessons.every((sl: any) => 
-                      studentProgress.some((p: any) => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed")
-                    );
-                    const completedCount = lesson.sublessons.filter((sl: any) => 
-                      studentProgress.some((p: any) => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed")
-                    ).length;
-
-                    return {
-                    key: String(lesson.id),
-                    label: (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                        <Text style={{ fontWeight: 700, color: "#334155", fontSize: "14px" }}>
-                          {lesson.title}
-                        </Text>
-                        {allCompleted ? (
-                          <CheckCircleFilled style={{ color: "#52c41a", fontSize: "16px" }} />
-                        ) : (
-                          <Text style={{ color: "#94a3b8", fontSize: "11px", fontWeight: 600 }}>
-                            {completedCount}/{lesson.sublessons.length}
-                          </Text>
-                        )}
-                      </div>
-                    ),
-                    children: (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingLeft: "4px" }}>
-                        {lesson.sublessons.map((sl: any) => {
-                          const isCompleted = studentProgress.some(p => Number(p.sub_lesson_id) === Number(sl.id) && p.status === "completed");
-                          const isActive = Number(sl.id) === Number(activeSubLessonId);
-                          const isLocked = isSubLessonLocked(sl.id);
-
-                          return (
-                            <motion.div 
-                              key={sl.id}
-                              whileHover={!isLocked ? { x: 4 } : {}}
-                              onClick={() => !isLocked && handleSelectSubLesson(sl)}
-                              style={{ 
-                                display: "flex", 
-                                alignItems: "center", 
-                                justifyContent: "space-between",
-                                padding: "10px 12px", 
-                                borderRadius: "10px",
-                                cursor: isLocked ? "not-allowed" : "pointer",
-                                transition: "all 0.2s ease",
-                                background: isActive ? "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" : isLocked ? "#fafafa" : "#ffffff",
-                                border: isActive ? "1px solid #c084fc" : "1px solid transparent",
-                                opacity: isLocked ? 0.6 : 1
-                              }}
-                              className="sublesson-item-hover"
-                            >
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-                                {isCompleted ? (
-                                  <CheckCircleFilled style={{ color: "#52c41a", fontSize: "16px" }} />
-                                ) : isActive ? (
-                                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
-                                    <PlayCircleFilled style={{ color: "#8b5cf6", fontSize: "16px" }} />
-                                  </motion.div>
-                                ) : isLocked ? (
-                                  <LockOutlined style={{ color: "#94a3b8", fontSize: "15px" }} />
-                                ) : (
-                                  <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: "2px solid #cbd5e1", display: "flex", alignItems: "center", justifyContent: "center" }} />
-                                )}
-                                
-                                <Text style={{ 
-                                  fontSize: "13px", 
-                                  fontWeight: isActive ? 700 : 500,
-                                  color: isActive ? "#7c3aed" : isLocked ? "#94a3b8" : "#475569"
-                                }}>
-                                  {sl.title}
-                                </Text>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    ),
-                    style: { marginBottom: "8px", borderBottom: "1px solid #f1f5f9" }
-                  };
-                  })}
-                />
-              </Card>
-            </motion.div>            </div>
-          </div>
-          )}
-        </div>
-
-      {/* SECTION NAVIGATION - inline, not fixed */}
-      <div style={{
-        marginTop: "24px",
-        background: "#ffffff",
-        borderTop: "1px solid #e2e8f0",
-        borderRadius: "16px",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        maxWidth: "1440px",
-        margin: "24px auto 0",
-        padding: "0"
-      }}>
-        {/* Progress Bar at top of footer */}
-        <div style={{ width: "100%", height: "3px", background: "#f1f5f9" }}>
-          <div style={{ 
-            width: `${totalSections > 0 ? ((activeView === "practice" ? totalSections : activeMaterialIndex + 1) / totalSections) * 100 : 0}%`, 
-            height: "100%", 
-            background: "linear-gradient(90deg, #7c3aed, #4f46e5)",
-            transition: "width 0.4s ease",
-            borderRadius: "0 2px 2px 0"
-          }} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px" }}>
-          <Button 
-            icon={<LeftOutlined />} 
-            onClick={handlePrevSection}
-            disabled={currentIndex === 0 && activeMaterialIndex === 0 && activeView === "material"}
-            style={{ borderRadius: "12px", fontWeight: 700, height: "44px", paddingInline: "24px", border: "1px solid #e2e8f0", background: "#fff" }}
-          >
-            Sebelumnya
-          </Button>
-          <div style={{ textAlign: "center", flex: 1, padding: "0 16px" }}>
-            <Text style={{ color: "#1e293b", fontWeight: 800, fontSize: "14px", display: "block" }}>
-              {getSectionLabel()}
-            </Text>
-            {/* Section dots */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginTop: "6px" }}>
-              {Array.from({ length: totalSections }).map((_, i) => {
-                const isCurrent = activeView === "practice" ? i === totalSections - 1 : i === activeMaterialIndex;
-                const isPast = activeView === "practice" ? true : i < activeMaterialIndex;
-                return (
-                  <div key={i} style={{
-                    width: isCurrent ? "20px" : "8px",
-                    height: "8px",
-                    borderRadius: "4px",
-                    background: isCurrent ? "linear-gradient(90deg, #7c3aed, #4f46e5)" : isPast ? "#c4b5fd" : "#e2e8f0",
-                    transition: "all 0.3s ease"
-                  }} />
-                );
-              })}
+        {/* BOTTOM FLOATING CAPSULE NAVIGATION (For Materials only) */}
+        {activeView === "material" && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "32px", width: "100%" }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              background: "#FFFFFF",
+              borderRadius: "9999px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.06)",
+              border: "1px solid #E5E7EB",
+              padding: "8px 16px",
+              gap: "16px"
+            }}>
+              <Button
+                type="text"
+                onClick={handlePrevSection}
+                icon={<LeftOutlined />}
+                style={{ fontWeight: 700, color: "#4B5563" }}
+                disabled={currentIndex === 0 && activeMaterialIndex === 0}
+              >
+                Prev
+              </Button>
+              
+              <div style={{ width: "1px", height: "20px", backgroundColor: "#E5E7EB" }} />
+              
+              {activeMaterialIndex === currentMaterials.length - 1 && hasTest ? (
+                <Button
+                  type="primary"
+                  onClick={handleNextSection}
+                  style={{
+                    background: "linear-gradient(135deg, #0D9488 0%, #0F766E 100%)",
+                    border: "none",
+                    borderRadius: "9999px",
+                    fontWeight: 700,
+                    height: "38px",
+                    paddingInline: "20px",
+                    boxShadow: "0 4px 12px rgba(13, 148, 136, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                >
+                  Let's Test 🚀
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  onClick={handleNextSection}
+                  style={{
+                    background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)",
+                    border: "none",
+                    borderRadius: "9999px",
+                    fontWeight: 700,
+                    height: "38px",
+                    paddingInline: "24px",
+                    boxShadow: "0 4px 12px rgba(91, 33, 182, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                >
+                  Next <RightOutlined />
+                </Button>
+              )}
             </div>
           </div>
-          <Button 
-            onClick={handleNextSection}
-            disabled={currentIndex === subLessonsSequence.length - 1 && activeView === "practice"}
-            style={{ 
-              borderRadius: "12px", 
-              fontWeight: 800,
-              height: "44px",
-              paddingInline: "24px",
-              background: "linear-gradient(135deg, #FFD700 0%, #FDB931 100%)", 
-              borderColor: "#FDB931", 
-              color: "#1F2937",
-              boxShadow: "0 4px 12px rgba(253, 185, 49, 0.3)"
-            }}
-          >
-            {activeView === "material" && activeMaterialIndex === currentMaterials.length - 1 && activeSubLesson?.codeQuestion 
-              ? "Mulai Latihan" 
-              : "Selanjutnya"} <RightOutlined />
-          </Button>
-        </div>
+        )}
+
       </div>
 
       <style>{`
+        @media (min-width: 768px) {
+          .sticky-code-editor {
+            position: sticky !important;
+            top: 140px !important;
+            align-self: flex-start !important;
+          }
+        }
         .sublesson-item-hover:hover {
           background: #f1f5f9 !important;
         }
@@ -1078,7 +1156,6 @@ export default function StudentMaterialPage() {
           font-style: italic;
         }
       `}</style>
-
     </div>
   );
 }

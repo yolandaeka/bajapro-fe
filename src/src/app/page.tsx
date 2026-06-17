@@ -1,65 +1,280 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React from 'react';
+import Link from 'next/link';
+import { Button } from 'antd';
+import { 
+  PlayCircleOutlined, 
+  CodeOutlined, 
+  ApartmentOutlined, 
+  RetweetOutlined, 
+  AppstoreOutlined, 
+  BulbOutlined, 
+  PlayCircleFilled, 
+  FileTextFilled, 
+  EditFilled, 
+  CodeFilled, 
+  RobotOutlined,
+  UserOutlined, 
+  SolutionOutlined, 
+  SettingOutlined, 
+  CheckCircleFilled, 
+  GlobalOutlined, 
+  ShareAltOutlined
+} from '@ant-design/icons';
+
+const Navbar = () => (
+  <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
+    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {/* Logo */}
+        <div className="w-8 h-8 bg-purple-800 rounded flex items-center justify-center text-white font-bold text-xs">{"</>"}</div>
+        <span className="text-xl font-extrabold tracking-tight text-gray-900">BAJA<span className="text-yellow-500">PRO</span></span>
+      </div>
+      <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-gray-600">
+        <Link href="/" className="hover:text-purple-700 transition">Home</Link>
+        <Link href="#materi" className="hover:text-purple-700 transition">Materi</Link>
+        <Link href="#aktivitas" className="hover:text-purple-700 transition">Aktivitas</Link>
+      </nav>
+      <div className="flex items-center gap-4">
+        <Link href="/login">
+          <Button style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Login</Button>
+        </Link>
+        <Link href="/register">
+          <Button type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Register</Button>
+        </Link>
+      </div>
+    </div>
+  </header>
+);
+
+const HeroSection = () => (
+  <section className="pt-40 pb-24 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)' }}>
+    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-purple-100 text-purple-700 text-xs font-bold mb-8 shadow-sm">
+          <span className="flex items-center justify-center w-5 h-5 bg-purple-100 rounded-full text-[10px]"><PlayCircleOutlined /></span>
+          Platform Pembelajaran Java
+        </div>
+        <h1 className="text-5xl md:text-6xl font-black text-gray-900 leading-[1.1] mb-6">
+          Kuasai <br/> Pemrograman Java <br/> bersama <span className="text-purple-700">BAJAPRO</span>
+        </h1>
+        <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-lg font-medium">
+          Tingkatkan kemampuan logika dan pemrograman berorientasi objek Anda dengan kurikulum terstruktur yang dirancang khusus untuk siswa kejuruan.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <Link href="/register">
+            <Button type="primary" size="large" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Mulai Belajar Sekarang &rarr;</Button>
+          </Link>
+          <Link href="#materi">
+            <Button size="large" style={{ borderColor: '#5B21B6', color: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Lihat Kurikulum</Button>
+          </Link>
+        </div>
+      </div>
+      <div className="relative mt-12 md:mt-0">
+        <div className="bg-[#1E1E1E] rounded-2xl p-6 shadow-2xl border border-gray-800 transform rotate-1 hover:rotate-0 transition duration-500">
+           {/* Code Editor Mock */}
+           <div className="flex gap-2 mb-6">
+             <div className="w-3 h-3 rounded-full bg-red-500"></div>
+             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+             <div className="w-3 h-3 rounded-full bg-green-500"></div>
+             <span className="ml-2 text-xs text-gray-500 font-mono flex items-center gap-2"><CodeOutlined/> Compiler - Ready</span>
+           </div>
+           <pre className="text-[13px] font-mono text-gray-300 leading-relaxed overflow-x-auto">
+             <span className="text-purple-400">public class</span> <span className="text-yellow-200">Main</span> {"{\n"}
+             {"  "}<span className="text-purple-400">public static void</span> <span className="text-blue-300">main</span>(String[] args) {"{\n"}
+             {"    "}System.<span className="text-blue-300">out</span>.println(<span className="text-green-300">"Hello, BAJAPRO!"</span>);{"\n"}
+             {"  }\n\n"}
+             {"  "}<span className="text-gray-500">// Start your journey</span>{"\n"}
+             {"  "}<span className="text-purple-400">boolean</span> startLearning = <span className="text-orange-400">true</span>;{"\n"}
+             {"  "}<span className="text-purple-400">if</span> (startLearning) {"{\n"}
+             {"    "}System.<span className="text-blue-300">out</span>.println(<span className="text-green-300">"Let's go!"</span>);{"\n"}
+             {"  }\n"}
+             {"}"}
+           </pre>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const modules = [
+  { id: 1, title: 'Module 1: Tipe Data, Variabel dan Operator', desc: 'Bangun fondasi pemrograman yang kuat dengan mempelajari tipe data, variabel, input-output, sequence, dan operator dalam Java.', icon: <CodeOutlined />, color: 'text-purple-600', bg: 'bg-purple-100', col: 'md:col-span-3' },
+  { id: 2, title: 'Module 2: Sintaks Pemilihan', desc: 'Pelajari pengambilan keputusan dengan operator logika dan pemilihan bersarang.', icon: <ApartmentOutlined />, color: 'text-blue-600', bg: 'bg-blue-100', col: 'md:col-span-3' },
+  { id: 3, title: 'Module 3: Sintaks Perulangan', desc: 'Pahami penggunaan perulangan untuk mengembangkan logika program yang lebih kompleks.', icon: <RetweetOutlined />, color: 'text-purple-600', bg: 'bg-purple-100', col: 'md:col-span-2' },
+  { id: 4, title: 'Module 4: Array 1 & Multidimensi', desc: 'Pahami penggunaan array satu dimensi dan multidimensi untuk menyimpan serta mengakses data secara efisien.', icon: <AppstoreOutlined />, color: 'text-indigo-600', bg: 'bg-indigo-100', col: 'md:col-span-2' },
+  { id: 5, title: 'Module 5: Fungsi', desc: 'Pelajari penggunaan fungsi statis dan fungsi rekursif untuk membuat program Java yang lebih terstruktur.', icon: <BulbOutlined />, color: 'text-purple-600', bg: 'bg-purple-100', col: 'md:col-span-2' },
+]
+
+const AlurBelajarSection = () => (
+  <section id="materi" className="py-28 px-6 bg-white">
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-14 max-w-2xl">
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Alur Belajar Terstruktur</h2>
+        <p className="text-gray-600 text-lg">Kuasai dasar-dasar Java melalui materi pembelajaran yang terstruktur dan dirancang untuk membantu Anda membangun kemampuan pemrograman secara bertahap.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+        {modules.map(mod => (
+          <div key={mod.id} className={`${mod.col} bg-[#FAFAFA] border border-gray-100 p-8 rounded-[24px] hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
+            <div className={`w-12 h-12 ${mod.bg} ${mod.color} rounded-xl flex items-center justify-center text-xl mb-6`}>
+              {mod.icon}
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">{mod.title}</h3>
+            <p className="text-gray-500 leading-relaxed text-sm font-medium">{mod.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const MetodePembelajaranSection = () => (
+  <section id="aktivitas" className="py-24 px-6 bg-white">
+    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+      <div>
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Metode Pembelajaran Variatif</h2>
+        <p className="text-gray-600 text-lg mb-12">Dapatkan pengalaman belajar yang lebih interaktif melalui kombinasi materi teks, video, dan latihan.</p>
+        
+        <div className="space-y-10">
+          {[
+            { title: 'Video Pembelajaran', desc: 'Pelajari visual yang menarik untuk memecah algoritma kompleks langkah demi langkah.', icon: <PlayCircleFilled className="text-purple-600 text-3xl"/> },
+            { title: 'Materi Teks', desc: 'Dokumentasi komprehensif dan mendetail untuk bacaan mendalam dan referensi cepat.', icon: <FileTextFilled className="text-yellow-500 text-3xl"/> },
+            { title: 'Latihan Essay', desc: 'Uji pemahaman konseptual sebelum pengiriman final.', icon: <EditFilled className="text-green-500 text-3xl"/> },
+            { title: 'Coding Test', desc: 'Latihan koding interaktif dengan compiler terintegrasi dan pesan error spesifik.', icon: <CodeFilled className="text-blue-500 text-3xl"/> },
+          ].map((item, i) => (
+            <div key={i} className="flex gap-6">
+              <div className="mt-1">{item.icon}</div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h4>
+                <p className="text-gray-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="relative">
+        <div className="bg-[#F8F7FA] p-8 md:p-12 rounded-[32px]">
+           <div className="bg-[#1E1E1E] rounded-2xl shadow-2xl border border-gray-800 overflow-hidden">
+             <div className="flex justify-between items-center px-5 py-4 bg-[#2D2D2D] border-b border-gray-700">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div className="text-xs text-gray-400 font-mono">Main.java</div>
+             </div>
+             <div className="p-6">
+               <pre className="text-sm font-mono text-gray-300 leading-relaxed overflow-x-auto">
+                 <span className="text-purple-400">public class</span> <span className="text-yellow-200">Main</span> {"{\n"}
+                 {"  "}<span className="text-purple-400">public static void</span> <span className="text-blue-300">main</span>(String[] args) {"{\n"}
+                 {"    "}System.<span className="text-blue-300">out</span>.println(<span className="text-green-300">"BAJAPRO Code Test!"</span>);{"\n"}
+                 {"  }\n"}
+                 {"}"}
+               </pre>
+               <div className="mt-8 pt-5 border-t border-gray-700">
+                 <div className="text-xs text-gray-500 mb-2 font-mono">{"> Output: BAJAPRO Code Test!"}</div>
+                 <div className="text-xs text-green-400 font-mono">BUILD SUCCESSFUL in 0.4s</div>
+               </div>
+             </div>
+           </div>
+        </div>
+        
+        {/* Floating element */}
+        <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-left-12 bg-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 flex items-center gap-5 z-10 animate-bounce" style={{ animationDuration: '3s' }}>
+           <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600">
+             <RobotOutlined className="text-2xl" />
+           </div>
+           <div>
+             <div className="text-sm font-extrabold text-gray-900 mb-1">Fast Feedback</div>
+             <div className="text-xs text-gray-500 font-medium">Real-time compilation</div>
+           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const SistemTerintegrasiSection = () => (
+  <section className="py-28 px-6" style={{ background: 'linear-gradient(180deg, #FDF4FF 0%, #F9FAFB 100%)' }}>
+    <div className="max-w-7xl mx-auto text-center">
+      <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Sistem Terintegrasi untuk Semua</h2>
+      <p className="text-gray-600 text-lg mb-16 max-w-2xl mx-auto font-medium">Pengalaman yang dioptimalkan untuk setiap peran dalam ekosistem pembelajaran.</p>
+      
+      <div className="grid md:grid-cols-3 gap-8 text-left">
+        {[
+          { role: 'Siswa', icon: <UserOutlined/>, color: 'text-purple-600', bg: 'bg-purple-100', items: ['Pembelajaran interaktif dengan materi teks/video.', 'Latihan coding dengan feedback instan.', 'Pelacakan progres dan pencapaian gamifikasi.'] },
+          { role: 'Pengajar', icon: <SolutionOutlined/>, color: 'text-blue-600', bg: 'bg-blue-100', items: ['Manajemen kelas dan penugasan yang efisien.', 'Otomatisasi penilaian tugas coding dasar.', 'Analitik performa siswa yang mendalam.'] },
+          { role: 'Admin', icon: <SettingOutlined/>, color: 'text-purple-600', bg: 'bg-purple-100', items: ['Kontrol penuh atas pengguna dan akses sistem.', 'Manajemen kurikulum dan materi pembelajaran.', 'Pengaturan level, badge, dan sistem gamifikasi.'] },
+        ].map((item, i) => (
+          <div key={i} className="bg-white p-10 rounded-[24px] shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div className={`w-14 h-14 ${item.bg} ${item.color} rounded-full flex items-center justify-center text-2xl mb-8`}>
+              {item.icon}
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">{item.role}</h3>
+            <ul className="space-y-5">
+              {item.items.map((desc, j) => (
+                <li key={j} className="flex gap-4 text-[14px] text-gray-600 font-medium">
+                  <CheckCircleFilled className="text-purple-300 text-lg mt-0.5" />
+                  <span className="leading-relaxed">{desc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer className="bg-[#5B21B6] text-white pt-24 pb-10 px-6">
+    <div className="max-w-7xl mx-auto grid md:grid-cols-5 gap-12 mb-20">
+      <div className="md:col-span-2 pr-8">
+        <div className="text-3xl font-black tracking-tight text-white mb-6">BAJA<span className="text-yellow-400">PRO</span></div>
+        <p className="text-purple-200 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
+      </div>
+      <div>
+        <h4 className="font-bold mb-6 text-white text-base">Company</h4>
+        <ul className="space-y-4 text-sm text-purple-200 font-medium">
+          <li><Link href="#" className="hover:text-white transition">About Us</Link></li>
+          <li><Link href="#" className="hover:text-white transition">Blog</Link></li>
+        </ul>
+      </div>
+      <div>
+        <h4 className="font-bold mb-6 text-white text-base">Resources</h4>
+        <ul className="space-y-4 text-sm text-purple-200 font-medium">
+          <li><Link href="#" className="hover:text-white transition">Java Documentation</Link></li>
+        </ul>
+      </div>
+      <div>
+        <h4 className="font-bold mb-6 text-white text-base">Support</h4>
+        <ul className="space-y-4 text-sm text-purple-200 font-medium">
+          <li><Link href="#" className="hover:text-white transition">Help Center</Link></li>
+          <li><Link href="#" className="hover:text-white transition">Contact Us</Link></li>
+          <li><Link href="#" className="hover:text-white transition">Privacy Policy</Link></li>
+        </ul>
+      </div>
+    </div>
+    <div className="max-w-7xl mx-auto pt-8 border-t border-purple-800/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-purple-300 font-medium">
+      <div>© 2026 BAJAPRO v2.1.1. All rights reserved.</div>
+      <div className="flex gap-5 text-lg">
+        <GlobalOutlined className="cursor-pointer hover:text-white transition" />
+        <ShareAltOutlined className="cursor-pointer hover:text-white transition" />
+      </div>
+    </div>
+  </footer>
+);
+
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="min-h-screen bg-white font-sans text-gray-800">
+      <Navbar />
+      <HeroSection />
+      <AlurBelajarSection />
+      <MetodePembelajaranSection />
+      <SistemTerintegrasiSection />
+      <Footer />
     </div>
   );
 }
