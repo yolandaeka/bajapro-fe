@@ -31,9 +31,8 @@ async function migrateData() {
         update: {}, // Jika sudah ada, lewati
         create: {
           id: oldRole.id,
-          roleName: oldRole.role, // Di lama 'role', di baru 'roleName'
+          roleName: oldRole.role,
           isActive: true,
-          // created_at dan updated_at bisa dipetakan jika diperlukan
         },
       });
     }
