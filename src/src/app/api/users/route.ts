@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 function jsonResponse(data: any, status = 200) {
   return NextResponse.json(data, {
@@ -78,13 +79,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    
+    // Hash password with bcrypt
+    const hashedPassword = bcrypt.hashSync(body.password, 10);
+    
     const created = await prisma.user.create({
       data: {
         roleId: Number(body.role_id),
         classId: body.class_id ? Number(body.class_id) : null,
         name: body.name,
         email: body.email.toLowerCase(),
-        password: body.password,
+        password: hashedPassword,
         isApprovedByAdmin: body.is_approved_by_admin !== undefined ? Number(body.is_approved_by_admin) : 0,
         instansiSekolah: body.instansi_sekolah || '',
         isActive: body.isactive === undefined ? true : Boolean(body.isactive),

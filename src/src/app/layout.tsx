@@ -28,21 +28,24 @@ export const metadata: Metadata = {
   description: "Platform Belajar Masa Kini",
 };
 
+import SessionProviderWrapper from "@/src/components/providers/SessionProviderWrapper";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${poppins.className} antialiased`}>
-        <AntdRegistry>
-          <ConfigProvider theme={{ token: { colorPrimary: '#531DAB', fontFamily: poppins.style.fontFamily || 'sans-serif' } }}>
-            <App>
-            {children}
-            </App>
-            {process.env.NODE_ENV === 'development' && (
-              <Script src="/figma-capture.js" strategy="afterInteractive" />
-            )}
-          </ConfigProvider>
-        
-        </AntdRegistry>
+        <SessionProviderWrapper>
+          <AntdRegistry>
+            <ConfigProvider theme={{ token: { colorPrimary: '#531DAB', fontFamily: poppins.style.fontFamily || 'sans-serif' } }}>
+              <App>
+              {children}
+              </App>
+              {process.env.NODE_ENV === 'development' && (
+                <Script src="/figma-capture.js" strategy="afterInteractive" />
+              )}
+            </ConfigProvider>
+          </AntdRegistry>
+        </SessionProviderWrapper>
       </body>
     </html>
   );

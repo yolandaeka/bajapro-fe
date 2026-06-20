@@ -13,6 +13,7 @@ import type { MenuProps } from "antd";
 import { usePathname } from "next/navigation";
 import { DownOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { allMenuItems, MenuItem } from "./Sidebar";
+import { useSession, signOut } from "next-auth/react";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -21,24 +22,12 @@ type BreadcrumbItem = GetProp<BreadcrumbProps, "items">[number];
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [userInfo, setUserInfo] = React.useState<{ name: string; role: string }>({ name: "User", role: "Pengajar" });
+  const { data: session } = useSession();
 
-  // 1. Ambil Data User dari Cookie
-  React.useEffect(() => {
-    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='))?.split('=')[1];
-    if (userCookie) {
-      try {
-        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
-        const user = JSON.parse(decoded);
-        // Karena cookie kita ringkas (id, role_id), kita asumsikan labelnya di sini
-        // Jika Anda ingin nama asli, idealnya cookie menyimpan 'name' juga
-        setUserInfo({
-          name: user.role_id == 1 ? "Administrator" : "Pengajar",
-          role: user.role_id == 1 ? "ADMIN" : "PENGAJAR"
-        });
-      } catch (e) {}
-    }
-  }, []);
+  const userInfo = {
+    name: session?.user?.name || (session?.user as any)?.username || ((session?.user as any)?.role_id == 1 ? "Administrator" : "Pengajar"),
+    role: (session?.user as any)?.role_id == 1 ? "ADMIN" : "PENGAJAR"
+  };
 
   const generateAutoBreadcrumbs = (): BreadcrumbItem[] => {
     const segments = pathname.split("/").filter(Boolean);
@@ -128,15 +117,21 @@ const Navbar = () => {
   };
 
   const userMenu: MenuProps["items"] = [
-    { key: "profile", icon: <UserOutlined />, label: "Profil Saya" },
+    { 
+      key: "profile", 
+      icon: <UserOutlined />, 
+      label: "Profil Saya",
+      onClick: () => {
+        window.location.href = "/profile";
+      }
+    },
     { type: "divider" },
     {
       key: "logout",
       icon: <LogoutOutlined style={{ color: "#ff4d4f" }} />,
       label: <span style={{ color: "#ff4d4f" }}>Keluar</span>,
       onClick: () => {
-        document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        window.location.href = "/login";
+        signOut({ callbackUrl: "/login" });
       }
     },
   ];

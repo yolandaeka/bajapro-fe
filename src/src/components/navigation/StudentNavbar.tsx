@@ -5,6 +5,7 @@ import { Layout, Avatar, Dropdown, Space, Typography, MenuProps, Button } from "
 import { usePathname, useRouter } from "next/navigation";
 import { DownOutlined, LogoutOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -18,26 +19,12 @@ interface StudentNavbarProps {
 const StudentNavbar: React.FC<StudentNavbarProps> = ({ setMobileOpen }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [userInfo, setUserInfo] = React.useState<{ name: string; role: string }>({ name: "User", role: "Pelajar" });
-
-  React.useEffect(() => {
-    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='))?.split('=')[1];
-    if (userCookie) {
-      try {
-        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
-        const user = JSON.parse(decoded);
-        setUserInfo({ name: user.name || "Pelajar", role: "Pelajar" });
-      } catch (e) {}
-    } else {
-      const lsUser = localStorage.getItem("user");
-      if (lsUser) {
-        try {
-          const u = JSON.parse(lsUser);
-          setUserInfo({ name: u.name || "Pelajar", role: "Pelajar" });
-        } catch (e) {}
-      }
-    }
-  }, []);
+  const { data: session } = useSession();
+  
+  const userInfo = {
+    name: session?.user?.name || "Pelajar",
+    role: "Pelajar"
+  };
 
   const userMenu: MenuProps["items"] = [
     {
@@ -52,10 +39,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ setMobileOpen }) => {
       icon: <LogoutOutlined style={{ color: "#ff4d4f" }} />,
       label: <span style={{ color: "#ff4d4f" }}>Keluar</span>,
       onClick: () => {
-        document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        window.location.href = "/login";
+        signOut({ callbackUrl: "/login" });
       },
     },
   ];

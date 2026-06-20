@@ -74,7 +74,6 @@ export async function PATCH(
 
   try {
     // 1. Update Permission Roles association
-    // route will be permissions/[id]
     if (route.startsWith('permissions/')) {
       const permId = route.split('/')[1];
       const body = await req.json();

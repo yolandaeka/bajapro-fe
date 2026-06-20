@@ -6,8 +6,7 @@ import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-
-
+import { signIn } from "next-auth/react";
 const { Title, Text } = Typography;
 
 interface LoginValues {
@@ -25,47 +24,40 @@ export default function LoginPage() {
   const handleLogin = async (values: LoginValues) => {
     setLoading(true);
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
-      const res = await fetch(`${BASE_URL}/users?email=${encodeURIComponent(values.email.toLowerCase())}`, { cache: 'no-store' });
-      const data = await res.json();
-      
-      if (data && data.length > 0) {
-        const user = data[0];
-        
-        if (user.password !== values.password) {
-          messageApi.error("Password salah!");
-          setLoading(false);
-          return;
-        }
-        
-        // Simpan hanya data esensial agar cookie ringan dan tidak error di middleware
-        const sessionData = {
-          id: user.id,
-          name: user.name,
-          role_id: user.role_id,
-          is_approved_by_admin: user.is_approved_by_admin
-        };
-        
-        document.cookie = `user=${encodeURIComponent(JSON.stringify(sessionData))}; path=/; SameSite=Lax`;
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: values.email,
+        password: values.password,
+      });
 
+      if (result?.error) {
+        messageApi.error(result.error);
+      } else {
         messageApi.success("Login berhasil!");
         
-        // Route based on role
-        if (user.role_id == 3) {
-          router.push("/student/dashboard");
-        } else if (user.role_id == 2) {
-          if (user.is_approved_by_admin == 1) {
+        // Cek sesi untuk melakukan route redirection karena result tidak memuat data user
+        const resSession = await fetch("/api/auth/session");
+        const session = await resSession.json();
+        const user = session?.user;
+
+        if (user) {
+          // Route based on role
+          if (user.role_id == 3) {
+            router.push("/student/dashboard");
+          } else if (user.role_id == 2) {
+            if (user.is_approved_by_admin == 1) {
+              router.push("/dashboard");
+            } else {
+              router.push("/waiting-approval");
+            }
+          } else if (user.role_id == 1) {
             router.push("/dashboard");
           } else {
-            router.push("/waiting-approval");
+            router.push("/");
           }
-        } else if (user.role_id == 1) {
-          router.push("/dashboard");
         } else {
           router.push("/");
         }
-      } else {
-        messageApi.error("Email atau Password salah!");
       }
     } catch (err) {
       messageApi.error("Terjadi kesalahan saat menghubungi server.");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 function jsonResponse(data: any, status = 200) {
   return NextResponse.json(data, {
@@ -60,6 +61,13 @@ export async function PUT(
 
   try {
     const body = await req.json();
+    
+    // Hash password if provided
+    let updatedPassword = body.password;
+    if (body.password) {
+      updatedPassword = bcrypt.hashSync(body.password, 10);
+    }
+    
     const updated = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -67,7 +75,7 @@ export async function PUT(
         classId: body.class_id !== undefined ? (body.class_id ? Number(body.class_id) : null) : undefined,
         name: body.name,
         email: body.email ? body.email.toLowerCase() : undefined,
-        password: body.password,
+        password: updatedPassword,
         isApprovedByAdmin: body.is_approved_by_admin !== undefined ? Number(body.is_approved_by_admin) : undefined,
         instansiSekolah: body.instansi_sekolah,
         isActive: body.isactive !== undefined ? Boolean(body.isactive) : undefined,
@@ -105,7 +113,7 @@ export async function PATCH(
     if (body.class_id !== undefined) updateData.classId = body.class_id ? Number(body.class_id) : null;
     if (body.name !== undefined) updateData.name = body.name;
     if (body.email !== undefined) updateData.email = body.email.toLowerCase();
-    if (body.password !== undefined) updateData.password = body.password;
+    if (body.password !== undefined) updateData.password = bcrypt.hashSync(body.password, 10);
     if (body.is_approved_by_admin !== undefined) updateData.isApprovedByAdmin = Number(body.is_approved_by_admin);
     if (body.instansi_sekolah !== undefined) updateData.instansiSekolah = body.instansi_sekolah;
     if (body.isactive !== undefined) updateData.isActive = Boolean(body.isactive);

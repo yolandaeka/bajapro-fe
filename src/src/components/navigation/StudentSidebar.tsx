@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 const { Sider } = Layout;
 
@@ -31,10 +32,7 @@ const StudentSidebar: React.FC<StudentSidebarProps> = ({
   const pathname = usePathname();
 
   const handleLogout = () => {
-    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+    signOut({ callbackUrl: "/login" });
   };
 
   let activeKey = "dashboard";

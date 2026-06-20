@@ -21,6 +21,7 @@ import { Layout, Menu, ConfigProvider, Button } from "antd";
 import type { MenuProps } from "antd";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const { Sider } = Layout;
 
@@ -168,19 +169,9 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = () => {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [userRole, setUserRole] = useState<string>("PENGAJAR");
+  const { data: session } = useSession();
 
-  // 1. Ambil Role Asli dari Cookie
-  React.useEffect(() => {
-    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='))?.split('=')[1];
-    if (userCookie) {
-      try {
-        const decoded = decodeURIComponent(userCookie).replace(/^"|"$/g, '');
-        const user = JSON.parse(decoded);
-        setUserRole(user.role_id == 1 ? "ADMIN" : "PENGAJAR");
-      } catch (e) {}
-    }
-  }, []);
+  const userRole = (session?.user as any)?.role_id == 1 ? "ADMIN" : "PENGAJAR";
 
   const filteredItems = getFilteredMenu(allMenuItems, userRole);
 

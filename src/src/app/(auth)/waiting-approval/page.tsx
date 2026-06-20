@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button, Typography, Result, Input, Card, message } from "antd";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -107,9 +108,7 @@ export default function WaitingApprovalPage() {
             type="default" 
             block 
             onClick={() => {
-              // Hapus cookie agar tidak terjebak redirect loop oleh middleware
-              document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-              router.push("/login");
+              signOut({ callbackUrl: "/login" });
             }}
           >
             Kembali ke Login
