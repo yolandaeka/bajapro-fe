@@ -12,7 +12,6 @@ import {
   Space,
   Popover,
   Descriptions,
-  Tag,
 } from "antd";
 import {
   PlusOutlined,
@@ -22,12 +21,18 @@ import {
 import { useUser } from "@/src/hooks/users/useUsers";
 import { UserData } from "@/src/types/users";
 import { UserTable } from "@/src/components/features/users/UsersTable";
-
 import { useSession } from "next-auth/react";
+import { useAuth } from "@/src/hooks/useAuth";
 
 const { Title } = Typography;
 
 export default function UsersManager() {
+  const { can, loading: authLoading } = useAuth();
+
+  // --- CONFIG USER dari session NextAuth ---
+  const { data: session } = useSession();
+  const sessionUser = session?.user as any;
+
   const {
     users,
     loading,
@@ -38,23 +43,20 @@ export default function UsersManager() {
     roleOptions,
     instansiOptions,
     kelasOptions,
-  } = useUser();
-  
+  } = useUser(sessionUser);
+
   const [form] = Form.useForm();
-  const selectedFormRole = Form.useWatch("role", form);
 
-  // --- CONFIG USER ---
-  const { data: session } = useSession();
-  const [currentUserRole, setCurrentUserRole] = useState<string>("Admin");
-  const [currentUserId, setCurrentUserId] = useState<string | number>("p1");
+  // Gunakan useState biasa — lebih reliable daripada Form.useWatch di dalam Modal
+  const [selectedFormRole, setSelectedFormRole] = useState<string | undefined>(undefined);
 
-  React.useEffect(() => {
-    if (session?.user) {
-      const user = session.user as any;
-      setCurrentUserRole(user.role_id === 1 ? "Admin" : "Pengajar");
-      setCurrentUserId(user.id);
-    }
-  }, [session]);
+  const currentUserRole =
+    sessionUser?.role_id === 1
+      ? "Admin"
+      : sessionUser?.role_id === 3
+        ? "Teacher"
+        : "Students";
+  const currentUserId = sessionUser?.id;
 
   // --- STATES ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,22 +72,16 @@ export default function UsersManager() {
 
   // --- LOGIKA FILTERING ---
   const filteredUsers = users.filter((u) => {
-    // 1. Role Pengajar: Hanya lihat muridnya sendiri
-    if (currentUserRole === "Pengajar") {
-      if (u.role !== "Student") return false;
-      if (u.id !== currentUserId) return false; 
+    if (currentUserRole === "Teacher") {
+      if (u.role !== "Students") return false;
+      if (u.id !== currentUserId) return false;
     }
-
-    // 2. Search Text
     if (searchText && !u.name.toLowerCase().includes(searchText.toLowerCase())) return false;
-
-    // 3. Filter Dropdown
     if (filterRole && u.role !== filterRole) return false;
     if (filterInstansi && u.instansi_sekolah !== filterInstansi) return false;
     if (filterKelas && u.class_name !== filterKelas) return false;
-
     return true;
-  }); // 👈 Sekarang sudah tertutup dengan benar
+  });
 
   // --- HANDLERS ---
   const handleAction = (action: "add" | "edit" | "view", record?: UserData) => {
@@ -98,12 +94,24 @@ export default function UsersManager() {
     } else {
       setViewData(null);
       if (action === "add") {
-        form.resetFields();
-        if (currentUserRole === "Pengajar") {
-          setTimeout(() => form.setFieldsValue({ role: "Pelajar" }), 50);
+        if (currentUserRole === "Teacher") {
+          setSelectedFormRole("Students");
+          setTimeout(() => {
+            form.resetFields();
+            form.setFieldsValue({ role: "Students" });
+          }, 50);
+        } else {
+          setSelectedFormRole(undefined); // reset pilihan role
+          setTimeout(() => {
+            form.resetFields();
+          }, 50);
         }
       } else if (record) {
-        setTimeout(() => form.setFieldsValue(record), 50);
+        setSelectedFormRole(record.role);
+        setTimeout(() => {
+          form.resetFields();
+          form.setFieldsValue(record);
+        }, 50);
       }
     }
   };
@@ -115,7 +123,10 @@ export default function UsersManager() {
       if (modalMode === "add") success = await addUser(values);
       else if (modalMode === "edit" && selectedId)
         success = await editUser(selectedId.toString(), values);
-      if (success) setIsModalOpen(false);
+      if (success) {
+        setIsModalOpen(false);
+        setSelectedFormRole(undefined);
+      }
     } catch (error) {
       console.log("Validasi form gagal", error);
     }
@@ -149,8 +160,8 @@ export default function UsersManager() {
           </div>
         </>
       )}
-      
-      {currentUserRole === "Pengajar" && (
+
+      {currentUserRole === "Teacher" && (
         <div>
           <Typography.Text strong>Kelas</Typography.Text>
           <Select
@@ -163,12 +174,12 @@ export default function UsersManager() {
           />
         </div>
       )}
-      
+
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "8px" }}>
         <Button type="dashed" onClick={() => {
-            setFilterRole(null);
-            setFilterInstansi(null);
-            setFilterKelas(null);
+          setFilterRole(null);
+          setFilterInstansi(null);
+          setFilterKelas(null);
         }}>Reset</Button>
         <Button
           type="primary"
@@ -180,6 +191,93 @@ export default function UsersManager() {
       </div>
     </div>
   );
+
+  // --- FORM: field kondisional berdasarkan selectedFormRole (useState, bukan Form.useWatch) ---
+  const renderFormFields = () => (
+    <Form form={form} layout="vertical" style={{ marginTop: "24px" }}>
+      {/* Nama + Role */}
+      <div style={{ display: "flex", gap: "16px" }}>
+        <Form.Item label="Nama User" name="name" style={{ flex: 1 }} rules={[{ required: true }]}>
+          <Input placeholder="Masukkan nama lengkap" size="large" />
+        </Form.Item>
+        <Form.Item label="Role" name="role" style={{ flex: 1 }} rules={[{ required: true }]}>
+          <Select
+            placeholder="Pilih Role"
+            size="large"
+            options={currentUserRole === "Teacher" ? [{ label: "Students", value: "Students" }] : roleOptions}
+            disabled={currentUserRole === "Teacher"}
+            // Saat user pilih role, update state lokal (bukan Form.useWatch)
+            onChange={(value) => setSelectedFormRole(value as string)}
+          />
+        </Form.Item>
+      </div>
+
+      {/* STUDENTS: Dropdown Kelas (wajib) */}
+      {selectedFormRole === "Students" && (
+        <Form.Item
+          label="Kelas"
+          name="class_name"
+          rules={[{ required: true, message: "Kelas wajib dipilih!" }]}
+        >
+          <Select
+            placeholder="Pilih Kelas"
+            size="large"
+            options={kelasOptions}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          />
+        </Form.Item>
+      )}
+
+      {/* TEACHER: NIP (opsional) + Instansi (wajib) */}
+      {selectedFormRole === "Teacher" && (
+        <>
+          <Form.Item label="NIP" name="nip">
+            <Input placeholder="Masukkan NIP (opsional)" size="large" />
+          </Form.Item>
+          <Form.Item
+            label="Nama Instansi / Sekolah"
+            name="instansi_sekolah"
+            rules={[{ required: true, message: "Instansi/Sekolah wajib diisi!" }]}
+          >
+            <Input placeholder="Contoh: SMAN 1 Malang / Polinema" size="large" />
+          </Form.Item>
+        </>
+      )}
+
+      {/* EMAIL & PASSWORD — untuk semua role */}
+      <div style={{ display: "flex", gap: "16px" }}>
+        <Form.Item
+          label="Email"
+          name="email"
+          style={{ flex: 1 }}
+          rules={[{ required: true, type: "email" }]}
+        >
+          <Input placeholder="contoh@email.com" size="large" />
+        </Form.Item>
+        {modalMode === "add" && (
+          <Form.Item label="Password" name="password" style={{ flex: 1 }} rules={[{ required: true }]}>
+            <Input.Password placeholder="Masukkan password" size="large" />
+          </Form.Item>
+        )}
+      </div>
+    </Form>
+  );
+
+  if (!authLoading && !can("users.read")) {
+    return (
+      <div style={{ padding: 24, textAlign: "center", marginTop: 50 }}>
+        <Typography.Title level={3} style={{ color: "#ff4d4f" }}>
+          Akses Ditolak
+        </Typography.Title>
+        <Typography.Text>
+          Anda tidak memiliki izin untuk melihat halaman Pengguna.
+        </Typography.Text>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "24px" }}>
@@ -240,13 +338,23 @@ export default function UsersManager() {
           </span>
         }
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setSelectedFormRole(undefined);
+        }}
         width={600}
+        destroyOnHidden   // Hancurkan form saat modal ditutup supaya state bersih
         footer={
           modalMode === "view" ? (
             <Button size="large" onClick={() => setIsModalOpen(false)}>Tutup</Button>
           ) : (
-            <Button size="large" type="primary" style={{ backgroundColor: "#7246BA" }} onClick={handleSimpan} loading={loading}>
+            <Button
+              size="large"
+              type="primary"
+              style={{ backgroundColor: "#7246BA" }}
+              onClick={handleSimpan}
+              loading={loading}
+            >
               Simpan
             </Button>
           )
@@ -258,10 +366,13 @@ export default function UsersManager() {
               <Descriptions.Item label="Nama User"><strong>{viewData.name}</strong></Descriptions.Item>
               <Descriptions.Item label="Role">{viewData.role}</Descriptions.Item>
               <Descriptions.Item label="Email">{viewData.email}</Descriptions.Item>
-              {viewData.role === "Pengajar" && (
-                <Descriptions.Item label="Instansi">{viewData.instansi_sekolah || "-"}</Descriptions.Item>
+              {viewData.role === "Teacher" && (
+                <>
+                  {viewData.nip && <Descriptions.Item label="NIP">{viewData.nip}</Descriptions.Item>}
+                  <Descriptions.Item label="Instansi">{viewData.instansi_sekolah || "-"}</Descriptions.Item>
+                </>
               )}
-              {viewData.role === "Pelajar" && (
+              {viewData.role === "Students" && (
                 <Descriptions.Item label="Kelas">{viewData.class_name || "-"}</Descriptions.Item>
               )}
             </Descriptions>
@@ -269,47 +380,9 @@ export default function UsersManager() {
             <p>Memuat data...</p>
           )
         ) : (
-          <Form form={form} layout="vertical" style={{ marginTop: "24px" }}>
-            <div style={{ display: "flex", gap: "16px" }}>
-              <Form.Item label="Nama User" name="name" style={{ flex: 1 }} rules={[{ required: true }]}>
-                <Input placeholder="Type here" size="large" />
-              </Form.Item>
-              <Form.Item label="Role" name="role" style={{ flex: 1 }} rules={[{ required: true }]}>
-                <Select 
-                  placeholder="Pilih Role" 
-                  size="large" 
-                  options={currentUserRole === "Pengajar" ? [{ label: "Pelajar", value: "Pelajar" }] : roleOptions} 
-                  disabled={currentUserRole === "Pengajar"}
-                />
-              </Form.Item>
-            </div>
-            
-            {selectedFormRole === "Pengajar" && (
-              <Form.Item label="Nama Instansi/Sekolah" name="instansi_sekolah" rules={[{ required: true }]}>
-                <Select placeholder="Pilih Instansi" size="large" options={instansiOptions} />
-              </Form.Item>
-            )}
-            
-            {selectedFormRole === "Pelajar" && (
-              <Form.Item label="Kelas" name="class_name" rules={[{ required: true }]}>
-                <Select placeholder="Pilih Kelas" size="large" options={kelasOptions} />
-              </Form.Item>
-            )}
-            
-            <div style={{ display: "flex", gap: "16px" }}>
-              <Form.Item label="Email" name="email" style={{ flex: 1 }} rules={[{ required: true, type: "email" }]}>
-                <Input placeholder="Type here" size="large" />
-              </Form.Item>
-              {modalMode === "add" && (
-                <Form.Item label="Password" name="password" style={{ flex: 1 }} rules={[{ required: true }]}>
-                  <Input.Password placeholder="Type here" size="large" />
-                </Form.Item>
-              )}
-            </div>
-          </Form>
+          renderFormFields()
         )}
       </Modal>
     </div>
   );
 }
-

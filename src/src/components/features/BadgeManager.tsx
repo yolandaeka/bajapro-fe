@@ -12,8 +12,9 @@ import {
   Button,
   Upload,
   message,
+  Spin,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import { BadgeTable } from "@/src/components/features/badge/BadgeTable";
 import { useBadge } from "@/src/hooks/badge/useBadge";
 import { BadgeData } from "@/src/types/badge";
@@ -22,13 +23,15 @@ import type { UploadProps } from "antd";
 
 const { Title } = Typography;
 
-const getBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+/** Upload gambar ke server dan kembalikan URL publik */
+const uploadImageToServer = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  if (!res.ok) throw new Error("Gagal upload gambar ke server");
+  const data = await res.json();
+  return data.url as string; // e.g. "/uploads/1234567890-badge.png"
+};
 
 interface UploadWrapperProps extends Omit<UploadProps, "value" | "onChange"> {
   value?: string;
@@ -61,6 +64,7 @@ export default function BadgeManager() {
   const [viewData, setViewData] = useState<BadgeData | null>(null);
 
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
 
   const handleAction = async (action: "add" | "edit" | "view", id?: string | number) => {
     setModalMode(action);
@@ -215,25 +219,45 @@ export default function BadgeManager() {
                   const isJpgOrPng =
                     file.type === "image/jpeg" || file.type === "image/png";
                   if (!isJpgOrPng) {
-                    message.error(
-                      "Gagal! Hanya bisa upload file JPG atau PNG.",
-                    );
+                    message.error("Gagal! Hanya bisa upload file JPG atau PNG.");
                     return Upload.LIST_IGNORE;
                   }
-
                   const isLt2M = file.size / 1024 / 1024 < 2;
                   if (!isLt2M) {
                     message.error("Gagal! Ukuran gambar maksimal 2MB.");
                     return Upload.LIST_IGNORE;
                   }
-
-                  const base64 = await getBase64(file as unknown as File);
-                  setImageUrl(base64);
-                  form.setFieldsValue({ image: base64 });
+                  try {
+                    setUploading(true);
+                    const formData = new FormData();
+                    formData.append("file", file as unknown as File);
+                    try {
+                      const response = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        setImageUrl(data.url);
+                        form.setFieldsValue({ image: data.url });
+                      } else {
+                        message.error(data.error || "Gagal mengunggah gambar.");
+                      }
+                    } catch (error) {
+                      message.error("Terjadi kesalahan saat mengunggah gambar.");
+                    }
+                  } finally {
+                    setUploading(false);
+                  }
                   return false;
                 }}
               >
-                {imageUrl ? (
+                {uploading ? (
+                  <div>
+                    <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                    <div style={{ marginTop: 8 }}>Mengupload...</div>
+                  </div>
+                ) : imageUrl ? (
                   <Image
                     src={imageUrl}
                     alt="ikon"
@@ -249,7 +273,7 @@ export default function BadgeManager() {
                 ) : (
                   <div>
                     <PlusOutlined />
-                    <div style={{ marginTop: 8 }}>Upload</div>
+                    <div style={{ marginTop: 8 }}>Upload Gambar</div>
                   </div>
                 )}
               </UploadWrapper>

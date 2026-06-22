@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { message } from "antd";
+import { App } from "antd";
 import React from "react";
 import { TeacherRecord } from "@/src/types/approval";
 import { fetchPengajarApi, approvePengajarApi, rejectPengajarApi } from "@/src/actions/approval/approvalApi";
 
 export const useApproval = () => {
+  const { message } = App.useApp();
   const [data, setData] = useState<TeacherRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState("");
@@ -28,7 +29,7 @@ export const useApproval = () => {
       }
     };
     loadData();
-  }, []);
+  }, [message]);
 
   // Handler Bulk Approve
   const handleBulkApprove = async () => {
@@ -57,6 +58,32 @@ export const useApproval = () => {
       setSelectedRowKeys([]); 
     } catch (error) {
       message.error("Gagal menolak data terpilih.");
+    }
+  };
+
+  const handleRowApprove = async (id: React.Key) => {
+    try {
+      await approvePengajarApi([id]);
+      setData((prev) =>
+        prev.map((item) => (item.key === id ? { ...item, is_approved_by_admin: 1 } : item))
+      );
+      message.success(`Akun pengajar berhasil di-approve!`);
+      setSelectedRowKeys((prev) => prev.filter((key) => key !== id));
+    } catch (error) {
+      message.error("Gagal meng-approve data.");
+    }
+  };
+
+  const handleRowReject = async (id: React.Key) => {
+    try {
+      await rejectPengajarApi([id]);
+      setData((prev) =>
+        prev.map((item) => (item.key === id ? { ...item, is_approved_by_admin: 2 } : item))
+      );
+      message.warning(`Akun pengajar ditolak.`);
+      setSelectedRowKeys((prev) => prev.filter((key) => key !== id));
+    } catch (error) {
+      message.error("Gagal menolak data.");
     }
   };
 
@@ -94,6 +121,8 @@ export const useApproval = () => {
     filteredData,
     rowSelection,
     handleBulkApprove,
-    handleBulkReject
+    handleBulkReject,
+    handleRowApprove,
+    handleRowReject
   };
 };

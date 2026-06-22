@@ -30,16 +30,19 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
       title: "Ikon Badge",
       dataIndex: "image",
       key: "image",
-      render: (imageUrl: string) => (
-        <Image
-          src={imageUrl}
-          alt="badge icon"
-          width={40}
-          height={40}
-          style={{ objectFit: "contain", borderRadius: "8px" }}
-          onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/40?text=?" }}
-        />
-      ),
+      render: (imageUrl: string) => {
+        const safeUrl = imageUrl?.startsWith("http") || imageUrl?.startsWith("/") ? imageUrl : `/${imageUrl}`;
+        return (
+          <img
+            src={safeUrl || "https://via.placeholder.com/40?text=?"}
+            alt="badge icon"
+            width={40}
+            height={40}
+            style={{ objectFit: "contain", borderRadius: "8px" }}
+            onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/40?text=?" }}
+          />
+        );
+      },
     },
     {
       title: "Nama Badge",

@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
         token.is_approved_by_admin = (user as any).is_approved_by_admin;
         token.class_id = (user as any).class_id;
         token.instansi_sekolah = (user as any).instansi_sekolah;
+        token.name = user.name; // Pastikan name tersimpan
       }
       if (trigger === "update" && session) {
         token = { ...token, ...session };
@@ -55,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).is_approved_by_admin = token.is_approved_by_admin;
         (session.user as any).class_id = token.class_id;
         (session.user as any).instansi_sekolah = token.instansi_sekolah;
+        session.user.name = token.name; // Pastikan name ter-mapping
       }
       return session;
     }

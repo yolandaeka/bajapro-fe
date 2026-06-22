@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 function jsonResponse(data: any, status = 200) {
   return NextResponse.json(data, {
     status,

@@ -87,32 +87,41 @@ export const usePermission = () => {
     });
   }, [allPermissions]);
 
-  // 4. Centang / Uncentang di layar sementara
-  const handleToggle = (permId: number, checked: boolean) => {
-    setActivePermissionIds(prev => 
-      checked ? [...prev, permId] : prev.filter(id => id !== permId)
-    );
-  };
-
-  // 5. Simpan ke Backend
-  const handleSave = async () => {
+  // 4. Centang / Uncentang di layar sementara & Auto-save
+  const handleToggle = async (permId: number, checked: boolean) => {
     if (!selectedRole) return;
+    
+    const newActiveIds = checked 
+      ? [...activePermissionIds, permId] 
+      : activePermissionIds.filter(id => id !== permId);
+      
+    setActivePermissionIds(newActiveIds);
     setLoading(true);
+    
     try {
-      await updateRolePermissionsApi(selectedRole.id, activePermissionIds);
-      messageApi.success(`Akses ${selectedRole.role_name} berhasil diperbarui!`);
+      await updateRolePermissionsApi(selectedRole.id, newActiveIds);
+      messageApi.success(`Akses fitur diperbarui!`);
       
       // Update state allPermissions agar kalau pindah role tidak perlu refresh browser
       const updatedPerms = await fetchAllPermissionsApi();
       const permsData = Array.isArray(updatedPerms) ? updatedPerms : (updatedPerms as { data?: Permission[] })?.data || [];
       setAllPermissions(permsData);
 
+      // Broadcast ke seluruh komponen yg pakai useAuth agar langsung re-fetch
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('permission-updated'));
+      }
+
     } catch (error) {
       messageApi.error("Gagal menyimpan perubahan");
+      // Revert on error
+      setActivePermissionIds(activePermissionIds);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSave = async () => {}; // Dummy to not break exports if used elsewhere
 
   return {
     loading, roles, selectedRole, tableDataSource, activePermissionIds, 

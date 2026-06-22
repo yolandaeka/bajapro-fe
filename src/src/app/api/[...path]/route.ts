@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 function jsonResponse(data: any, status = 200) {
   return NextResponse.json(data, {
     status,
@@ -21,7 +23,8 @@ function mapLevel(l: any) {
   return {
     id: l.id,
     level_name: l.levelName,
-    description: l.description,
+    deskripsi: l.description,
+    description: l.description, // keep description just in case it's used elsewhere
     isactive: l.isActive,
   };
 }
@@ -288,7 +291,11 @@ export async function GET(
 
     // 9. code_question
     if (route === 'code_question') {
-      const items = await prisma.codeQuestion.findMany();
+      const subLessonId = searchParams.get('sub_lesson_id');
+      const items = await prisma.codeQuestion.findMany({
+        where: subLessonId ? { subLessonId: Number(subLessonId) } : {},
+        orderBy: { id: 'asc' }
+      });
       return jsonResponse(items.map(mapCodeQuestion));
     }
 
@@ -303,12 +310,55 @@ export async function GET(
       return jsonResponse(items.map(mapEssayQuestion));
     }
 
+    // 11. Users
+    if (route === 'users') {
+      const users = await prisma.user.findMany({ include: { class: true, role: true }, orderBy: { id: 'asc' } });
+      return jsonResponse(users.map((u: any) => ({
+        id: u.id, name: u.name, email: u.email, role: u.role?.name || "", isactive: u.isActive ? 1 : 0,
+        instansi_sekolah: u.instansiSekolah || null, class_name: u.class?.className || null, is_approved_by_admin: u.isApprovedByAdmin
+      })));
+    }
+
+    // 12. Permissions
+    if (route === 'permissions') {
+      const name = searchParams.get('name');
+      const whereClause: any = {};
+      if (name) {
+        whereClause.name = name;
+      }
+      const permissions = await prisma.permission.findMany({ where: whereClause, orderBy: { id: 'asc' } });
+      return jsonResponse(permissions);
+    }
+
+    // 13. Roles
+    if (route === 'roles') {
+      const roles = await prisma.role.findMany({ orderBy: { id: 'asc' } });
+      return jsonResponse(roles);
+    }
+
+    // 14. Class
+    if (route === 'class') {
+      const teacherId = searchParams.get('teacher_id');
+      const whereClause: any = {};
+      if (teacherId) {
+        whereClause.teacherId = Number(teacherId);
+      }
+      const classes = await prisma.class.findMany({ where: whereClause, orderBy: { id: 'asc' } });
+      return jsonResponse(classes.map((c: any) => ({
+        id: c.id, class_name: c.className, school_name: c.schoolName, class_code: c.classCode, teacher_id: c.teacherId
+      })));
+    }
+
     // -- Handle GET by ID for all resources --
     if (path.length === 2) {
       const resource = path[0];
       const id = Number(path[1]);
       
       if (!isNaN(id)) {
+        if (resource === 'levels') {
+          const item = await prisma.level.findUnique({ where: { id } });
+          return item ? jsonResponse(mapLevel(item)) : jsonResponse({ error: "Not found" }, 404);
+        }
         if (resource === 'courses') {
           const item = await prisma.course.findUnique({ where: { id } });
           return item ? jsonResponse(mapCourse(item)) : jsonResponse({ error: "Not found" }, 404);
@@ -351,6 +401,10 @@ export async function PATCH(
       const body = await req.json();
 
       if (!isNaN(id)) {
+        if (resource === 'levels') {
+          const updated = await prisma.level.update({ where: { id }, data: { levelName: body.levelName || body.level_name, description: body.description, isActive: body.isactive === 'Aktif' || body.isactive === true || body.isActive === true || body.isActive === 'Aktif' } });
+          return jsonResponse(mapLevel(updated));
+        }
         if (resource === 'courses') {
           const updated = await prisma.course.update({ where: { id }, data: { courseName: body.course_name, description: body.description, imgThumbnail: body.img_thumbnail } });
           return jsonResponse(mapCourse(updated));
@@ -362,6 +416,18 @@ export async function PATCH(
         if (resource === 'sublessons') {
           const updated = await prisma.subLesson.update({ where: { id }, data: { title: body.title, orderPosition: body.order_position } });
           return jsonResponse(mapSubLesson(updated));
+        }
+        if (resource === 'materials') {
+          const updated = await prisma.material.update({ where: { id }, data: { title: body.title, materials: body.materials || "", urlVideo: body.url_video, contentPosition: body.content_position } });
+          return jsonResponse(mapMaterial(updated));
+        }
+        if (resource === 'code_question') {
+          const updated = await prisma.codeQuestion.update({ where: { id }, data: { subLessonId: body.sub_lesson_id ? Number(body.sub_lesson_id) : undefined, codeQuestion: body.code_question, score: body.score } });
+          return jsonResponse(mapCodeQuestion(updated));
+        }
+        if (resource === 'essay_question') {
+          const updated = await prisma.essayQuestion.update({ where: { id }, data: { essayQuestion: body.question, answer: body.answer, answer2: body.answer_2 || null, answer3: body.answer_3 || null, answer4: body.answer_4 || null } });
+          return jsonResponse(mapEssayQuestion(updated));
         }
       }
     }
@@ -379,17 +445,38 @@ export async function POST(
   const route = path.join('/');
   try {
     const body = await req.json();
+    if (route === 'levels') {
+      const created = await prisma.level.create({ data: { levelName: body.levelName || body.level_name, description: body.description, isActive: true } });
+      return jsonResponse(mapLevel(created));
+    }
     if (route === 'courses') {
       const created = await prisma.course.create({ data: { courseName: body.course_name, description: body.description, imgThumbnail: body.img_thumbnail, published: 1, isActive: true } });
       return jsonResponse(mapCourse(created));
     }
     if (route === 'lessons') {
-      const created = await prisma.lesson.create({ data: { courseId: body.course_id, levelId: body.level_id, title: body.title, description: body.description, position: body.position, published: 1, isActive: true } });
+      const courseId = Number(body.course_id);
+      const count = await prisma.lesson.count({ where: { courseId } });
+      const created = await prisma.lesson.create({ data: { courseId, levelId: Number(body.level_id), title: body.title, description: body.description || "", position: body.position || count + 1, published: 1, isActive: true } });
       return jsonResponse(mapLesson(created));
     }
     if (route === 'sublessons') {
-      const created = await prisma.subLesson.create({ data: { lessonId: body.lesson_id, title: body.title, orderPosition: body.order_position, isActive: true } });
+      const lessonId = Number(body.lesson_id);
+      const count = await prisma.subLesson.count({ where: { lessonId } });
+      const created = await prisma.subLesson.create({ data: { lessonId, title: body.title, orderPosition: body.order_position ? Number(body.order_position) : count + 1, isActive: true } });
       return jsonResponse(mapSubLesson(created));
+    }
+    if (route === 'materials') {
+      const subLessonId = Number(body.sub_lesson_id);
+      const created = await prisma.material.create({ data: { subLessonId, title: body.title, materials: body.materials || "", urlVideo: body.url_video, contentPosition: body.content_position ? Number(body.content_position) : 1, isActive: true } });
+      return jsonResponse(mapMaterial(created));
+    }
+    if (route === 'code_question') {
+      const created = await prisma.codeQuestion.create({ data: { subLessonId: Number(body.sub_lesson_id), codeQuestion: body.code_question || "", score: body.score ? Number(body.score) : 30, isActive: true } });
+      return jsonResponse(mapCodeQuestion(created));
+    }
+    if (route === 'essay_question') {
+      const created = await prisma.essayQuestion.create({ data: { codeQuestionId: body.code_question_id ? Number(body.code_question_id) : undefined, essayQuestion: body.question || "", answer: body.answer || "", answer2: body.answer_2 || body.answer_1 || null, answer3: body.answer_3 || body.answer_2 || null, answer4: body.answer_4 || body.answer_3 || null, isActive: true } });
+      return jsonResponse(mapEssayQuestion(created));
     }
     if (route === 'users') {
       let roleId = 3; // Pelajar default
@@ -402,13 +489,18 @@ export async function POST(
         if (classObj) classId = classObj.id;
       }
 
+      const existingUser = await prisma.user.findUnique({ where: { email: body.email } });
+      if (existingUser) {
+        return jsonResponse({ error: 'Email sudah terdaftar' }, 400);
+      }
+
       const created = await prisma.user.create({
         data: {
           name: body.name,
           email: body.email,
           roleId: roleId,
-          password: body.password || "password123",
-          instansiSekolah: body.instansi_sekolah || null,
+          password: require('bcryptjs').hashSync(body.password || "password123", 10),
+          instansiSekolah: body.instansi_sekolah || "",
           classId: classId,
           isActive: true,
         }
@@ -428,6 +520,7 @@ export async function POST(
     }
     return jsonResponse({ error: 'Route not found' }, 404);
   } catch (error: any) {
+    console.error("API POST ERROR:", error);
     return jsonResponse({ error: error.message || 'Internal Server Error' }, 500);
   }
 }
@@ -438,19 +531,48 @@ export async function PUT(
 ) {
   const { path } = await params;
   try {
-    if (path.length === 2 && path[0] === 'users') {
+    if (path.length === 2) {
+      const resource = path[0];
       const id = Number(path[1]);
       const body = await req.json();
+
       if (!isNaN(id)) {
-        const updated = await prisma.user.update({
-          where: { id },
-          data: {
-            name: body.name,
-            email: body.email,
-            instansiSekolah: body.instansi_sekolah || null,
+        if (resource === 'users') {
+          const updated = await prisma.user.update({
+            where: { id },
+            data: {
+              name: body.name,
+              email: body.email,
+              instansiSekolah: body.instansi_sekolah || null,
+              nip: body.nip || null,
+            }
+          });
+          return jsonResponse(updated);
+        }
+
+        // Bulk reorder for lessons
+        if (resource === 'lessons' && body.updates) {
+          const updates = body.updates as { id: number; newPosition: number }[];
+          for (const update of updates) {
+            await prisma.lesson.update({
+              where: { id: update.id },
+              data: { position: update.newPosition }
+            });
           }
-        });
-        return jsonResponse(updated);
+          return jsonResponse({ success: true });
+        }
+
+        // Bulk reorder for sublessons
+        if (resource === 'sublessons' && body.updates) {
+          const updates = body.updates as { id: number; newPosition: number }[];
+          for (const update of updates) {
+            await prisma.subLesson.update({
+              where: { id: update.id },
+              data: { orderPosition: update.newPosition }
+            });
+          }
+          return jsonResponse({ success: true });
+        }
       }
     }
     return jsonResponse({ error: 'Route not found' }, 404);
@@ -469,7 +591,8 @@ export async function DELETE(
     const id = Number(path[1]);
     if (!isNaN(id)) {
       try {
-        if (resource === 'courses') await prisma.course.delete({ where: { id } });
+        if (resource === 'levels') await prisma.level.delete({ where: { id } });
+        else if (resource === 'courses') await prisma.course.delete({ where: { id } });
         else if (resource === 'lessons') await prisma.lesson.delete({ where: { id } });
         else if (resource === 'sublessons') await prisma.subLesson.delete({ where: { id } });
         return jsonResponse({ success: true });

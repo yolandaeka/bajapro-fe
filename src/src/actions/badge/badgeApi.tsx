@@ -33,8 +33,13 @@ const handleFetch = async (url: string, options?: RequestInit) => {
         if (response.status === 401 || response.status === 403) {
           console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
         }
-        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
-        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+        let errorMsg = response.statusText;
+        try {
+          const errorJson = await response.json();
+          errorMsg = errorJson.error || errorMsg;
+        } catch (e) {}
+        console.error(`Fetch Error: ${response.status} - ${errorMsg} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${errorMsg}`);
       }
       
       return response.json();

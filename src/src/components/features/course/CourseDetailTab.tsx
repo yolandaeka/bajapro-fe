@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Upload, message, Image } from "antd";
+import { Form, Input, Button, Upload, message, Image, App } from "antd";
 import { UploadOutlined, SaveOutlined } from "@ant-design/icons";
 import type { RcFile } from "antd/es/upload";
 import { CourseRecord, CourseFormData } from "@/src/types/course";
@@ -23,7 +23,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
   const { can } = useAuth();
   const canEdit = can('course.update');
   const [form] = Form.useForm();
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message: messageApi } = App.useApp();
 
   const [previewImage, setPreviewImage] = useState<string>(
     initialData?.img_thumbnail || ""
@@ -39,6 +39,9 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
   }, [initialData, form]);
 
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState<boolean>(false);
+
   const handleBeforeUpload = (file: RcFile) => {
     const isAllowedType = ["image/png", "image/jpeg", "image/jpg"].includes(file.type);
     if (!isAllowedType) {
@@ -52,26 +55,49 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
       return Upload.LIST_IGNORE;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setPreviewImage(reader.result as string);
-    };
+    setSelectedFile(file);
+    setPreviewImage(URL.createObjectURL(file));
 
     return false;
   };
 
   const onFinish = async (values: CourseFormData) => {
+    let finalImageUrl = previewImage;
+
+    // Jika ada file baru yang dipilih, upload file ke API
+    if (selectedFile) {
+      try {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!res.ok) throw new Error("Gagal mengunggah gambar");
+        
+        const data = await res.json();
+        finalImageUrl = data.url;
+      } catch (err) {
+        messageApi.error("Terjadi kesalahan saat mengunggah gambar");
+        setUploading(false);
+        return; // Jangan lanjutkan simpan form jika upload gagal
+      } finally {
+        setUploading(false);
+      }
+    }
+
     const payload = {
       ...values,
-      img_thumbnail: previewImage, 
+      img_thumbnail: finalImageUrl, 
     };
     await onSave(payload); 
   };
 
   return (
     <>
-      {contextHolder}
       <style>{`
         .ant-input-disabled, 
         .ant-select-disabled .ant-select-selection-item,
@@ -147,7 +173,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
           <Button 
             type="primary" 
             htmlType="submit" 
-            loading={loading} 
+            loading={loading || uploading} 
             icon={<SaveOutlined />}
           >
             Simpan

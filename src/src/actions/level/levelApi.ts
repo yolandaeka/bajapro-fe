@@ -71,11 +71,11 @@ export const createLevelApi = async (data: LevelFormData): Promise<void> => {
   }
 };
 
-// 4. PUT (EDIT)
+// 4. PUT/PATCH (EDIT)
 export const updateLevelApi = async (id: string | number, data: LevelFormData): Promise<void> => {
   if (USE_REAL_API) {
     const response = await fetch(`${BASE_URL}/levels/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });

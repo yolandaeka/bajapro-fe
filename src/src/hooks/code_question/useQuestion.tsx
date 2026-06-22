@@ -26,20 +26,18 @@ export const useQuestion = () => {
   const loadCourses = useCallback(async () => {
     const data = await api.fetchCoursesApi();
 
-    setCourses(data.map((c: { id: string | number; course_name: string }) => ({ label: c.course_name, value: c.id })));
+    setCourses(data.map((c: { id: string | number; course_name: string }) => ({ label: c.course_name, value: Number(c.id) })));
   }, []);
 
   const loadLessons = useCallback(async (courseId: number | string) => {
     const res = await api.fetchLessonsByCourseApi(courseId);
     
-    setLessons(res.map((l: { id: string | number; title: string }) => ({ label: l.title, value: l.id })));
+    setLessons(res.map((l: { id: string | number; title: string }) => ({ label: l.title, value: Number(l.id) })));
   }, []);
 
-  // ✅ FIX: value pakai string | number karena json-server kadang return id string random
   const loadSubLessons = useCallback(async (lessonId: number | string) => {
     const res = await api.fetchSubLessonsByLessonApi(lessonId);
-    // GANTI (sl: any) menjadi (sl: { id: number; name: string })
-    setSubLessons(res.map((sl: { id: string | number; title: string }) => ({ label: sl.title, value: sl.id })));
+    setSubLessons(res.map((sl: { id: string | number; title: string }) => ({ label: sl.title, value: Number(sl.id) })));
   }, []);
 
   const clearSubLessons = useCallback(() => setSubLessons([]), []);

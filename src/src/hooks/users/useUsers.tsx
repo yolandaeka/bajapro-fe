@@ -11,7 +11,12 @@ import {
   getRoleOptionsApi 
 } from "@/src/actions/users/usersApi";
 
-export const useUser = () => {
+interface SessionUser {
+  id?: number | string;
+  role_id?: number | string;
+}
+
+export const useUser = (sessionUser?: SessionUser | null) => {
   // State untuk data tabel
   const [users, setUsers] = useState<UserData[]>([]);
   
@@ -39,9 +44,13 @@ export const useUser = () => {
   // 2. Fungsi khusus untuk mengambil opsi Filter & Form
   const fetchOptions = useCallback(async () => {
     try {
+      // Kalau yang login adalah Pengajar (role_id=2), kirim ID-nya agar kelas difilter
+      const isPengajar = Number(sessionUser?.role_id) === 2;
+      const teacherId = isPengajar ? Number(sessionUser?.id) : null;
+
       const [instansiData, kelasData, roleData] = await Promise.all([
         getInstansiOptionsApi(),
-        getKelasOptionsApi(),
+        getKelasOptionsApi(teacherId),
         getRoleOptionsApi()
       ]);
       setInstansiOptions(instansiData);
@@ -50,7 +59,7 @@ export const useUser = () => {
     } catch (error) {
       console.error("Gagal memuat data opsi dropdown", error);
     }
-  }, []);
+  }, [sessionUser?.id, sessionUser?.role_id]);
 
   // 3. Panggil kedua fungsi di atas SAAT HALAMAN PERTAMA KALI DIBUKA
   useEffect(() => {
@@ -114,3 +123,4 @@ export const useUser = () => {
     contextHolder 
   };
 };
+

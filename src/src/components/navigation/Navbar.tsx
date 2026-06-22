@@ -25,8 +25,8 @@ const Navbar = () => {
   const { data: session } = useSession();
 
   const userInfo = {
-    name: session?.user?.name || (session?.user as any)?.username || ((session?.user as any)?.role_id == 1 ? "Administrator" : "Pengajar"),
-    role: (session?.user as any)?.role_id == 1 ? "ADMIN" : "PENGAJAR"
+    name: session?.user?.name || (session?.user as any)?.username || (session?.user ? ((session.user as any).role_id == 1 ? "Administrator" : "Pengajar") : ""),
+    role: session?.user ? ((session.user as any).role_id == 1 ? "ADMIN" : "PENGAJAR") : ""
   };
 
   const generateAutoBreadcrumbs = (): BreadcrumbItem[] => {

@@ -31,8 +31,13 @@ const handleFetch = async (url: string, options?: RequestInit) => {
         if (response.status === 401 || response.status === 403) {
           console.warn("Akses ditolak atau sesi kedaluwarsa. Redirecting ke login...");
         }
-        console.error(`Fetch Error: ${response.status} - ${response.statusText} pada URL: ${url}`);
-        throw new Error(`Server Error (${response.status}): ${response.statusText}`);
+        let errorMsg = response.statusText;
+        try {
+          const errorJson = await response.json();
+          errorMsg = errorJson.error || errorMsg;
+        } catch (e) {}
+        console.error(`Fetch Error: ${response.status} - ${errorMsg} pada URL: ${url}`);
+        throw new Error(`Server Error (${response.status}): ${errorMsg}`);
       }
       
       return response.json();
@@ -174,31 +179,13 @@ export const getInstansiOptionsApi = async (): Promise<{ label: string; value: s
   }
 };
 
-export const getKelasOptionsApi = async (): Promise<{ label: string; value: string }[]> => {
+export const getKelasOptionsApi = async (teacherId?: number | null): Promise<{ label: string; value: string }[]> => {
   if (USE_REAL_API) {
     try {
-      let isPengajar = false;
-      let userId = null;
-      if (typeof window !== "undefined") {
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          try {
-            const user = JSON.parse(userStr);
-            if (user.role_id == 2 || user.role === "Pengajar" || user.role_id === "2") {
-              isPengajar = true;
-              userId = user.id;
-            }
-          } catch (e) {}
-        }
-      }
-
-      let classes;
-      
-      if (isPengajar && userId) {
-        classes = await handleFetch(`${BASE_URL}/class?teacher_id=${userId}`);
-      } else {
-        classes = await handleFetch(`${BASE_URL}/class`);
-      }
+      const url = teacherId
+        ? `${BASE_URL}/class?teacher_id=${teacherId}`
+        : `${BASE_URL}/class`;
+      const classes = await handleFetch(url);
       return classes.map((c: any) => ({ label: c.class_name, value: c.class_name }));
     } catch (error) {
       return [

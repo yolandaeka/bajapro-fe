@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { message, Modal } from "antd";
+import { App } from "antd";
 import { useRouter } from "next/navigation";
 import {
   CourseRecord,
@@ -39,8 +39,7 @@ export const useManageCourseMateri = (courseId: number | null) => {
   // const [activeTab, setActiveTab] = useState("detail"); //default nya tab detail course
   const [loading, setLoading] = useState<boolean>(false);
   const isEditing = !!courseId;
-  const [messageApi, contextHolder] = message.useMessage();
-  const [modalApi, modalContextHolder] = Modal.useModal();
+  const { message: messageApi, modal: modalApi } = App.useApp();
 
   // --- STATE TAB 1: Detail Course ---
   const [courseData, setCourseData] = useState<CourseRecord | null>(null);
@@ -377,8 +376,6 @@ const handleDeleteSubLesson = (id: number) =>
     handleSaveSubLessonAll,
     handleReorderSubLessons,
     handleDeleteSubLesson,
-    contextHolder,
-    isMounted,
-    modalContextHolder
+    isMounted
   };
 };

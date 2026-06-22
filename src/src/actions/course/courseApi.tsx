@@ -132,11 +132,12 @@ export const updateCourseApi = async (
   data: CourseFormData,
 ): Promise<void> => {
   if (USE_REAL_API) {
-    await fetch(`${BASE_URL}/courses/${id}`, {
-      method: "PUT",
+    const response = await fetch(`${BASE_URL}/courses/${id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+    if (!response.ok) throw new Error("Gagal update course");
   } else {
     dummyCourses = dummyCourses.map((item) =>
       item.id === id ? { ...item, ...data } : item,
@@ -180,11 +181,16 @@ export const createLessonApi = async (
   data: LessonCreateData,
 ): Promise<void> => {
   if (USE_REAL_API) {
-    await fetch(`${BASE_URL}/lessons`, {
+    const payload = {
+      ...data,
+      course_id: courseId,
+    };
+    const response = await fetch(`${BASE_URL}/lessons`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
+    if (!response.ok) throw new Error("Gagal menambah lesson");
   } else {
     const courseLessons = dummyLessons.filter((l) => l.course_id === courseId);
     dummyLessons.push({
@@ -277,7 +283,7 @@ export const updateSubLessonApi = async (
   data: SubLessonCreateData
 ): Promise<void> => {
   await handleFetch(`${BASE_URL}/sublessons/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });

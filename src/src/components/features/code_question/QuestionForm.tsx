@@ -19,7 +19,7 @@ import { getQuestionDetailApi } from "@/src/actions/code_question/questionApi";
 import { CodeFormData } from "@/src/types/code_question";
 import TiptapEditor from "@/src/components/ui/TiptapEditor";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/src/hooks/useAuth";
 
 interface QuestionFormProps {
@@ -34,9 +34,27 @@ const TiptapEditorWrapper = React.forwardRef<
 ));
 TiptapEditorWrapper.displayName = "TiptapEditorWrapper";
 
-const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
+const ReadonlyHtml = React.forwardRef<HTMLDivElement, { value?: string }>(({ value }, ref) => (
+  <div 
+    ref={ref}
+    className="p-4 bg-gray-50 border border-gray-200 rounded min-h-[100px]"
+    dangerouslySetInnerHTML={{ __html: value || "-" }} 
+  />
+));
+ReadonlyHtml.displayName = "ReadonlyHtml";
+
+const ReadonlyText = React.forwardRef<HTMLDivElement, { value?: string }>(({ value }, ref) => (
+  <div ref={ref} className="p-2 bg-gray-50 border border-gray-200 rounded">
+    {value || "-"}
+  </div>
+));
+ReadonlyText.displayName = "ReadonlyText";
+
+const QuestionForm: React.FC<QuestionFormProps> = ({ questionId }) => {
   const [form] = Form.useForm();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isViewParam = searchParams.get("view") === "true";
 
   // SEMUA DATA ditarik langsung dari Hook!
   const {
@@ -58,33 +76,30 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
 
   // Logika Set Data Edit & Create
   useEffect(() => {
+    let isMounted = true;
+
     if (questionId) {
       getQuestionDetailApi(questionId).then(async (data) => {
-        setTimeout(() => {
-          form.setFieldsValue(data);
-        }, 0);
+        if (!isMounted) return;
+        form.setFieldsValue(data);
 
         if (data.course_id) await loadLessons(data.course_id);
-
         if (data.lesson_id) await loadSubLessons(data.lesson_id);
 
-        setTimeout(() => {
-          form.setFieldsValue({
-            ...data,
-            course_id: data.course_id ? String(data.course_id) : undefined,
-            lesson_id: data.lesson_id ? String(data.lesson_id) : undefined,
-            sub_lesson_id: data.sub_lesson_id
-              ? String(data.sub_lesson_id)
-              : undefined,
-          });
-        }, 0);
+        if (!isMounted) return;
+        form.setFieldsValue({
+          ...data,
+          course_id: data.course_id ? Number(data.course_id) : undefined,
+          lesson_id: data.lesson_id ? Number(data.lesson_id) : undefined,
+          sub_lesson_id: data.sub_lesson_id ? Number(data.sub_lesson_id) : undefined,
+        });
         console.log("Data soal berhasil dimuat untuk edit:", data);
       });
-    } else {
-      setTimeout(() => {
-        form.setFieldsValue({ essays: [{}, {}, {}] });
-      }, 0);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [questionId, form, loadLessons, loadSubLessons]);
 
   // Handler UI: Kosongkan field form, lalu suruh Hook ambil data baru
@@ -105,7 +120,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
 
   const { can, loading: authLoading } = useAuth();
   const isEdit = !!questionId;
-  const canSave = isEdit ? can("question.update") : can("question.create");
+  const canSave = (isEdit ? can("question.update") : can("question.create")) && !isViewParam;
   const isViewOnly = !canSave;
 
   return (
@@ -124,6 +139,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
         form={form} 
         layout="vertical" 
         onFinish={onFinish}
+        initialValues={!questionId ? { essays: [{}, {}, {}] } : undefined}
       >
         {/* HEADER: Selalu aktif agar tombol Kembali bisa diklik */}
         <div
@@ -177,18 +193,13 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
               name="course_id"
               rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
             >
-              {isViewOnly ? (
-                <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                  {courses.find((c) => String(c.value) === String(form.getFieldValue("course_id")))?.label || form.getFieldValue("course_id") || "-"}
-                </div>
-              ) : (
-                <Select
-                  style={{ width: "100%" }}
-                  options={courses}
-                  onChange={onCourseChange}
-                  placeholder="Pilih Course"
-                />
-              )}
+              <Select
+                style={{ width: "100%" }}
+                options={courses}
+                onChange={onCourseChange}
+                placeholder="Pilih Course"
+                disabled={isViewOnly}
+              />
             </Form.Item>
           </Col>
 
@@ -198,18 +209,13 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
               name="lesson_id"
               rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
             >
-              {isViewOnly ? (
-                <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                  {lessons.find((c) => String(c.value) === String(form.getFieldValue("lesson_id")))?.label || form.getFieldValue("lesson_id") || "-"}
-                </div>
-              ) : (
-                <Select
-                  style={{ width: "100%" }}
-                  options={lessons}
-                  onChange={onLessonChange}
-                  placeholder="Pilih Lesson"
-                />
-              )}
+              <Select
+                style={{ width: "100%" }}
+                options={lessons}
+                onChange={onLessonChange}
+                placeholder="Pilih Lesson"
+                disabled={isViewOnly}
+              />
             </Form.Item>
           </Col>
 
@@ -219,17 +225,12 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
               name="sub_lesson_id"
               rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
             >
-              {isViewOnly ? (
-                <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                  {subLessons.find((c) => String(c.value) === String(form.getFieldValue("sub_lesson_id")))?.label || form.getFieldValue("sub_lesson_id") || "-"}
-                </div>
-              ) : (
-                <Select
-                  style={{ width: "100%" }}
-                  options={subLessons}
-                  placeholder="Pilih Sub Lesson"
-                />
-              )}
+              <Select
+                style={{ width: "100%" }}
+                options={subLessons}
+                placeholder="Pilih Sub Lesson"
+                disabled={isViewOnly}
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -249,14 +250,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
           name="code_question"
           rules={[{ required: !isViewOnly, message: "Soal wajib diisi" }]}
         >
-          {isViewOnly ? (
-            <div 
-              className="p-4 bg-gray-50 border border-gray-200 rounded min-h-[100px]"
-              dangerouslySetInnerHTML={{ __html: form.getFieldValue("code_question") || "-" }} 
-            />
-          ) : (
-            <TiptapEditorWrapper />
-          )}
+          {isViewOnly ? <ReadonlyHtml /> : <TiptapEditorWrapper />}
         </Form.Item>
         <Form.Item
           label="Exploring Score"
@@ -264,7 +258,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
           rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
         >
           {isViewOnly ? (
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded">{form.getFieldValue("score") || "-"}</div>
+            <ReadonlyText />
           ) : (
             <InputNumber min={0} max={100} style={{ display: "block" }} />
           )}
@@ -283,7 +277,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
         <Form.List name="essays">
           {(fields) => {
             return (
-              <Space direction="vertical" style={{ width: "100%" }} size="large">
+              <Space orientation="vertical" style={{ width: "100%" }} size="large">
                 {fields.map(({ key, name, ...restField }, index) => (
                   <Card key={key} title={`Soal Essay ${index + 1}`} type="inner" style={{ marginBottom: 16 }}>
                     <Form.Item {...restField} name={[name, "id"]} hidden>
@@ -296,44 +290,17 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
                       name={[name, "question"]}
                       rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
                     >
-                      {isViewOnly ? (
-                        <div 
-                          className="p-4 bg-gray-50 border border-gray-200 rounded min-h-[100px]"
-                          dangerouslySetInnerHTML={{ __html: form.getFieldValue(["essays", index, "question"]) || "-" }} 
-                        />
-                      ) : (
-                        <TiptapEditorWrapper />
-                      )}
+                      {isViewOnly ? <ReadonlyHtml /> : <TiptapEditorWrapper />}
                     </Form.Item>
 
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <Form.Item
-                        {...restField}
-                        label="Jawaban Utama"
-                        name={[name, "answer"]}
-                        rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
-                      >
-                        {isViewOnly ? (
-                          <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                            {form.getFieldValue(["essays", index, "answer"]) || "-"}
-                          </div>
-                        ) : (
-                          <Input.TextArea rows={2} placeholder="Masukkan teks jawaban yang benar" />
-                        )}
-                      </Form.Item>
+                    <Space orientation="vertical" style={{ width: "100%" }}>
                       <Form.Item
                         {...restField}
                         label="Jawaban 1"
-                        name={[name, "answer_1"]}
+                        name={[name, "answer"]}
                         rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
                       >
-                        {isViewOnly ? (
-                          <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                            {form.getFieldValue(["essays", index, "answer_1"]) || "-"}
-                          </div>
-                        ) : (
-                          <Input.TextArea rows={2} />
-                        )}
+                        {isViewOnly ? <ReadonlyText /> : <Input.TextArea autoSize placeholder="Masukkan teks jawaban 1" />}
                       </Form.Item>
                       <Form.Item
                         {...restField}
@@ -341,13 +308,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
                         name={[name, "answer_2"]}
                         rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
                       >
-                        {isViewOnly ? (
-                          <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                            {form.getFieldValue(["essays", index, "answer_2"]) || "-"}
-                          </div>
-                        ) : (
-                          <Input.TextArea rows={2} />
-                        )}
+                        {isViewOnly ? <ReadonlyText /> : <Input.TextArea autoSize placeholder="Masukkan teks jawaban 2" />}
                       </Form.Item>
                       <Form.Item
                         {...restField}
@@ -355,13 +316,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
                         name={[name, "answer_3"]}
                         rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
                       >
-                        {isViewOnly ? (
-                          <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                            {form.getFieldValue(["essays", index, "answer_3"]) || "-"}
-                          </div>
-                        ) : (
-                          <Input.TextArea rows={2} />
-                        )}
+                        {isViewOnly ? <ReadonlyText /> : <Input.TextArea autoSize placeholder="Masukkan teks jawaban 3" />}
                       </Form.Item>
                       <Form.Item
                         {...restField}
@@ -369,13 +324,7 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
                         name={[name, "answer_4"]}
                         rules={[{ required: !isViewOnly, message: "Wajib diisi" }]}
                       >
-                        {isViewOnly ? (
-                          <div className="p-2 bg-gray-50 border border-gray-200 rounded">
-                            {form.getFieldValue(["essays", index, "answer_4"]) || "-"}
-                          </div>
-                        ) : (
-                          <Input.TextArea rows={2} />
-                        )}
+                        {isViewOnly ? <ReadonlyText /> : <Input.TextArea autoSize placeholder="Masukkan teks jawaban 4" />}
                       </Form.Item>
                     </Space>
                   </Card>
@@ -391,11 +340,5 @@ const QuestionFormInner: React.FC<QuestionFormProps> = ({ questionId }) => {
     </div>
   );
 };
-
-const QuestionForm: React.FC<QuestionFormProps> = (props) => (
-  <App>
-    <QuestionFormInner {...props} />
-  </App>
-);
 
 export default QuestionForm;

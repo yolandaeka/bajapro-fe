@@ -43,6 +43,7 @@ model User {
   password           String
   isApprovedByAdmin  Int                  @default(0) @map("is_approved_by_admin")
   instansiSekolah    String               @map("instansi_sekolah")
+  nip                String?              @map("nip")
   isActive           Boolean              @default(true) @map("isactive")
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")

@@ -34,6 +34,7 @@ export interface MenuItem {
   icon?: React.ReactNode;
   label: React.ReactNode;
   roles?: string[];
+  permission?: string; // Tambahkan field permission
   children?: MenuItem[];
 }
 
@@ -54,18 +55,22 @@ export const allMenuItems: MenuItem[] = [
         label: <Link href="/level">Level</Link>,
         icon: <DeploymentUnitOutlined />,
         roles: ["ADMIN"],
+        permission: "level.read",
       },
       {
         key: "course",
         label: <Link href="/course">Course</Link>,
         icon: <BlockOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
+        permission: "course.read",
       },
       {
         key: "question",
         label: <Link href="/code_question">Question</Link>,
         icon: <QuestionCircleOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
+        // TODO: Jika question punya permission sendiri (misal question.read), bisa diubah di sini
+        // Karena question tidak ada di list permission, kita fallback ke roles atau biarkan
       },
     ],
   },
@@ -85,24 +90,28 @@ export const allMenuItems: MenuItem[] = [
         label: <Link href="/kelas">Kelas</Link>,
         icon: <BankOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
+        permission: "kelas.read",
       },
       {
         key: "users",
         label: <Link href="/users">Users</Link>,
         icon: <TeamOutlined />,
         roles: ["ADMIN", "PENGAJAR"],
+        permission: "users.read",
       },
       {
         key: "approval",
         label: <Link href="/approval">Approval</Link>,
         icon: <AppstoreAddOutlined />,
         roles: ["ADMIN"],
+        permission: "approval.read",
       },
       {
         key: "permission",
         label: <Link href="/permission">Permission</Link>,
         icon: <SettingOutlined />,
         roles: ["ADMIN"],
+        permission: "permission.read",
       },
     ],
   },
@@ -135,27 +144,43 @@ export const allMenuItems: MenuItem[] = [
         key: "badge",
         label: <Link href="/badge">Badge Settings</Link>,
         icon: <SettingOutlined />,
-       
       },
     ],
   },
 ];
 
+import { useAuth } from "@/src/hooks/useAuth";
+
 const getFilteredMenu = (
   menuData: MenuItem[],
   userRole: string,
+  can: (permissionName: string) => boolean
 ): MenuItem[] => {
   return menuData
-    .filter((item) => !item.roles || item.roles.includes(userRole))
+    .filter((item) => {
+      // 1. Jika item butuh permission, cek apakah punya izin
+      if (item.permission && !can(item.permission)) {
+        return false;
+      }
+      // 2. Fallback ke role (misal dashboard tidak punya permission spesifik)
+      if (item.roles && !item.roles.includes(userRole)) {
+        return false;
+      }
+      return true;
+    })
     .map((item) => {
       if (item.children) {
+        const filteredChildren = getFilteredMenu(item.children, userRole, can);
+        // Jika parent, dan semua childrennya hilang karena filter, sembunyikan parent
+        if (filteredChildren.length === 0) return null;
         return {
           ...item,
-          children: getFilteredMenu(item.children, userRole),
+          children: filteredChildren,
         };
       }
       return item;
-    });
+    })
+    .filter(Boolean) as MenuItem[]; // hapus item yang null
 };
 
 // ==========================================
@@ -170,10 +195,12 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const { data: session } = useSession();
+  const { can } = useAuth(); // Pakai useAuth
 
   const userRole = (session?.user as any)?.role_id == 1 ? "ADMIN" : "PENGAJAR";
 
-  const filteredItems = getFilteredMenu(allMenuItems, userRole);
+  // Filter dengan fungsi `can`
+  const filteredItems = getFilteredMenu(allMenuItems, userRole, can);
 
   // --- FUNGSI OTOMATIS: Mencari Key & Parent yang Aktif ---
   const [openKeys, setOpenKeys] = useState<string[]>([]);

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const created = await prisma.badge.create({
       data: {
         name: body.name,
-        image: body.image,
+        image: body.image || "",
         minScore: Number(body.minScore) || 0,
         maxScore: Number(body.maxScore) || 100,
         isActive: body.isactive === undefined ? true : Boolean(body.isactive),

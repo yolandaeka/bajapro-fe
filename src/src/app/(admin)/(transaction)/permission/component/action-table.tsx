@@ -1,6 +1,5 @@
 "use client";
-import { Table, Checkbox, Card, Row, Col, Button, Typography } from "antd";
-import { SaveOutlined } from "@ant-design/icons";
+import { Table, Switch, Card, Row, Col, Button, Typography } from "antd";
 import { usePermission, ACTIONS } from "@/src/hooks/permission/usePermission";
 
 const { Text } = Typography;
@@ -8,7 +7,7 @@ const { Text } = Typography;
 export const PermissionTab = () => {
   const {
     loading, roles, selectedRole, handleSelectRole,
-    tableDataSource, activePermissionIds, handleToggle, handleSave, contextHolder
+    tableDataSource, activePermissionIds, handleToggle, contextHolder
   } = usePermission();
 
   return (
@@ -42,11 +41,10 @@ export const PermissionTab = () => {
           </Card>
         </Col>
 
-        {/* KOLOM KANAN: CHECKBOX AKSES */}
+        {/* KOLOM KANAN: TOGGLE AKSES */}
         <Col span={16}>
           <Card 
             title={<span>Manajemen Akses : <Text color="purple">{selectedRole?.role_name || "..."}</Text></span>}
-            extra={<Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={loading}>Save</Button>}
             style={{ borderRadius: 16 }}
           >
             <Table 
@@ -60,9 +58,11 @@ export const PermissionTab = () => {
                   dataIndex: act,
                   align: "center" as const,
                   render: (permId: number) => permId ? (
-                    <Checkbox 
+                    <Switch 
+                      size="small"
                       checked={(activePermissionIds || []).includes(permId)}
-                      onChange={(e) => handleToggle(permId, e.target.checked)}
+                      onChange={(checked) => handleToggle(permId, checked)}
+                      loading={loading}
                     />
                   ) : "-"
                 }))

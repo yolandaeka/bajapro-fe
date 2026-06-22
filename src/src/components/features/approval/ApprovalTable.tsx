@@ -20,6 +20,8 @@ export const ApprovalTable = () => {
     rowSelection,
     handleBulkApprove,
     handleBulkReject,
+    handleRowApprove,
+    handleRowReject,
   } = useApproval();
 
   const columns = [
@@ -38,7 +40,34 @@ export const ApprovalTable = () => {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Instansi", dataIndex: "instansi", key: "instansi", sorter: (a: TeacherRecord, b: TeacherRecord) => a.instansi.localeCompare(b.instansi) },
     { title: "NIP", dataIndex: "nip", key: "nip" },
-    
+    {
+      title: "Aksi",
+      key: "action",
+      render: (_: unknown, record: TeacherRecord) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            size="small"
+            style={{ backgroundColor: "#22c55e", borderColor: "#22c55e" }}
+            onClick={() => handleRowApprove(record.key)}
+            disabled={record.is_approved_by_admin === 1}
+          >
+            Approve
+          </Button>
+          <Button
+            type="primary"
+            danger
+            icon={<CloseCircleOutlined />}
+            size="small"
+            onClick={() => handleRowReject(record.key)}
+            disabled={record.is_approved_by_admin === 2}
+          >
+            Reject
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (

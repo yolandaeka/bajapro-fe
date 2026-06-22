@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Table,
   Button,
@@ -29,7 +29,7 @@ export default function ListCourse({
   initialData: CourseRecord[];
 }) {
   const router = useRouter();
-  const { can } = useAuth(); // Hook Keamanan
+  const { can, loading: authLoading, user } = useAuth(); // Hook Keamanan
   const [searchText, setSearchText] = useState("");
   const [courses, setCourses] = useState<CourseRecord[]>(initialData);
   const [loading] = useState(false);
@@ -40,6 +40,19 @@ export default function ListCourse({
   );
 
   // ... (tetap sama)
+
+  if (!authLoading && !can("course.read")) {
+    return (
+      <div style={{ padding: 24, textAlign: "center", marginTop: 50 }}>
+        <Typography.Title level={3} style={{ color: "#ff4d4f" }}>
+          Akses Ditolak
+        </Typography.Title>
+        <Typography.Text>
+          Anda tidak memiliki izin untuk melihat halaman Course.
+        </Typography.Text>
+      </div>
+    );
+  }
 
   const columns: TableColumnsType<CourseRecord> = [
     {
@@ -138,6 +151,7 @@ export default function ListCourse({
               type="primary"
               size="large"
               icon={<PlusOutlined />}
+              style={{ backgroundColor: "#7246BA" }}
               onClick={() => router.push("/course/add")}
             >
               Tambah Course

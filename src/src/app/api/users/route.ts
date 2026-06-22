@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
         password: user.password,
         is_approved_by_admin: user.isApprovedByAdmin,
         instansi_sekolah: user.instansiSekolah,
+        nip: user.nip,
         isactive: user.isActive,
         created_at: user.createdAt,
         updated_at: user.updatedAt,
@@ -83,15 +84,28 @@ export async function POST(req: NextRequest) {
     // Hash password with bcrypt
     const hashedPassword = bcrypt.hashSync(body.password, 10);
     
+    // Menentukan roleId berdasarkan string role atau body.role_id
+    let parsedRoleId = 3; // Pelajar default
+    if (body.role === 'Admin') parsedRoleId = 1;
+    else if (body.role === 'Pengajar') parsedRoleId = 2;
+    else if (body.role_id !== undefined) parsedRoleId = Number(body.role_id);
+    
+    // Cek email duplikat
+    const existingUser = await prisma.user.findUnique({ where: { email: body.email.toLowerCase() } });
+    if (existingUser) {
+      return jsonResponse({ error: 'Email sudah terdaftar' }, 400);
+    }
+
     const created = await prisma.user.create({
       data: {
-        roleId: Number(body.role_id),
+        roleId: parsedRoleId,
         classId: body.class_id ? Number(body.class_id) : null,
         name: body.name,
         email: body.email.toLowerCase(),
         password: hashedPassword,
         isApprovedByAdmin: body.is_approved_by_admin !== undefined ? Number(body.is_approved_by_admin) : 0,
         instansiSekolah: body.instansi_sekolah || '',
+        nip: body.nip || null,
         isActive: body.isactive === undefined ? true : Boolean(body.isactive),
       },
     });

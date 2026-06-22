@@ -185,7 +185,7 @@ const QuestionTable = () => {
             type="primary" 
             icon={<EyeFilled />}  
             style={{ backgroundColor: "#1677ff" }}  
-            onClick={() => router.push(`/code_question/${record.id}`)}
+            onClick={() => router.push(`/code_question/${record.id}?view=true`)}
           >
             {!can("question.update") && "Detail"}
           </Button>

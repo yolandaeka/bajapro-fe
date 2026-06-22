@@ -23,22 +23,19 @@ export const ManageCourseMateri = () => {
     loading,
     activeTab,
     setActiveTab,
-    contextHolder,
+    isMounted,
     lessons,
     levels,
     handleAddLesson,
     handleUpdateLesson,
     handleDeleteLesson,
     handleReorderLessons,
-    isMounted,
     subLessons,
     selectedLessonId,
     setSelectedLessonId,
     handleSaveSubLessonAll,
     handleDeleteSubLesson,
     handleReorderSubLessons,
-    modalContextHolder
-
   } = useManageCourseMateri(courseId);
 
   const isEditMode = !!params?.id;
@@ -123,8 +120,6 @@ export const ManageCourseMateri = () => {
         backgroundColor: "#f8fafc",
       }}
     >
-      {contextHolder}
-      {modalContextHolder}
       <div
         style={{
           display: "flex",

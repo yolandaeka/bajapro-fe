@@ -16,12 +16,15 @@ interface Props {
   onDelete: (id: string | number) => void;
 }
 
+import { useAuth } from "@/src/hooks/useAuth";
+
 export const LevelTable: React.FC<Props> = ({
   data,
   loading,
   onAction,
   onDelete,
 }) => {
+  const { can } = useAuth();
   const [searchText, setSearchText] = useState("");
 
   const columns = [
@@ -38,28 +41,33 @@ export const LevelTable: React.FC<Props> = ({
       key: "action",
       render: (_: unknown, record: LevelData) => (
         <Space size="small">
-          {/* Kirim sinyal action beserta ID-nya */}
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#1677ff" }}
-            icon={<EyeFilled />}
-            onClick={() => onAction("view", record.id)}
-          />
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#facc15", color: "black" }}
-            icon={<EditFilled />}
-            onClick={() => onAction("edit", record.id)}
-          />
-          <Popconfirm
-            title="Hapus Level"
-            description="Apakah kamu yakin ingin menghapus level ini?"
-            onConfirm={() => onDelete(record.id)}
-            okText="Ya, Hapus"
-            cancelText="Batal"
-          >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+          {can('level.read') && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#1677ff" }}
+              icon={<EyeFilled />}
+              onClick={() => onAction("view", record.id)}
+            />
+          )}
+          {can('level.update') && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#facc15", color: "black" }}
+              icon={<EditFilled />}
+              onClick={() => onAction("edit", record.id)}
+            />
+          )}
+          {can('level.delete') && (
+            <Popconfirm
+              title="Hapus Level"
+              description="Apakah kamu yakin ingin menghapus level ini?"
+              onConfirm={() => onDelete(record.id)}
+              okText="Ya, Hapus"
+              cancelText="Batal"
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -80,16 +88,18 @@ export const LevelTable: React.FC<Props> = ({
           gap: "16px",
         }}
       >
-        {/* Kirim sinyal "add" saat tombol Tambah diklik */}
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          size="large"
-          style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
-          onClick={() => onAction("add")}
-        >
-          Tambah Level
-        </Button>
+        {/* Kirim sinyal "add" saat tombol Tambah diklik, HANYA jika punya izin */}
+        {can('level.create') && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
+            onClick={() => onAction("add")}
+          >
+            Tambah Level
+          </Button>
+        )}
         <Input
           placeholder="Cari"
           prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
