@@ -232,9 +232,9 @@ export default function DashboardManager() {
           
           <motion.div variants={containerVariants}>
             <Row gutter={[24, 24]}>
-            {data?.lessonHistory?.length > 0 ? (
-                data.lessonHistory.map((history: any) => {
-                  const progressPct = history.total_score > 100 ? 100 : history.total_score || 0;
+            {data?.latestProgress?.length > 0 ? (
+                data.latestProgress.map((history: any) => {
+                  const progressPct = 100; // Since it's completed sublesson
                   return (
                     <Col xs={24} sm={12} key={history.id}>
                     <motion.div variants={itemVariants} whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 400 }}>
@@ -285,7 +285,7 @@ export default function DashboardManager() {
                           Beginner
                         </span>
                         <Title level={4} style={{ margin: "0 0 12px 0", fontSize: "14px", fontWeight: 800, color: "#1F2937", lineHeight: "1.4", height: "38px", overflow: "hidden" }}>
-                          {history.course?.course_name || "Tipe Data, Variabel, dan Operator"}
+                          {history.subLesson?.title || "Materi Pembelajaran"}
                         </Title>
                         
                         <div style={{ marginBottom: "16px" }}>
@@ -298,7 +298,7 @@ export default function DashboardManager() {
                               style={{ margin: 0 }} 
                             />
                             <Text style={{ fontSize: "10px", fontWeight: 700, color: "#6B7280", marginTop: "4px", display: "block" }}>
-                              {progressPct}% Progress
+                              100% Selesai
                             </Text>
                         </div>
                         
@@ -314,9 +314,9 @@ export default function DashboardManager() {
                             height: "38px",
                             boxShadow: "0 4px 12px rgba(109, 40, 217, 0.2)"
                           }}
-                          onClick={() => router.push(`/student/level/${history.course_id}`)}
+                          onClick={() => router.push(`/student/material/${history.courseId}/${history.subLesson?.lesson?.levelId || 1}?subLessonId=${history.subLessonId}`)}
                         >
-                          Lanjutkan
+                          Ulas Kembali
                         </Button>
                       </Card>
                     </motion.div>

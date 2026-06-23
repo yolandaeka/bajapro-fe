@@ -85,12 +85,27 @@ export async function GET(
       const userRankIndex = leaderboardRaw.findIndex((u: any) => u.id === studentId);
       const userRank = userRankIndex !== -1 ? userRankIndex + 1 : '-';
 
+      const recentProgress = await prisma.studentProgress.findMany({
+        where: { userId: studentId, status: 'completed' },
+        orderBy: { updatedAt: 'desc' },
+        take: 2,
+        include: {
+          subLesson: {
+            include: {
+               lesson: {
+                 include: { course: true }
+               }
+            }
+          }
+        }
+      });
+
       return jsonResponse({
         enrolledCount: enrolledCourses.length,
         materialsTotal: allMaterials.length,
         materialsCompleted: completedMaterials,
         overallProgress: overallProgress,
-        latestProgress: [],
+        latestProgress: recentProgress,
         lessonHistory: enrolledCourses.map((ec: any) => ({
           id: ec.id,
           student_id: ec.studentId,
@@ -1030,14 +1045,55 @@ export async function POST(
       }
 
       // 3.2. Save Essay Answers
-      if (essayAnswers && Array.isArray(essayAnswers)) {
+      if (essayAnswers && Array.isArray(essayAnswers) && essayAnswers.length > 0) {
+        
         for (let i = 0; i < essayAnswers.length; i++) {
           const essay = essayAnswers[i];
           const essayQuestionId = Number(essay.essayQuestionId);
+          
+          let aiScore = 20; // Fallback score
+
+          try {
+            // Get the correct answers from DB
+            const dbQuestion = await prisma.essayQuestion.findUnique({
+              where: { id: essayQuestionId }
+            });
+
+            if (dbQuestion && essay.answer) {
+              const formData = new URLSearchParams();
+              formData.append('esay_question', dbQuestion.essayQuestion || '');
+              formData.append('esay_answer', dbQuestion.answer || '');
+              formData.append('esay_answer2', dbQuestion.answer2 || '');
+              formData.append('esay_answer3', dbQuestion.answer3 || '');
+              formData.append('esay_answer4', dbQuestion.answer4 || '');
+              formData.append('user_answer', essay.answer);
+
+              const res = await fetch('http://labai.polinema.ac.id:90/online-compiler/compiler/generate/grade', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              });
+
+              if (res.ok) {
+                const json = await res.json();
+                if (json && typeof json.output === 'number') {
+                  aiScore = json.output;
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to grade essay ${essayQuestionId} using AI:`, error);
+          }
+
           let kp = 0, kr = 0, kb = 0;
-          if (i === 0) kp = 20; // Default mock score (will be AI evaluated later)
-          else if (i === 1) kr = 20;
-          else if (i === 2) kb = 20;
+          
+          if (i === 0) kp = aiScore;
+          else if (i === 1) kr = aiScore;
+          else if (i === 2) kb = aiScore;
+          else {
+            // Just map to kp if more than 3
+            kp = aiScore;
+          }
 
           const existingEssayAnswer = await prisma.essayAnswer.findFirst({
             where: { userId: studentId, essayQuestionId },

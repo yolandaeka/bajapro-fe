@@ -29,7 +29,7 @@ import {
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { 
   getCourseMaterialTreeApi, 
   getStudentProgressApi, 
@@ -71,9 +71,11 @@ function getYouTubeEmbedUrl(url: string) {
 export default function MaterialCourseidLevelidManager() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   
   const courseId = Number(params?.courseId);
   const levelId = Number(params?.levelId);
+  const urlSubLessonId = searchParams?.get("subLessonId");
 
   const [loading, setLoading] = useState(true);
   const [studentId, setStudentId] = useState<number>(5);
@@ -124,19 +126,39 @@ export default function MaterialCourseidLevelidManager() {
       setStudentProgress(progress);
       setCourseProgress(courseProg);
 
-      // Determine active sublesson: first one or first uncompleted
+      // Restore from localStorage
+      const savedState = localStorage.getItem(`materialState_${courseId}_${levelId}`);
+      let parsedState: any = {};
+      if (savedState) {
+         try { parsedState = JSON.parse(savedState); } catch(e){}
+      }
+
+      // Determine active sublesson
       if (tree.length > 0) {
         let defaultSubL: any = null;
         
-        // Find first incomplete
-        for (const lesson of tree) {
-          const incomplete = lesson.sublessons.find((sl: any) => {
-            const prog = progress.find((p: any) => Number(p.sub_lesson_id) === Number(sl.id));
-            return !prog || prog.status !== "completed";
-          });
-          if (incomplete) {
-            defaultSubL = incomplete;
-            break;
+        if (urlSubLessonId) {
+          for (const lesson of tree) {
+            const found = lesson.sublessons.find((sl: any) => String(sl.id) === String(urlSubLessonId));
+            if (found) { defaultSubL = found; break; }
+          }
+        }
+
+        if (!defaultSubL && parsedState.subLessonId) {
+          for (const lesson of tree) {
+            const found = lesson.sublessons.find((sl: any) => Number(sl.id) === Number(parsedState.subLessonId));
+            if (found) { defaultSubL = found; break; }
+          }
+        }
+
+        if (!defaultSubL) {
+          // Find first incomplete
+          for (const lesson of tree) {
+            const incomplete = lesson.sublessons.find((sl: any) => {
+              const prog = progress.find((p: any) => Number(p.sub_lesson_id) === Number(sl.id));
+              return !prog || prog.status !== "completed";
+            });
+            if (incomplete) { defaultSubL = incomplete; break; }
           }
         }
 
@@ -147,7 +169,10 @@ export default function MaterialCourseidLevelidManager() {
 
         if (defaultSubL) {
           setActiveSubLessonId(defaultSubL.id);
-          // Set default code template
+          
+          if (parsedState.view) setActiveView(parsedState.view);
+          if (parsedState.section !== undefined) setActiveMaterialIndex(parsedState.section);
+
           if (defaultSubL.codeQuestion) {
             setCodeContent(defaultSubL.codeQuestion.hint || "// Tulis kodemu di sini...");
           } else {
@@ -168,6 +193,16 @@ export default function MaterialCourseidLevelidManager() {
       fetchData();
     }
   }, [studentId, courseId, levelId]);
+
+  useEffect(() => {
+    if (activeSubLessonId) {
+      localStorage.setItem(`materialState_${courseId}_${levelId}`, JSON.stringify({
+        subLessonId: activeSubLessonId,
+        view: activeView,
+        section: activeMaterialIndex
+      }));
+    }
+  }, [activeSubLessonId, activeView, activeMaterialIndex, courseId, levelId]);
 
   // Find active sublesson object
   const getActiveSubLesson = () => {
@@ -243,7 +278,7 @@ export default function MaterialCourseidLevelidManager() {
   };
 
   // Handle run code
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     if (!codeContent.trim()) {
       messageApi.warning("Silakan tulis kode sebelum melakukan Run!");
       return;
@@ -252,30 +287,52 @@ export default function MaterialCourseidLevelidManager() {
     setIsRunning(true);
     setRunOutput("Compiling files...\nLinking libraries...\nExecuting tests...\n\n");
 
-    setTimeout(() => {
-      // Create a gorgeous mock log depending on the code content
-      let isError = false;
+    try {
+      // NOTE: User parameter can be the student name or ID. Test cases should exist on the Django server.
+      const res = await fetch('/api/compiler/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user: 'student_' + studentId, 
+          code: codeContent,
+          studentId,
+          codeQuestionId: activeSubLesson?.codeQuestion?.id
+        })
+      });
+      const data = await res.json();
+      
       let logs = "";
+      let isError = false;
 
-      if (codeContent.includes("tefor") || codeContent.includes("tefor (")) {
+      if (data.error) {
         isError = true;
-        logs = `SyntaxError: Unexpected token 'tefor' on line 1.\nDid you mean 'for'?\n\nBuild failed.`;
+        logs = `Server Error: ${data.error}\n\n`;
+        if (data.raw) logs += data.raw.substring(0, 500);
       } else {
-        logs = `Running tests...\n`;
-        logs += `✔ Test 1: Syntax compilation successful.\n`;
-        logs += `✔ Test 2: Standard conditional statement validated.\n`;
-        logs += `✔ Test 3: Output matches the case requirements.\n\n`;
-        logs += `Build successful! All tests passed.\nRun Output:\nSelamat anda lulus!\n`;
+        const output = data.output || {};
+        if (output.java && output.java.includes("failed")) {
+          isError = true;
+        } else if (output.test_output && output.test_output.includes("FAILED")) {
+          isError = true;
+        }
+        
+        logs += `[Java Compiler]\n${output.java || ''}\n\n`;
+        logs += `[Test Output]\n${output.test_output || ''}\n\n`;
+        logs += `[Points]\nScore: ${output.point || 0}\n`;
       }
 
       setRunOutput(logs);
-      setIsRunning(false);
       if (!isError) {
         messageApi.success("Kode berhasil dijalankan tanpa error!");
       } else {
         messageApi.error("Ada error di kodemu! Silakan periksa output.");
       }
-    }, 1500);
+    } catch (e: any) {
+      setRunOutput(`Failed to reach compiler server: ${e.message}`);
+      messageApi.error("Gagal menghubungi server compiler.");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   // Submit test
@@ -342,11 +399,11 @@ export default function MaterialCourseidLevelidManager() {
       // If more materials to show, go to next material
       if (activeMaterialIndex < currentMaterials.length - 1) {
         setActiveMaterialIndex(activeMaterialIndex + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
       } else if (hasTest) {
         // All materials done, go to test section
         setActiveView("practice");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
       } else {
         // No test, go to next sublesson
         if (currentIndex < subLessonsSequence.length - 1) {
@@ -364,11 +421,11 @@ export default function MaterialCourseidLevelidManager() {
     if (activeView === "practice") {
       setActiveView("material");
       setActiveMaterialIndex(currentMaterials.length - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     } else {
       if (activeMaterialIndex > 0) {
         setActiveMaterialIndex(activeMaterialIndex - 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
       } else if (currentIndex > 0) {
         const prevSub = subLessonsSequence[currentIndex - 1];
         handleSelectSubLesson(prevSub);
@@ -520,14 +577,9 @@ export default function MaterialCourseidLevelidManager() {
               </div>
 
               <Title level={2} style={{ fontWeight: 800, color: "#1e293b", margin: "0 0 8px 0" }}>Luar Biasa!</Title>
-              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "16px", lineHeight: 1.6 }}>
-                Kamu telah menyelesaikan materi <span style={{ fontWeight: 700, color: "#531DAB" }}>{activeSubLesson?.title}</span> dengan nilai sempurna!
+              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "32px", lineHeight: 1.6 }}>
+                Kamu telah berhasil menyelesaikan dan mengirimkan materi <span style={{ fontWeight: 700, color: "#531DAB" }}>{activeSubLesson?.title}</span>!
               </Paragraph>
-
-              <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "16px", padding: "16px", marginBottom: "32px", display: "inline-block" }}>
-                <Text style={{ fontSize: "14px", color: "#166534", fontWeight: 600, display: "block", marginBottom: "4px" }}>Total Poin Diperoleh</Text>
-                <Title level={1} style={{ color: "#15803D", margin: 0 }}>+{scoreGained} Pts</Title>
-              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Button 
@@ -763,10 +815,10 @@ export default function MaterialCourseidLevelidManager() {
         {/* Sidebar Footer */}
         <div style={{ padding: "16px 24px", borderTop: "1px solid #f1f5f9", backgroundColor: "#ffffff" }}>
           <Button 
-            type="text" 
+            type="default" 
             icon={<ArrowLeftOutlined style={{ color: "#7c3aed" }} />} 
             onClick={() => router.push(`/student/level/${courseId}`)}
-            style={{ fontWeight: 700, color: "#4b5563", padding: 0 }}
+            style={{ fontWeight: 700, color: "#4b5563", width: "100%", height: "42px", borderRadius: "10px", borderColor: "#cbd5e1" }}
           >
             Kembali ke Level
           </Button>
@@ -961,7 +1013,7 @@ export default function MaterialCourseidLevelidManager() {
 
               {/* Right Column: Code Editor and Run Box */}
               {activeSubLesson?.codeQuestion && (
-                <Col xs={24} md={13} className="sticky-code-editor">
+                <Col xs={24} md={13} style={{ position: "sticky", top: "24px", alignSelf: "flex-start" }}>
                   <Card
                     variant="borderless"
                     style={{ 
@@ -1044,26 +1096,28 @@ export default function MaterialCourseidLevelidManager() {
             </Row>
 
             {/* Bottom Submit Test Button specific to practice view */}
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "32px", width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "32px", width: "100%" }}>
               <Button
                 type="primary"
                 loading={isSubmitting}
                 onClick={handleSubmitTest}
                 icon={<SendOutlined />}
+                size="large"
                 style={{
                   background: "#0F766E",
                   border: "none",
                   borderRadius: "9999px",
-                  fontWeight: 700,
-                  height: "44px",
-                  paddingInline: "28px",
-                  boxShadow: "0 4px 12px rgba(15, 118, 110, 0.3)",
+                  fontWeight: 800,
+                  fontSize: "18px",
+                  height: "56px",
+                  paddingInline: "48px",
+                  boxShadow: "0 6px 16px rgba(15, 118, 110, 0.4)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px"
+                  gap: "8px"
                 }}
               >
-                Submit Test
+                SUBMIT TEST
               </Button>
             </div>
           </motion.div>

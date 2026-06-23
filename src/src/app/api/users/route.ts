@@ -97,10 +97,23 @@ export async function POST(req: NextRequest) {
       return jsonResponse({ error: 'Email sudah terdaftar' }, 400);
     }
 
+    // Handle class_id lookup if kode_kelas is provided
+    let finalClassId = body.class_id ? Number(body.class_id) : null;
+    if (!finalClassId && body.kode_kelas) {
+      const classRecord = await prisma.class.findFirst({
+        where: { classCode: body.kode_kelas, isActive: true }
+      });
+      if (classRecord) {
+        finalClassId = classRecord.id;
+      } else {
+        return jsonResponse({ error: 'Kode kelas tidak ditemukan atau tidak aktif' }, 400);
+      }
+    }
+
     const created = await prisma.user.create({
       data: {
         roleId: parsedRoleId,
-        classId: body.class_id ? Number(body.class_id) : null,
+        classId: finalClassId,
         name: body.name,
         email: body.email.toLowerCase(),
         password: hashedPassword,

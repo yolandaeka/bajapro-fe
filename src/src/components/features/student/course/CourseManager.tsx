@@ -42,9 +42,11 @@ export default function CourseManager() {
           ]);
           
           const eMap: Record<number, any> = {};
-          dashData.lessonHistory.forEach((h: any) => {
-            eMap[h.course_id] = h;
-          });
+          if (dashData.enrolledCourses) {
+            dashData.enrolledCourses.forEach((h: any) => {
+              eMap[h.courseId] = h;
+            });
+          }
 
           setCourses(allCourses);
           setEnrolledMap(eMap);
@@ -87,7 +89,7 @@ export default function CourseManager() {
             const progressVal = isEnrolled ? (isEnrolled.progressPercent || 0) : 0;
             
             return (
-              <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
+              <Col xs={24} sm={24} md={12} lg={12} key={course.id}>
                 <motion.div variants={itemVariants} whileHover={{ y: -6 }} transition={{ type: "spring", stiffness: 300 }} style={{ height: "100%" }}>
                   <Card 
                     variant="borderless"

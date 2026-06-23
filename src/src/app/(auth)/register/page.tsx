@@ -47,6 +47,7 @@ export default function RegisterPage() {
       const newUser = {
         role_id: role === "Student" ? 3 : 2,
         class_id: null,
+        kode_kelas: values.kode_kelas,
         name: values.name,
         email: values.email,
         password: values.password,

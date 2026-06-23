@@ -1,6 +1,6 @@
 import React from "react";
-import { Table, Button, Space, Tag, Popconfirm } from "antd";
-import { EyeFilled, EditFilled, DeleteFilled } from "@ant-design/icons";
+import { Table, Button, Space, Tag, Popconfirm, message } from "antd";
+import { EyeFilled, EditFilled, DeleteFilled, CopyOutlined } from "@ant-design/icons";
 import { ClassData } from "@/src/types/kelas";
 import type { TableProps } from "antd";
 import { useAuth } from "@/src/hooks/useAuth";
@@ -33,6 +33,21 @@ export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onA
       dataIndex: "class_code",
       key: "class_code",
       sorter: (a: ClassData, b: ClassData) => a.class_code.localeCompare(b.class_code),
+      render: (code: string) => (
+        <Space>
+          <span>{code}</span>
+          <Button 
+            type="text" 
+            icon={<CopyOutlined style={{ color: '#1677ff' }} />} 
+            onClick={() => {
+              navigator.clipboard.writeText(code);
+              message.success("Kode kelas disalin!");
+            }} 
+            size="small"
+            title="Salin Kode Kelas"
+          />
+        </Space>
+      )
     },
     
     ...(role === "Admin"
