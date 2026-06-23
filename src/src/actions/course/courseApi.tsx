@@ -340,18 +340,6 @@ export const updateMaterialsApi = async (
 
 // DELETE Sublesson
 export const deleteSubLessonApi = async (id: number): Promise<void> => {
-  // 1. Cek apakah ada Materials
-  const materials = await handleFetch(`${BASE_URL}/materials?sub_lesson_id=${id}`);
-  if (materials && materials.length > 0) {
-    throw new Error(`Gagal menghapus! Sub-Lesson ini masih memiliki ${materials.length} Konten Materi.`);
-  }
-
-  // 2. Cek apakah ada Question (code_question)
-  const questions = await handleFetch(`${BASE_URL}/code_question?sub_lesson_id=${id}`);
-  if (questions && questions.length > 0) {
-    throw new Error(`Gagal menghapus! Sub-Lesson ini masih memiliki ${questions.length} Pertanyaan.`);
-  }
-
   return handleFetch(`${BASE_URL}/sublessons/${id}`, { method: "DELETE" });
 };
 

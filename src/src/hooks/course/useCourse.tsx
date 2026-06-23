@@ -143,12 +143,12 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
         await deleteApi(id);
         messageApi.success(`${type} berhasil dihapus.`);
         onSuccess();
-      } catch (error: unknown) {
+      } catch (error: any) {
         // ERROR HANDLING UNTUK DATA YANG MASIH BERELASI (FOREIGN KEY)
         console.error(error);
         modalApi.error({
           title: "Gagal Menghapus",
-          content: `Data ${type} ini tidak bisa dihapus karena masih digunakan atau memiliki data terkait (misal: Lesson masih punya Sub Lesson). Silakan hapus data di bawahnya terlebih dahulu.`,
+          content: error?.message || `Data ${type} ini tidak bisa dihapus karena masih digunakan atau memiliki data terkait. Silakan hapus data di bawahnya terlebih dahulu.`,
         });
       }
     },

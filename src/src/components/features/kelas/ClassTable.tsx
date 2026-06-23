@@ -3,6 +3,7 @@ import { Table, Button, Space, Tag, Popconfirm } from "antd";
 import { EyeFilled, EditFilled, DeleteFilled } from "@ant-design/icons";
 import { ClassData } from "@/src/types/kelas";
 import type { TableProps } from "antd";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface ClassTableProps {
   data: ClassData[];
@@ -13,6 +14,7 @@ interface ClassTableProps {
 }
 
 export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onAction, onDelete }) => {
+  const { can } = useAuth();
   const columns: TableProps<ClassData>['columns'] = [
     {
       title: "No.",
@@ -56,26 +58,32 @@ export const ClassTable: React.FC<ClassTableProps> = ({ data, loading, role, onA
       width: 150,
       render: (_: unknown, record: ClassData) => (
         <Space size="small">
-          <Button 
-            type="primary" 
-            icon={<EyeFilled />} 
-            style={{ backgroundColor: "#1677ff" }} 
-            onClick={() => onAction("view", record)} 
-          />
-          <Button 
-            type="primary" 
-            icon={<EditFilled />} 
-            style={{ backgroundColor: "#faad14", color: "black" }} 
-            onClick={() => onAction("edit", record)} 
-          />
-          <Popconfirm 
-            title="Hapus kelas ini?" 
-            onConfirm={() => onDelete(record.id)} 
-            okText="Ya" 
-            cancelText="Batal"
-          >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+          {can("kelas.read") && (
+            <Button 
+              type="primary" 
+              icon={<EyeFilled />} 
+              style={{ backgroundColor: "#1677ff" }} 
+              onClick={() => onAction("view", record)} 
+            />
+          )}
+          {can("kelas.update") && (
+            <Button 
+              type="primary" 
+              icon={<EditFilled />} 
+              style={{ backgroundColor: "#faad14", color: "black" }} 
+              onClick={() => onAction("edit", record)} 
+            />
+          )}
+          {can("kelas.delete") && (
+            <Popconfirm 
+              title="Hapus kelas ini?" 
+              onConfirm={() => onDelete(record.id)} 
+              okText="Ya" 
+              cancelText="Batal"
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },

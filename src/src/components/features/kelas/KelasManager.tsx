@@ -23,12 +23,14 @@ import {
 import { useClass } from "@/src/hooks/kelas/useClass";
 import { ClassData } from "@/src/types/kelas";
 import { ClassTable } from "@/src/components/features/kelas/ClassTable";
+import { useAuth } from "@/src/hooks/useAuth";
 
 import { useSession } from "next-auth/react";
 
 const { Title } = Typography;
 
 export default function KelasManager() {
+  const { can } = useAuth();
   const { 
     kelas, 
     guruOptions, 
@@ -73,7 +75,7 @@ export default function KelasManager() {
 
   const filteredKelas = safeKelas.filter((k) => {
     // 1. Jika Pengajar, hanya tampilkan kelas buatannya (berdasarkan teacher_id)
-    if (currentUserRole === "Pengajar" && k.teacher_id !== currentUserId) {
+    if (currentUserRole === "Pengajar" && Number(k.teacher_id) !== Number(currentUserId)) {
       return false;
     }
 
@@ -210,15 +212,17 @@ export default function KelasManager() {
         </p>
 
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            size="large" 
-            style={{ backgroundColor: "#7246BA", borderRadius: "8px" }} 
-            onClick={() => handleAction("add")}
-          >
-            Tambah Kelas
-          </Button>
+          {can("kelas.create") && (
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              size="large" 
+              style={{ backgroundColor: "#7246BA", borderRadius: "8px" }} 
+              onClick={() => handleAction("add")}
+            >
+              Tambah Kelas
+            </Button>
+          )}
           <Space>
             <Input 
               size="large" 

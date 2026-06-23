@@ -42,6 +42,7 @@ export async function GET(
       password: user.password,
       is_approved_by_admin: user.isApprovedByAdmin,
       instansi_sekolah: user.instansiSekolah,
+      nip: user.nip,
       isactive: user.isActive,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
@@ -78,6 +79,7 @@ export async function PUT(
         password: updatedPassword,
         isApprovedByAdmin: body.is_approved_by_admin !== undefined ? Number(body.is_approved_by_admin) : undefined,
         instansiSekolah: body.instansi_sekolah,
+        nip: body.nip !== undefined ? body.nip : undefined,
         isActive: body.isactive !== undefined ? Boolean(body.isactive) : undefined,
       },
     });
@@ -91,6 +93,7 @@ export async function PUT(
       password: updated.password,
       is_approved_by_admin: updated.isApprovedByAdmin,
       instansi_sekolah: updated.instansiSekolah,
+      nip: updated.nip,
       isactive: updated.isActive,
     });
   } catch (error: any) {
@@ -116,6 +119,7 @@ export async function PATCH(
     if (body.password !== undefined) updateData.password = bcrypt.hashSync(body.password, 10);
     if (body.is_approved_by_admin !== undefined) updateData.isApprovedByAdmin = Number(body.is_approved_by_admin);
     if (body.instansi_sekolah !== undefined) updateData.instansiSekolah = body.instansi_sekolah;
+    if (body.nip !== undefined) updateData.nip = body.nip;
     if (body.isactive !== undefined) updateData.isActive = Boolean(body.isactive);
 
     const updated = await prisma.user.update({
@@ -132,6 +136,7 @@ export async function PATCH(
       password: updated.password,
       is_approved_by_admin: updated.isApprovedByAdmin,
       instansi_sekolah: updated.instansiSekolah,
+      nip: updated.nip,
       isactive: updated.isActive,
     });
   } catch (error: any) {

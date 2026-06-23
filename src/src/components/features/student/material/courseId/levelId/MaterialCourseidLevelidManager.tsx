@@ -43,6 +43,23 @@ const { Panel } = Collapse;
 
 function getYouTubeEmbedUrl(url: string) {
   if (!url) return null;
+  try {
+    let videoId = '';
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
+    } else if (url.includes('youtube.com/watch')) {
+      const urlObj = new URL(url);
+      videoId = urlObj.searchParams.get('v') || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  } catch (e) {
+    // Ignore URL parsing errors
+  }
+
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   if (match && match[2].length === 11) {
@@ -79,6 +96,9 @@ export default function MaterialCourseidLevelidManager() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [scoreGained, setScoreGained] = useState<number>(0);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const { data: session } = useSession();
 
@@ -137,7 +157,7 @@ export default function MaterialCourseidLevelidManager() {
       }
     } catch (e) {
       console.error(e);
-      message.error("Gagal memuat materi pembelajaran.");
+      messageApi.error("Gagal memuat materi pembelajaran.");
     } finally {
       setLoading(false);
     }
@@ -207,7 +227,7 @@ export default function MaterialCourseidLevelidManager() {
   // Change Sub Lesson
   const handleSelectSubLesson = (subL: any) => {
     if (isSubLessonLocked(subL.id)) {
-      message.warning("Materi ini masih terkunci! Selesaikan materi sebelumnya terlebih dahulu.");
+      messageApi.warning("Materi ini masih terkunci! Selesaikan materi sebelumnya terlebih dahulu.");
       return;
     }
     setActiveSubLessonId(subL.id);
@@ -225,7 +245,7 @@ export default function MaterialCourseidLevelidManager() {
   // Handle run code
   const handleRunCode = () => {
     if (!codeContent.trim()) {
-      message.warning("Silakan tulis kode sebelum melakukan Run!");
+      messageApi.warning("Silakan tulis kode sebelum melakukan Run!");
       return;
     }
 
@@ -251,9 +271,9 @@ export default function MaterialCourseidLevelidManager() {
       setRunOutput(logs);
       setIsRunning(false);
       if (!isError) {
-        message.success("Kode berhasil dijalankan tanpa error!");
+        messageApi.success("Kode berhasil dijalankan tanpa error!");
       } else {
-        message.error("Ada error di kodemu! Silakan periksa output.");
+        messageApi.error("Ada error di kodemu! Silakan periksa output.");
       }
     }, 1500);
   };
@@ -264,14 +284,14 @@ export default function MaterialCourseidLevelidManager() {
 
     // Check code question
     if (activeSubLesson.codeQuestion && !codeContent.trim()) {
-      message.warning("Silakan isi Code Editor terlebih dahulu!");
+      messageApi.warning("Silakan isi Code Editor terlebih dahulu!");
       return;
     }
 
     // Check essay answers
     const missingEssay = activeSubLesson.essayQuestions.some((eq: any) => !essayAnswers[eq.id]?.trim());
     if (missingEssay) {
-      message.warning("Harap jawab semua pertanyaan essay yang tersedia!");
+      messageApi.warning("Harap jawab semua pertanyaan essay yang tersedia!");
       return;
     }
 
@@ -283,6 +303,10 @@ export default function MaterialCourseidLevelidManager() {
         answer: essayAnswers[eq.id] || ""
       }));
 
+      const codePts = activeSubLesson.codeQuestion ? (Number(activeSubLesson.codeQuestion.score) || 30) : 0;
+      const essayPts = payloadEssay.length * 20;
+      const totalPoints = 10 + codePts + essayPts; // 10 pts for wondering score
+      
       await submitPracticeAnswersApi({
         studentId,
         courseId,
@@ -290,10 +314,11 @@ export default function MaterialCourseidLevelidManager() {
         codeQuestionId: activeSubLesson.codeQuestion ? Number(activeSubLesson.codeQuestion.id) : null,
         codeAnswer: codeContent,
         essayAnswers: payloadEssay,
-        scoreToAdd: activeSubLesson.codeQuestion ? Number(activeSubLesson.codeQuestion.score) || 30 : 20
+        scoreToAdd: codePts
       });
 
       // Show popup
+      setScoreGained(totalPoints);
       setShowSuccessModal(true);
       // Reload states locally to update progress sidebar
       const [newProgress, newCourseProg] = await Promise.all([
@@ -305,7 +330,7 @@ export default function MaterialCourseidLevelidManager() {
 
     } catch (e) {
       console.error(e);
-      message.error("Gagal melakukan submit materi.");
+      messageApi.error("Gagal melakukan submit materi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -327,11 +352,11 @@ export default function MaterialCourseidLevelidManager() {
         if (currentIndex < subLessonsSequence.length - 1) {
           handleSelectSubLesson(subLessonsSequence[currentIndex + 1]);
         } else {
-          message.success("Selamat! Kamu telah menyelesaikan seluruh materi di level ini.");
+          messageApi.success("Selamat! Kamu telah menyelesaikan seluruh materi di level ini.");
         }
       }
     } else {
-      message.info("Silakan klik 'Submit Test' untuk menyelesaikan bab ini!");
+      messageApi.info("Silakan klik 'Submit Test' untuk menyelesaikan bab ini!");
     }
   };
 
@@ -379,7 +404,7 @@ export default function MaterialCourseidLevelidManager() {
       }
       setEssayAnswers({});
     } else {
-      message.success("Luar biasa! Kamu telah melahap habis semua materi level ini. Kembali ke peta petualangan!");
+      messageApi.success("Luar biasa! Kamu telah melahap habis semua materi level ini. Kembali ke peta petualangan!");
       router.push(`/student/level/${courseId}`);
     }
   };
@@ -464,6 +489,7 @@ export default function MaterialCourseidLevelidManager() {
 
   return (
     <div style={{ display: "flex", width: "100%", minHeight: "calc(100vh - 72px)", position: "relative", backgroundColor: "#f8fafc" }}>
+      {contextHolder}
       
       {/* SUCCESS MODAL POPUP */}
       <AnimatePresence>
@@ -494,9 +520,14 @@ export default function MaterialCourseidLevelidManager() {
               </div>
 
               <Title level={2} style={{ fontWeight: 800, color: "#1e293b", margin: "0 0 8px 0" }}>Luar Biasa!</Title>
-              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "32px", lineHeight: 1.6 }}>
+              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "16px", lineHeight: 1.6 }}>
                 Kamu telah menyelesaikan materi <span style={{ fontWeight: 700, color: "#531DAB" }}>{activeSubLesson?.title}</span> dengan nilai sempurna!
               </Paragraph>
+
+              <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "16px", padding: "16px", marginBottom: "32px", display: "inline-block" }}>
+                <Text style={{ fontSize: "14px", color: "#166534", fontWeight: 600, display: "block", marginBottom: "4px" }}>Total Poin Diperoleh</Text>
+                <Title level={1} style={{ color: "#15803D", margin: 0 }}>+{scoreGained} Pts</Title>
+              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Button 
@@ -513,16 +544,16 @@ export default function MaterialCourseidLevelidManager() {
                     boxShadow: "0 4px 12px rgba(255, 94, 0, 0.2)"
                   }}
                 >
-                  Materi Berikutnya <RightOutlined />
+                  Materi Selanjutnya <RightOutlined />
                 </Button>
                 <Button 
                   type="text" 
                   size="large" 
                   block
-                  onClick={() => router.push(`/student/level/${courseId}`)}
+                  onClick={() => router.push(`/student/report/${courseId}`)}
                   style={{ color: "#64748b", fontWeight: 600 }}
                 >
-                  Lihat Report & Peta
+                  Lihat Report
                 </Button>
               </div>
             </motion.div>

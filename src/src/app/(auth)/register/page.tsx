@@ -45,12 +45,12 @@ export default function RegisterPage() {
       }
 
       const newUser = {
-        role_id: role === "Student" ? 2 : 3,
+        role_id: role === "Student" ? 3 : 2,
         class_id: null,
         name: values.name,
         email: values.email,
         password: values.password,
-        // LOGIKA BARU: Jika approval tidak dibutuhkan, langsung beri 1 (Approved)
+        nip: role === "Student" ? null : values.nip,
         is_approved_by_admin: role === "Student" ? 1 : (isApprovalNeeded ? 0 : 1), 
         instansi_sekolah: role === "Student" ? "" : values.asal_instansi,
         isactive: true,
@@ -81,7 +81,12 @@ export default function RegisterPage() {
           }
         }
       } else {
-        messageApi.error("Gagal mendaftar. Silakan coba lagi.");
+        const errData = await res.json().catch(() => ({}));
+        if (errData && errData.error) {
+          messageApi.error(errData.error);
+        } else {
+          messageApi.error("Gagal mendaftar. Silakan coba lagi.");
+        }
       }
     } catch (err) {
       messageApi.error("Terjadi kesalahan saat menghubungi server.");

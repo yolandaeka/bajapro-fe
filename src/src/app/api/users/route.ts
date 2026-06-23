@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
         password: u.password,
         is_approved_by_admin: u.isApprovedByAdmin,
         instansi_sekolah: u.instansiSekolah,
+        nip: u.nip,
         isactive: u.isActive,
         created_at: u.createdAt,
         updated_at: u.updatedAt,

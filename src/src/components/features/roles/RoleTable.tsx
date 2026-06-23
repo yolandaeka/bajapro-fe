@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Input, Table, Button, Space, Tag, Popconfirm } from "antd";
 import { EyeFilled, EditFilled, DeleteFilled, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { RoleData } from "@/src/types/roles";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface RoleTableProps {
   data: RoleData[];
@@ -17,6 +18,7 @@ export const RoleTable: React.FC<RoleTableProps> = ({
   onDelete,
 }) => {
   const [searchText, setSearchText] = useState("");
+  const { can } = useAuth();
   
   const columns = [
     {
@@ -37,27 +39,33 @@ export const RoleTable: React.FC<RoleTableProps> = ({
       render: (_: unknown, record: RoleData) => (
         // 👇 Ganti "middle" jadi "small" biar gak kelebaran
         <Space size="small">
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#1677ff" }}
-            icon={<EyeFilled />}
-            onClick={() => onAction("view", record.id)}
-          />
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#facc15", color: "black" }}
-            icon={<EditFilled />}
-            onClick={() => onAction("edit", record.id)}
-          />
-          <Popconfirm
-            title="Hapus Role"
-            description="Apakah kamu yakin ingin menghapus role ini?"
-            onConfirm={() => onDelete(record.id)}
-            okText="Ya, Hapus"
-            cancelText="Batal"
-          >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+          {can("roles.read") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#1677ff" }}
+              icon={<EyeFilled />}
+              onClick={() => onAction("view", record.id)}
+            />
+          )}
+          {can("roles.update") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#facc15", color: "black" }}
+              icon={<EditFilled />}
+              onClick={() => onAction("edit", record.id)}
+            />
+          )}
+          {can("roles.delete") && (
+            <Popconfirm
+              title="Hapus Role"
+              description="Apakah kamu yakin ingin menghapus role ini?"
+              onConfirm={() => onDelete(record.id)}
+              okText="Ya, Hapus"
+              cancelText="Batal"
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -82,15 +90,17 @@ export const RoleTable: React.FC<RoleTableProps> = ({
           gap: "16px",
         }}
       >
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          size="large"
-          style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
-          onClick={() => onAction("add")}
-        >
-          Tambah Role
-        </Button>
+        {can("roles.create") ? (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
+            onClick={() => onAction("add")}
+          >
+            Tambah Role
+          </Button>
+        ) : <div />}
 
         <Input
           placeholder="Cari"

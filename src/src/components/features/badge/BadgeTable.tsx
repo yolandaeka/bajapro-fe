@@ -3,6 +3,7 @@ import { Input, Table, Button, Space, Tag, Popconfirm } from "antd";
 import { EyeFilled, EditFilled, DeleteFilled, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { BadgeData } from "@/src/types/badge";
 import Image from "next/image";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface BadgeTableProps {
   data: BadgeData[];
@@ -18,6 +19,7 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
   onDelete,
 }) => {
   const [searchText, setSearchText] = useState("");
+  const { can } = useAuth();
 
   const columns = [
     {
@@ -64,27 +66,33 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
       render: (_: unknown, record: BadgeData) => (
         // 👇 Ganti "middle" jadi "small" biar gak kelebaran
         <Space size="small">
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#1677ff" }}
-            icon={<EyeFilled />}
-            onClick={() => onAction("view", record.id)}
-          />
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#facc15", color: "black" }}
-            icon={<EditFilled />}
-            onClick={() => onAction("edit", record.id)}
-          />
-          <Popconfirm
-            title="Hapus Badge"
-            description="Apakah kamu yakin ingin menghapus badge ini?"
-            onConfirm={() => onDelete(record.id)}
-            okText="Ya, Hapus"
-            cancelText="Batal"
-          >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+          {can("badge.read") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#1677ff" }}
+              icon={<EyeFilled />}
+              onClick={() => onAction("view", record.id)}
+            />
+          )}
+          {can("badge.update") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#facc15", color: "black" }}
+              icon={<EditFilled />}
+              onClick={() => onAction("edit", record.id)}
+            />
+          )}
+          {can("badge.delete") && (
+            <Popconfirm
+              title="Hapus Badge"
+              description="Apakah kamu yakin ingin menghapus badge ini?"
+              onConfirm={() => onDelete(record.id)}
+              okText="Ya, Hapus"
+              cancelText="Batal"
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -112,15 +120,17 @@ export const BadgeTable: React.FC<BadgeTableProps> = ({
           gap: "16px",
         }}
       >
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          size="large"
-          style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
-          onClick={() => onAction("add")}
-        >
-          Tambah Badge
-        </Button>
+        {can("badge.create") ? (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
+            onClick={() => onAction("add")}
+          >
+            Tambah Badge
+          </Button>
+        ) : <div />}
 
         <Input
           placeholder="Cari"

@@ -65,7 +65,7 @@ export default function LevelIdManager() {
           const enrolledCourse = dashData.lessonHistory.find(
             (h: any) => h.course_id === Number(courseId)
           );
-          if (enrolledCourse) setProgressVal(enrolledCourse.total_score || 0);
+          if (enrolledCourse) setProgressVal(enrolledCourse.progressPercent || 0);
         }
       } catch (e) {
         console.error(e);
@@ -167,17 +167,19 @@ export default function LevelIdManager() {
           />
 
           {course.levels.map((level: any, index: number) => {
-            // Derive status
+            // Derive status based on progressPercent dynamically
             let status: "completed" | "active" | "locked" = "locked";
+            const percentPerLevel = 100 / course.levels.length;
+            
             if (!isEnrolled || progressVal === 0) {
               status = index === 0 ? "active" : "locked";
-            } else if (progressVal > 0 && progressVal < 100) {
-              if (index === 0) status = "completed";
-              else if (index === 1) status = "active";
-              else status = "locked";
+            } else if (progressVal >= (index + 1) * percentPerLevel - 0.1) {
+              // Using -0.1 to handle small rounding errors
+              status = "completed";
+            } else if (progressVal >= index * percentPerLevel - 0.1) {
+              status = "active";
             } else {
-              if (index < 2) status = "completed";
-              else status = "active";
+              status = "locked";
             }
 
             const isLeft = index % 2 === 0; // even → left on desktop

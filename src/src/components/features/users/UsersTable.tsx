@@ -5,6 +5,7 @@ import type { TableProps } from "antd"; // 👈 Tambahkan ini biar ESLint aman
 import { EyeFilled, EditFilled, DeleteFilled, TeamOutlined } from "@ant-design/icons"; 
 import { useRouter } from "next/navigation";
 import { UserData } from "@/src/types/users";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface UserTableProps {
   data: UserData[];
@@ -22,6 +23,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   onDelete 
 }) => {
   const router = useRouter();
+  const { can } = useAuth();
 
   const columns: TableProps<UserData>['columns'] = [
     { 
@@ -63,7 +65,7 @@ export const UserTable: React.FC<UserTableProps> = ({
     ] : []),
 
     // 👇 KONDISI 2: JIKA PENGAJAR, TAMPILKAN KOLOM KELAS
-    ...(currentUserRole === "Pengajar" ? [
+    ...(currentUserRole === "Teacher" ? [
       {
         title: "Kelas",
         dataIndex: "class_name", // Pastikan key-nya sesuai dengan API/Database
@@ -77,27 +79,33 @@ export const UserTable: React.FC<UserTableProps> = ({
       key: "action",
       render: (_text: unknown, record: UserData) => (
         <Space size="small">
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#1677ff" }}
-            icon={<EyeFilled />}
-            onClick={() => onAction("view", record)}
-          />
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#facc15", color: "black" }}
-            icon={<EditFilled />}
-            onClick={() => onAction("edit", record)}
-          />
-          <Popconfirm
-            title="Hapus User"
-            description="Apakah kamu yakin ingin menghapus user ini?"
-            onConfirm={() => onDelete(record.id)}
-            okText="Ya, Hapus"
-            cancelText="Batal"
-          >
-            <Button type="primary" danger icon={<DeleteFilled />} />
-          </Popconfirm>
+          {can("users.read") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#1677ff" }}
+              icon={<EyeFilled />}
+              onClick={() => onAction("view", record)}
+            />
+          )}
+          {can("users.update") && (
+            <Button
+              type="primary"
+              style={{ backgroundColor: "#facc15", color: "black" }}
+              icon={<EditFilled />}
+              onClick={() => onAction("edit", record)}
+            />
+          )}
+          {can("users.delete") && (
+            <Popconfirm
+              title="Hapus User"
+              description="Apakah kamu yakin ingin menghapus user ini?"
+              onConfirm={() => onDelete(record.id)}
+              okText="Ya, Hapus"
+              cancelText="Batal"
+            >
+              <Button type="primary" danger icon={<DeleteFilled />} />
+            </Popconfirm>
+          )}
           
           {/* Tombol Lihat Murid khusus Admin ke Pengajar */}
           {/* {currentUserRole === "Admin" && record.role === "Pengajar" && (

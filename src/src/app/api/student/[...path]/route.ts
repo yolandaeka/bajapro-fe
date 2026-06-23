@@ -57,20 +57,39 @@ export async function GET(
         };
       });
 
-      const top5Leaderboard = leaderboardRaw
-        .sort((a: any, b: any) => b.score - a.score)
-        .slice(0, 5);
+      // Sort leaderboard to find rank
+      leaderboardRaw.sort((a: any, b: any) => b.score - a.score);
+
+      const top5Leaderboard = leaderboardRaw.slice(0, 5);
 
       const totalScore = enrolledCourses.reduce(
         (acc: number, curr: any) => acc + (curr.totalScore || 0),
         0
       );
 
+      // Materials Completed
+      const completedMaterials = await prisma.studentProgress.count({
+        where: { userId: studentId, status: 'completed' }
+      });
+
+      // Overall Progress
+      const overallProgress = allMaterials.length > 0 ? Math.round((completedMaterials / allMaterials.length) * 100) : 0;
+
+      // Badge
+      const allBadges = await prisma.badge.findMany();
+      const userBadge = allBadges.find((b: any) => totalScore >= b.minScore && totalScore <= b.maxScore);
+      const badgeName = userBadge ? userBadge.name : 'Beginner';
+      const badgeImage = userBadge ? userBadge.image : null;
+
+      // Rank
+      const userRankIndex = leaderboardRaw.findIndex((u: any) => u.id === studentId);
+      const userRank = userRankIndex !== -1 ? userRankIndex + 1 : '-';
+
       return jsonResponse({
         enrolledCount: enrolledCourses.length,
         materialsTotal: allMaterials.length,
-        materialsCompleted: Math.floor(allMaterials.length * 0.4),
-        overallProgress: enrolledCourses.length > 0 ? 10 : 0,
+        materialsCompleted: completedMaterials,
+        overallProgress: overallProgress,
         latestProgress: [],
         lessonHistory: enrolledCourses.map((ec: any) => ({
           id: ec.id,
@@ -84,8 +103,9 @@ export async function GET(
           course: ec.course,
         })),
         achievement: {
-          badge: 'Warrior',
-          rank: '#10',
+          badge: badgeName,
+          badgeImage: badgeImage,
+          rank: userRank,
           totalScore,
         },
         top5Leaderboard,
@@ -881,38 +901,75 @@ export async function POST(
         where: { userId: studentId, courseId, subLessonId },
       });
 
+      let updatedOrCreated;
       if (existing) {
-        const updated = await prisma.studentProgress.update({
+        updatedOrCreated = await prisma.studentProgress.update({
           where: { id: existing.id },
           data: {
             status: status || 'completed',
           },
         });
-        return jsonResponse({
-          id: updated.id,
-          user_id: updated.userId,
-          course_id: updated.courseId,
-          sub_lesson_id: updated.subLessonId,
-          status: updated.status,
+      } else {
+        updatedOrCreated = await prisma.studentProgress.create({
+          data: {
+            userId: studentId,
+            courseId,
+            subLessonId,
+            status: status || 'completed',
+            isActive: true,
+          },
         });
       }
 
-      const created = await prisma.studentProgress.create({
+      if (updatedOrCreated.status === 'completed') {
+        const ws = await prisma.wonderingScore.findFirst({
+          where: { userId: studentId, subLessonId },
+        });
+        if (!ws) {
+          await prisma.wonderingScore.create({
+            data: { userId: studentId, subLessonId, score: 10, isActive: true },
+          });
+        } else {
+          await prisma.wonderingScore.update({
+            where: { id: ws.id },
+            data: { score: 10 },
+          });
+        }
+      }
+
+      // Recalculate Student Course Total Score
+      const completedProgress = await prisma.studentProgress.findMany({
+        where: { userId: studentId, courseId, status: 'completed' },
+      });
+      const readScore = completedProgress.length * 10;
+
+      const studentCodeAnswers = await prisma.codeAnswer.findMany({
+        where: { userId: studentId },
+      });
+      const codingScore = studentCodeAnswers.reduce((acc: number, curr: any) => acc + (curr.exploringScore || 0), 0);
+
+      const studentEssayAnswers = await prisma.essayAnswer.findMany({
+        where: { userId: studentId },
+      });
+      const essayScore = studentEssayAnswers.reduce((acc: number, curr: any) => {
+        return acc + (curr.konteksPenjelasan || 0) + (curr.keruntutan || 0) + (curr.kebenaran || 0);
+      }, 0);
+
+      const newTotalScore = readScore + codingScore + essayScore;
+
+      await prisma.studentCourse.updateMany({
+        where: { studentId, courseId },
         data: {
-          userId: studentId,
-          courseId,
-          subLessonId,
-          status: status || 'completed',
-          isActive: true,
+          totalScore: newTotalScore,
         },
       });
 
       return jsonResponse({
-        id: created.id,
-        user_id: created.userId,
-        course_id: created.courseId,
-        sub_lesson_id: created.subLessonId,
-        status: created.status,
+        id: updatedOrCreated.id,
+        user_id: updatedOrCreated.userId,
+        course_id: updatedOrCreated.courseId,
+        sub_lesson_id: updatedOrCreated.subLessonId,
+        status: updatedOrCreated.status,
       });
     }
 
@@ -944,7 +1001,7 @@ export async function POST(
             where: { id: existingCodeAnswer.id },
             data: {
               isCodeRight: true,
-              exploringScore: Number(scoreToAdd) || 0,
+              exploringScore: 30,
             },
           });
         } else {
@@ -953,7 +1010,7 @@ export async function POST(
               userId: studentId,
               codeQuestionId,
               isCodeRight: true,
-              exploringScore: Number(scoreToAdd) || 0,
+              exploringScore: 30,
               isActive: true,
             },
           });
@@ -974,8 +1031,14 @@ export async function POST(
 
       // 3.2. Save Essay Answers
       if (essayAnswers && Array.isArray(essayAnswers)) {
-        for (const essay of essayAnswers) {
+        for (let i = 0; i < essayAnswers.length; i++) {
+          const essay = essayAnswers[i];
           const essayQuestionId = Number(essay.essayQuestionId);
+          let kp = 0, kr = 0, kb = 0;
+          if (i === 0) kp = 20; // Default mock score (will be AI evaluated later)
+          else if (i === 1) kr = 20;
+          else if (i === 2) kb = 20;
+
           const existingEssayAnswer = await prisma.essayAnswer.findFirst({
             where: { userId: studentId, essayQuestionId },
           });
@@ -985,6 +1048,9 @@ export async function POST(
               where: { id: existingEssayAnswer.id },
               data: {
                 answer: essay.answer,
+                konteksPenjelasan: kp,
+                keruntutan: kr,
+                kebenaran: kb,
               },
             });
           } else {
@@ -993,9 +1059,9 @@ export async function POST(
                 userId: studentId,
                 essayQuestionId,
                 answer: essay.answer,
-                konteksPenjelasan: 20, // Default mock score
-                keruntutan: 20,
-                kebenaran: 20,
+                konteksPenjelasan: kp,
+                keruntutan: kr,
+                kebenaran: kb,
                 teacherNotes: '',
                 isApprovedByTeacher: 'approved',
                 isActive: true,
@@ -1024,6 +1090,20 @@ export async function POST(
             status: 'completed',
             isActive: true,
           },
+        });
+      }
+
+      const ws = await prisma.wonderingScore.findFirst({
+        where: { userId: studentId, subLessonId },
+      });
+      if (!ws) {
+        await prisma.wonderingScore.create({
+          data: { userId: studentId, subLessonId, score: 10, isActive: true },
+        });
+      } else {
+        await prisma.wonderingScore.update({
+          where: { id: ws.id },
+          data: { score: 10 },
         });
       }
 

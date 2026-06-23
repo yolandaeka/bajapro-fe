@@ -51,7 +51,7 @@ export const ApprovalTable = () => {
             size="small"
             style={{ backgroundColor: "#22c55e", borderColor: "#22c55e" }}
             onClick={() => handleRowApprove(record.key)}
-            disabled={record.is_approved_by_admin === 1}
+            disabled={record.is_approved_by_admin !== 0}
           >
             Approve
           </Button>
@@ -61,7 +61,7 @@ export const ApprovalTable = () => {
             icon={<CloseCircleOutlined />}
             size="small"
             onClick={() => handleRowReject(record.key)}
-            disabled={record.is_approved_by_admin === 2}
+            disabled={record.is_approved_by_admin !== 0}
           >
             Reject
           </Button>

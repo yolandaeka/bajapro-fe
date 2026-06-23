@@ -207,7 +207,7 @@ export default function ReportCourseidManager() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <TrophyOutlined style={{ fontSize: "28px", color: "#FBBF24" }} />
                 <Title level={4} style={{ margin: 0, fontWeight: 800, color: '#1F2937' }}>
-                  {data.badge?.badge_name || 'Beginner'}
+                  {data.badge?.name || 'Beginner'}
                 </Title>
               </div>
             </Card>

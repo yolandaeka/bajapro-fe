@@ -84,7 +84,7 @@ export default function CourseManager() {
           {courses.map((course) => {
             const isEnrolled = enrolledMap[course.id];
             // Format progress percent
-            const progressVal = isEnrolled ? (isEnrolled.total_score > 100 ? 100 : isEnrolled.total_score || 5) : 0;
+            const progressVal = isEnrolled ? (isEnrolled.progressPercent || 0) : 0;
             
             return (
               <Col xs={24} sm={12} md={8} lg={6} key={course.id}>

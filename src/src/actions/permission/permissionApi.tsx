@@ -22,13 +22,13 @@ export const fetchRolesApi = async (): Promise<RoleData[]> => {
 
 export const fetchAllPermissionsApi = async (): Promise<Permission[]> => {
   // Ini akan mengambil [{ id: 1, name: "course.read", role_ids: [1, 2] }] dari Postman temanmu
-  if (USE_REAL_API) return handleFetch(`${BASE_URL}/permissions`);
+  if (USE_REAL_API) return handleFetch(`${BASE_URL}/permissions?t=${Date.now()}`);
   return [];
 };
 
 export const updateRolePermissionsApi = async (roleId: number, permissionIds: number[]): Promise<void> => {
   
-  const response = await fetch(`${BASE_URL}/permissions`);
+  const response = await fetch(`${BASE_URL}/permissions?t=${Date.now()}`);
   const allPermissions: Permission[] = await response.json();
 
   const safeRoleId = Number(roleId);

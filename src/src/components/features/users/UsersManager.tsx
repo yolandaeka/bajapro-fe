@@ -53,7 +53,7 @@ export default function UsersManager() {
   const currentUserRole =
     sessionUser?.role_id === 1
       ? "Admin"
-      : sessionUser?.role_id === 3
+      : sessionUser?.role_id === 2
         ? "Teacher"
         : "Students";
   const currentUserId = sessionUser?.id;
@@ -289,15 +289,17 @@ export default function UsersManager() {
         </p>
 
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
-            onClick={() => handleAction("add")}
-          >
-            Tambah User
-          </Button>
+          {can("users.create") && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              style={{ backgroundColor: "#7246BA", borderRadius: "8px" }}
+              onClick={() => handleAction("add")}
+            >
+              Tambah User
+            </Button>
+          )}
           <Space>
             <Input
               size="large"
@@ -368,7 +370,7 @@ export default function UsersManager() {
               <Descriptions.Item label="Email">{viewData.email}</Descriptions.Item>
               {viewData.role === "Teacher" && (
                 <>
-                  {viewData.nip && <Descriptions.Item label="NIP">{viewData.nip}</Descriptions.Item>}
+                  <Descriptions.Item label="NIP">{viewData.nip || "-"}</Descriptions.Item>
                   <Descriptions.Item label="Instansi">{viewData.instansi_sekolah || "-"}</Descriptions.Item>
                 </>
               )}

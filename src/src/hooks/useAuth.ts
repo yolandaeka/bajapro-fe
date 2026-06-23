@@ -19,7 +19,7 @@ export const useAuth = () => {
     try {
       setPermLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || '/api'}/permission/permissions`,
+        `${process.env.NEXT_PUBLIC_API_URL || '/api'}/permission/permissions?t=${Date.now()}`,
         { cache: 'no-store' }
       );
       if (!res.ok) throw new Error('Gagal mengambil permission');
@@ -53,14 +53,10 @@ export const useAuth = () => {
 
   /**
    * Cek apakah user punya izin tertentu.
-   * - Admin (role_id=1) selalu true.
-   * - Role lain dicek dari daftar permission yang diambil dari API.
+   * Dicek dari daftar permission yang diambil dari API.
    */
   const can = (permissionName: string): boolean => {
     const roleId = Number(user?.role_id);
-
-    // Bypass mutlak untuk Admin agar tidak pernah kehilangan akses ke menu utama.
-    if (roleId === 1) return true;
 
     // Selama permission belum selesai dimuat, tahan dulu
     if (permLoading) return false;

@@ -315,7 +315,7 @@ export async function GET(
       const users = await prisma.user.findMany({ include: { class: true, role: true }, orderBy: { id: 'asc' } });
       return jsonResponse(users.map((u: any) => ({
         id: u.id, name: u.name, email: u.email, role: u.role?.name || "", isactive: u.isActive ? 1 : 0,
-        instansi_sekolah: u.instansiSekolah || null, class_name: u.class?.className || null, is_approved_by_admin: u.isApprovedByAdmin
+        instansi_sekolah: u.instansiSekolah || null, nip: u.nip || null, class_name: u.class?.className || null, is_approved_by_admin: u.isApprovedByAdmin
       })));
     }
 
@@ -553,24 +553,28 @@ export async function PUT(
         // Bulk reorder for lessons
         if (resource === 'lessons' && body.updates) {
           const updates = body.updates as { id: number; newPosition: number }[];
-          for (const update of updates) {
-            await prisma.lesson.update({
-              where: { id: update.id },
-              data: { position: update.newPosition }
-            });
-          }
+          await Promise.all(
+            updates.map((update) =>
+              prisma.lesson.update({
+                where: { id: update.id },
+                data: { position: update.newPosition }
+              })
+            )
+          );
           return jsonResponse({ success: true });
         }
 
         // Bulk reorder for sublessons
         if (resource === 'sublessons' && body.updates) {
           const updates = body.updates as { id: number; newPosition: number }[];
-          for (const update of updates) {
-            await prisma.subLesson.update({
-              where: { id: update.id },
-              data: { orderPosition: update.newPosition }
-            });
-          }
+          await Promise.all(
+            updates.map((update) =>
+              prisma.subLesson.update({
+                where: { id: update.id },
+                data: { orderPosition: update.newPosition }
+              })
+            )
+          );
           return jsonResponse({ success: true });
         }
       }
@@ -595,6 +599,9 @@ export async function DELETE(
         else if (resource === 'courses') await prisma.course.delete({ where: { id } });
         else if (resource === 'lessons') await prisma.lesson.delete({ where: { id } });
         else if (resource === 'sublessons') await prisma.subLesson.delete({ where: { id } });
+        else if (resource === 'materials') await prisma.material.delete({ where: { id } });
+        else if (resource === 'code_question') await prisma.codeQuestion.delete({ where: { id } });
+        else if (resource === 'essay_question') await prisma.essayQuestion.delete({ where: { id } });
         return jsonResponse({ success: true });
       } catch (error: any) {
         return jsonResponse({ error: error.message }, 500);

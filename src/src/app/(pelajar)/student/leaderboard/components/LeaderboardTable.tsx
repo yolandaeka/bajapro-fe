@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Space, Typography } from "antd";
-import { FileExcelOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 

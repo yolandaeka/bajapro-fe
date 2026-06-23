@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         nama: t.name,
         email: t.email,
         instansi: t.instansiSekolah || '-',
-        nip: '-', // NIP can be mocked
+        nip: t.nip || '-',
         is_approved_by_admin: t.isApprovedByAdmin,
       }))
     );
