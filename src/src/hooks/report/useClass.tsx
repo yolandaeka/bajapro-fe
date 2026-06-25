@@ -27,7 +27,7 @@ export const useClass = (classId?: string | number, courseId?: string | number) 
           
           let studentStatus = 'pending';
           if (studentEssays.length > 0) {
-            const hasReject = studentEssays.some((ea: any) => ea.is_approved_by_teacher == false || ea.is_approved_by_teacher === 'false' || ea.is_approved_by_teacher === 'no' || ea.is_approved_by_teacher === 'reject');
+            const hasReject = studentEssays.some((ea: any) => ea.is_approved_by_teacher === 0 || ea.is_approved_by_teacher == false || ea.is_approved_by_teacher === 'false' || ea.is_approved_by_teacher === 'no' || ea.is_approved_by_teacher === 'reject');
             const hasPending = studentEssays.some((ea: any) => ea.is_approved_by_teacher === null || ea.is_approved_by_teacher === 'pending');
             
             if (hasReject) {

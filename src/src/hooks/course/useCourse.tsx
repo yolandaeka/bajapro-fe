@@ -311,9 +311,11 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
         setSubLessons(updatedSubs.sort((a, b) => a.order_position - b.order_position));
       }
 
+      return true;
     } catch (error: unknown) {
       console.error("Gagal simpan sub lesson:", error);
       messageApi.error("Terjadi kesalahan saat menyimpan data.");
+      return false;
     } finally {
       setLoading(false);
     }

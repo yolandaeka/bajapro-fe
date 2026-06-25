@@ -93,7 +93,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, loadin
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.text("Leaderboard", 14, 15);
-    
+
     const tableColumn = ["Rank", "Nama", "Badge", "Reading Score", "Coding Score", "Essay Score", "Total Score"];
     const tableRows: any[] = [];
 
@@ -121,9 +121,9 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, loadin
 
   return (
     <div style={{ backgroundColor: "white", padding: 24, borderRadius: 16 }}>
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
         marginBottom: 16,
         flexWrap: "wrap",
         gap: 16
@@ -136,18 +136,18 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, loadin
             Export PDF
           </Button>
         </Space>
-        <Input 
-          placeholder="Cari..." 
-          prefix={<SearchOutlined />} 
-          style={{ width: 250, borderRadius: 8 }} 
+        <Input
+          placeholder="Cari..."
+          prefix={<SearchOutlined />}
+          style={{ width: 250, borderRadius: 8 }}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
       </div>
 
-      <Table 
-        columns={columns} 
-        dataSource={tableData} 
+      <Table
+        columns={columns}
+        dataSource={tableData}
         loading={loading}
         rowKey="id"
         pagination={{ pageSize: 5 }}

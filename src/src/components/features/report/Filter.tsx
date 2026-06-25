@@ -121,10 +121,13 @@ export default function Filter() {
                 style={{ width: '100%', marginTop: '8px' }} 
                 value={selected.class}
                 onChange={(v) => setSelected({ ...selected, class: v })}
-                options={classes.map((c) => ({ 
-                  label: c.class_name, 
-                  value: String(c.id) 
-                }))} 
+                options={[
+                  ...(session?.user && (session.user as any).role_id === 1 ? [{ label: "Tanpa Kelas / Umum", value: "none" }] : []),
+                  ...classes.map((c) => ({ 
+                    label: c.class_name, 
+                    value: String(c.id) 
+                  }))
+                ]} 
               />
             </div>
           </div>

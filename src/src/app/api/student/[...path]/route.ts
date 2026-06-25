@@ -27,38 +27,68 @@ export async function GET(
   try {
     // 1. Get Student Dashboard Data
     if (route === 'dashboard') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const studentIdParam = searchParams.get('studentId');
+      const studentId = studentIdParam && studentIdParam !== 'undefined' ? Number(studentIdParam) : 0;
+      
+      if (isNaN(studentId)) {
+        return jsonResponse({ error: 'Invalid student ID' }, 400);
+      }
 
-      const enrolledCourses = await prisma.studentCourse.findMany({
-        where: { studentId },
-        include: { course: true },
+      // Batch all independent queries in parallel for maximum speed
+      const [
+        enrolledCourses,
+        materialsCount,
+        completedMaterials,
+        allBadges,
+        recentProgress,
+        allStudentCourses,
+        allStudents,
+      ] = await Promise.all([
+        prisma.studentCourse.findMany({
+          where: { studentId },
+          include: { course: true },
+        }),
+        prisma.subLesson.count({ where: { isActive: true } }),
+        prisma.studentProgress.count({
+          where: { userId: studentId, status: 'completed' }
+        }),
+        prisma.badge.findMany(),
+        prisma.studentProgress.findMany({
+          where: { userId: studentId, status: 'completed' },
+          orderBy: { updatedAt: 'desc' },
+          take: 2,
+          include: {
+            subLesson: {
+              include: {
+                 lesson: {
+                   include: { course: true, level: true }
+                 }
+              }
+            }
+          }
+        }),
+        prisma.studentCourse.findMany({
+          select: { studentId: true, totalScore: true }
+        }),
+        prisma.user.findMany({
+          where: { roleId: 3 },
+          select: { id: true, name: true }
+        }),
+      ]);
+
+      // Build leaderboard from pre-fetched data
+      const scoreMap = new Map<number, number>();
+      allStudentCourses.forEach((sc: any) => {
+        scoreMap.set(sc.studentId, (scoreMap.get(sc.studentId) || 0) + (sc.totalScore || 0));
       });
 
-      const allMaterials = await prisma.material.findMany();
-
-      // Top 5 Leaderboard
-      const allStudentCourses = await prisma.studentCourse.findMany();
-      const allUsers = await prisma.user.findMany({
-        where: { roleId: 3 },
-      });
-
-      const leaderboardRaw = allUsers.map((user: any) => {
-        const userCourses = allStudentCourses.filter(
-          (sc: any) => sc.studentId === user.id
-        );
-        const totalUserScore = userCourses.reduce(
-          (acc: number, sc: any) => acc + (sc.totalScore || 0),
-          0
-        );
-        return {
+      const leaderboardRaw = allStudents
+        .map((user: any) => ({
           id: user.id,
           name: user.name,
-          score: totalUserScore,
-        };
-      });
-
-      // Sort leaderboard to find rank
-      leaderboardRaw.sort((a: any, b: any) => b.score - a.score);
+          score: scoreMap.get(user.id) || 0,
+        }))
+        .sort((a: any, b: any) => b.score - a.score);
 
       const top5Leaderboard = leaderboardRaw.slice(0, 5);
 
@@ -67,48 +97,40 @@ export async function GET(
         0
       );
 
-      // Materials Completed
-      const completedMaterials = await prisma.studentProgress.count({
-        where: { userId: studentId, status: 'completed' }
-      });
+      const overallProgress = materialsCount > 0 ? Math.round((completedMaterials / materialsCount) * 100) : 0;
 
-      // Overall Progress
-      const overallProgress = allMaterials.length > 0 ? Math.round((completedMaterials / allMaterials.length) * 100) : 0;
-
-      // Badge
-      const allBadges = await prisma.badge.findMany();
       const userBadge = allBadges.find((b: any) => totalScore >= b.minScore && totalScore <= b.maxScore);
       const badgeName = userBadge ? userBadge.name : 'Beginner';
       const badgeImage = userBadge ? userBadge.image : null;
 
-      // Rank
       const userRankIndex = leaderboardRaw.findIndex((u: any) => u.id === studentId);
       const userRank = userRankIndex !== -1 ? userRankIndex + 1 : '-';
 
-      const recentProgress = await prisma.studentProgress.findMany({
-        where: { userId: studentId, status: 'completed' },
-        orderBy: { updatedAt: 'desc' },
-        take: 2,
-        include: {
-          subLesson: {
-            include: {
-               lesson: {
-                 include: { course: true }
-               }
-            }
-          }
-        }
-      });
+      // Batch progress queries for all enrolled courses at once (eliminates N+1)
+      const courseIds = enrolledCourses.map((ec: any) => ec.courseId);
+      
+      const [allLessonsForCourses, allProgressForCourses] = await Promise.all([
+        prisma.lesson.findMany({
+          where: { courseId: { in: courseIds }, isActive: true },
+          include: { subLessons: { where: { isActive: true }, select: { id: true } } }
+        }),
+        prisma.studentProgress.findMany({
+          where: { userId: studentId, courseId: { in: courseIds }, status: 'completed' }
+        })
+      ]);
 
-      return jsonResponse({
-        enrolledCount: enrolledCourses.length,
-        materialsTotal: allMaterials.length,
-        materialsCompleted: completedMaterials,
-        overallProgress: overallProgress,
-        latestProgress: recentProgress,
-        lessonHistory: enrolledCourses.map((ec: any) => ({
+      const lessonHistory = enrolledCourses.map((ec: any) => {
+        const courseLessons = allLessonsForCourses.filter((l: any) => l.courseId === ec.courseId);
+        const totalCourseSublessons = courseLessons.reduce((acc: number, l: any) => acc + l.subLessons.length, 0);
+        const completedCourseSublessons = allProgressForCourses.filter(
+          (p: any) => p.courseId === ec.courseId
+        ).length;
+        const progressPercent = totalCourseSublessons > 0 ? Math.round((completedCourseSublessons / totalCourseSublessons) * 100) : 0;
+        
+        return {
           id: ec.id,
           student_id: ec.studentId,
+          courseId: ec.courseId,
           course_id: ec.courseId,
           total_score: ec.totalScore,
           badge_id: ec.badgeId,
@@ -116,7 +138,17 @@ export async function GET(
           created_at: ec.createdAt,
           updated_at: ec.updatedAt,
           course: ec.course,
-        })),
+          progressPercent: progressPercent,
+        };
+      });
+
+      return jsonResponse({
+        enrolledCount: enrolledCourses.length,
+        materialsTotal: materialsCount, // Note: This is actually sublessons count now
+        materialsCompleted: completedMaterials,
+        overallProgress: overallProgress,
+        latestProgress: recentProgress,
+        lessonHistory,
         achievement: {
           badge: badgeName,
           badgeImage: badgeImage,
@@ -185,9 +217,11 @@ export async function GET(
 
       const lessons = await prisma.lesson.findMany({
         where: { courseId, isActive: true },
+        orderBy: { position: 'asc' },
         include: {
           subLessons: {
             where: { isActive: true },
+            orderBy: { orderPosition: 'asc' },
           },
         },
       });
@@ -227,7 +261,8 @@ export async function GET(
 
     // 4. Check Enrollment / Get Student Course Progress
     if (route === 'enrollment' || route === 'course-progress') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const sIdParam = searchParams.get('studentId');
+      const studentId = sIdParam && sIdParam !== 'undefined' ? Number(sIdParam) : 0;
       const courseId = Number(searchParams.get('courseId') || '0');
 
       const enrollment = await prisma.studentCourse.findFirst({
@@ -281,9 +316,11 @@ export async function GET(
 
       const lessons = await prisma.lesson.findMany({
         where: { courseId, levelId, isActive: true },
+        orderBy: { position: 'asc' },
         include: {
           subLessons: {
             where: { isActive: true },
+            orderBy: { orderPosition: 'asc' },
             include: {
               materials: {
                 where: { isActive: true },
@@ -390,7 +427,8 @@ export async function GET(
 
     // 6. Get Student Progress list
     if (route === 'progress') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const sIdParam = searchParams.get('studentId');
+      const studentId = sIdParam && sIdParam !== 'undefined' ? Number(sIdParam) : 0;
       const courseId = Number(searchParams.get('courseId') || '0');
 
       const progresses = await prisma.studentProgress.findMany({
@@ -413,7 +451,8 @@ export async function GET(
 
     // 7. Get Student Course Report Data
     if (route === 'course-report') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const sIdParam = searchParams.get('studentId');
+      const studentId = sIdParam && sIdParam !== 'undefined' ? Number(sIdParam) : 0;
       const courseId = Number(searchParams.get('courseId') || '0');
 
       const course = await prisma.course.findUnique({
@@ -484,7 +523,8 @@ export async function GET(
         let essayScore = 0;
         let isAllApproved = true;
         let hasEssay = eqList.length > 0;
-        let isPending = false;
+        let hasPending = false;
+        let hasRejected = false;
 
         if (hasEssay) {
           eqList.forEach((eq: any) => {
@@ -495,16 +535,15 @@ export async function GET(
                 (ea.keruntutan || 0) +
                 (ea.kebenaran || 0);
               essayScore += singleScore;
-              const isApproved =
-                ea.isApprovedByTeacher === 'approved' ||
-                ea.isApprovedByTeacher === '1' ||
-                ea.isApprovedByTeacher === 'true';
-              if (!isApproved) {
+              const approval = ea.isApprovedByTeacher;
+              if (approval === 0) hasRejected = true;
+              else if (approval !== 1) {
                 isAllApproved = false;
-                isPending = true;
+                hasPending = true;
               }
             } else {
               isAllApproved = false;
+              hasPending = true;
             }
           });
         }
@@ -516,7 +555,9 @@ export async function GET(
         let status = 'Pending';
         if (progress && progress.status === 'completed') {
           if (hasEssay) {
-            status = isPending ? 'Pending' : 'Approve';
+            if (hasRejected) status = 'Rejected';
+            else if (hasPending) status = 'Pending';
+            else status = 'Approve';
           } else {
             status = 'Approve';
           }
@@ -587,7 +628,8 @@ export async function GET(
 
     // 8. Get Student Sub Lesson Report Detail
     if (route === 'sublesson-report') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const sIdParam = searchParams.get('studentId');
+      const studentId = sIdParam && sIdParam !== 'undefined' ? Number(sIdParam) : 0;
       const courseId = Number(searchParams.get('courseId') || '0');
       const subLessonId = Number(searchParams.get('subLessonId') || '0');
 
@@ -673,22 +715,21 @@ export async function GET(
       let essayTotalScore = 0;
       let isAllApproved = true;
       let hasEssay = essayQuestions.length > 0;
-      let isPending = false;
+      let hasPending = false;
+      let hasRejected = false;
 
       if (hasEssay) {
         essayDetails.forEach((ed: any) => {
           essayTotalScore += ed.score;
           if (!ed.answer) {
             isAllApproved = false;
+            hasPending = true;
           } else {
-            const isApproved =
-              ed.answer.is_approved_by_teacher === 'approved' ||
-              ed.answer.is_approved_by_teacher === '1' ||
-              ed.answer.is_approved_by_teacher === 'true' ||
-              ed.answer.is_approved_by_teacher === true;
-            if (!isApproved) {
+            const approval = ed.answer.is_approved_by_teacher;
+            if (approval === 0) hasRejected = true;
+            else if (approval !== 1) {
               isAllApproved = false;
-              isPending = true;
+              hasPending = true;
             }
           }
         });
@@ -701,7 +742,9 @@ export async function GET(
       let status = 'Pending';
       if (progress && progress.status === 'completed') {
         if (hasEssay) {
-          status = isPending ? 'Pending' : 'Approve';
+          if (hasRejected) status = 'Rejected';
+          else if (hasPending) status = 'Pending';
+          else status = 'Approve';
         } else {
           status = 'Approve';
         }
@@ -770,7 +813,8 @@ export async function GET(
 
     // 9. Get Student Profile
     if (route === 'profile') {
-      const studentId = Number(searchParams.get('studentId') || '0');
+      const sIdParam = searchParams.get('studentId');
+      const studentId = sIdParam && sIdParam !== 'undefined' ? Number(sIdParam) : 0;
 
       const user = await prisma.user.findUnique({
         where: { id: studentId },
@@ -1095,8 +1139,12 @@ export async function POST(
             kp = aiScore;
           }
 
+          const userObj = await prisma.user.findUnique({ where: { id: Number(studentId) } });
+          const hasClass = !!userObj?.classId;
+          const approvalStatus = hasClass ? null : 1;
+
           const existingEssayAnswer = await prisma.essayAnswer.findFirst({
-            where: { userId: studentId, essayQuestionId },
+            where: { userId: Number(studentId), essayQuestionId },
           });
 
           if (existingEssayAnswer) {
@@ -1107,19 +1155,20 @@ export async function POST(
                 konteksPenjelasan: kp,
                 keruntutan: kr,
                 kebenaran: kb,
+                isApprovedByTeacher: approvalStatus,
               },
             });
           } else {
             await prisma.essayAnswer.create({
               data: {
-                userId: studentId,
+                userId: Number(studentId),
                 essayQuestionId,
                 answer: essay.answer,
                 konteksPenjelasan: kp,
                 keruntutan: kr,
                 kebenaran: kb,
                 teacherNotes: '',
-                isApprovedByTeacher: 'approved',
+                isApprovedByTeacher: approvalStatus,
                 isActive: true,
               },
             });

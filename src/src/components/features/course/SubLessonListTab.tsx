@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, Select, Button, Typography, Empty, Space, message } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined, MenuOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Card, Select, Button, Typography, Empty, Space, Spin, App, Alert } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined, MenuOutlined, EditFilled, DeleteFilled } from "@ant-design/icons";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { SubLessonForm } from "./SubLessonForm";
 import { LessonRecord, SubLessonRecord, ReorderItem, MaterialRecord, SubLessonCreateData, MaterialsCreateData } from "@/src/types/course";
@@ -15,22 +15,52 @@ interface Props {
   subLessons: SubLessonRecord[];
   selectedLessonId: number | null;
   onSelectLesson: (id: number) => void;
-  onSaveAll: (subLesson: SubLessonCreateData, materials: MaterialRecord[], editId?: number) => void;
+  onSaveAll: (subLesson: SubLessonCreateData, materials: MaterialRecord[], editId?: number) => Promise<boolean>;
   // ... (tetap sama)
   onDeleteSub: (id: number) => void;
   onReorderSub: (updates: ReorderItem[]) => void;
   loading: boolean;
+  courseId?: number | null;
 }
 
 export const SubLessonListTab: React.FC<Props> = ({
-  lessons, subLessons, selectedLessonId, onSelectLesson, onSaveAll, onDeleteSub, onReorderSub, loading
+  lessons, subLessons, selectedLessonId, onSelectLesson, onSaveAll, onDeleteSub, onReorderSub, loading, courseId
 }) => {
-  const { can } = useAuth();
+  const { message } = App.useApp();
+  const { can, user } = useAuth();
   const canCreate = can('course.create');
   const canUpdate = can('course.update');
   const canDelete = can('course.delete');
   const [view, setView] = useState<"list" | "form">("list");
   const [editingData, setEditingData] = useState<SubLessonRecord | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Persist view state in sessionStorage so refresh stays on materials form
+  const storageKey = `sublesson_view_${courseId || "default"}`;
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.view === "form") {
+          setView("form");
+          // Try to restore editing data from subLessons
+          if (parsed.editingId) {
+            const found = subLessons.find(s => s.id === parsed.editingId);
+            if (found) setEditingData(found);
+          }
+        }
+      } catch { /* ignore parse errors */ }
+    }
+  }, [subLessons]);
+
+  useEffect(() => {
+    sessionStorage.setItem(storageKey, JSON.stringify({
+      view,
+      editingId: editingData?.id || null,
+    }));
+  }, [view, editingData, storageKey]);
 
   const handleOnDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -47,18 +77,30 @@ export const SubLessonListTab: React.FC<Props> = ({
 
   if (view === "form") {
     return (
-     <SubLessonForm
+      <Spin spinning={isSaving}>
+       <SubLessonForm
         lessons={lessons}
         initialLessonId={selectedLessonId}
         initialData={editingData}
         onBack={() => { setEditingData(null); setView("list"); }}
-        onSave={(vals, mats) => { 
-          // PERBAIKAN: Tambahkan editingData?.id sebagai parameter ketiga!
-          onSaveAll(vals, mats, editingData?.id); 
-          setView("list"); 
+        onSave={async (vals, mats) => { 
+          setIsSaving(true);
+          try {
+            // Await save completion before switching back to list
+            await onSaveAll(vals, mats, editingData?.id); 
+            // Wait a bit to let the user see the success message
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            setEditingData(null);
+            setView("list"); 
+          } catch (err) {
+            message.error("Gagal menyimpan data. Silakan coba lagi.");
+          } finally {
+            setIsSaving(false);
+          }
         }}
-        loading={loading}
+        loading={loading || isSaving}
       />
+      </Spin>
     );
   }
 
@@ -66,11 +108,19 @@ export const SubLessonListTab: React.FC<Props> = ({
     <div className="">
       <Card>
         <Space orientation="vertical" className="w-full">
+          {user?.role === 'admin' && !selectedLessonId && (
+            <Alert 
+              message="Pilih Lesson yang ingin dikelola untuk membuat Sub Lesson dan Materi." 
+              type="info" 
+              showIcon 
+              style={{ marginBottom: 12 }} 
+            />
+          )}
           <Text strong>Pilih Lesson:</Text>
           <Select
             className="w-full"
             placeholder="Pilih Lesson"
-            options={lessons.map(l => ({ label: l.title, value: l.id }))}
+            options={[...lessons].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)).map(l => ({ label: l.title, value: l.id }))}
             value={selectedLessonId}
             onChange={(val) => onSelectLesson(val)}
           />
@@ -93,8 +143,17 @@ export const SubLessonListTab: React.FC<Props> = ({
         {!selectedLessonId ? (
           <Empty description="Pilih Lesson terlebih dahulu" />
         ) : (
-          <DragDropContext onDragEnd={canUpdate ? handleOnDragEnd : () => {}}>
-            <Droppable droppableId="sublesson-list" isDropDisabled={!canUpdate}>
+          <>
+            {user?.role === 'admin' && (
+              <Alert 
+                message="Atur urutan sub lesson dengan menyeret (drag) baris ke posisi yang diinginkan." 
+                type="info" 
+                showIcon 
+                style={{ marginBottom: 16 }} 
+              />
+            )}
+            <DragDropContext onDragEnd={canUpdate ? handleOnDragEnd : () => {}}>
+              <Droppable droppableId="sublesson-list" isDropDisabled={!canUpdate}>
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                   {subLessons.map((sub, index) => (
@@ -112,15 +171,17 @@ export const SubLessonListTab: React.FC<Props> = ({
                               </div>
                               <Text strong>{sub.title}</Text>
                             </Space>
-                            <Space>
-                              <Button 
-                                icon={<EditOutlined style={{ color: "#1677ff" }} />} 
-                                onClick={() => { setEditingData(sub); setView("form"); }} 
-                              />
-                              {canDelete && (
-                                <Button danger icon={<DeleteOutlined />} onClick={() => onDeleteSub(sub.id)} />
-                              )}
-                            </Space>
+                              <Space>
+                                <Button
+                                  type="primary"
+                                  icon={<EditFilled />}
+                                  style={{ backgroundColor: "#faad14", color: "black" }}
+                                  onClick={() => { setEditingData(sub); setView("form"); }}
+                                />
+                                {canDelete && (
+                                  <Button type="primary" danger icon={<DeleteFilled />} onClick={() => onDeleteSub(sub.id)} />
+                                )}
+                              </Space>
                           </div>
                         )}
                       </Draggable>
@@ -146,6 +207,7 @@ export const SubLessonListTab: React.FC<Props> = ({
               )}
             </Droppable>
           </DragDropContext>
+          </>
         )}
       </Card>
       </div>

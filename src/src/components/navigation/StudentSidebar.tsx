@@ -11,6 +11,7 @@ import {
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
@@ -31,8 +32,8 @@ const StudentSidebar: React.FC<StudentSidebarProps> = ({
 }) => {
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/login" });
   };
 
   let activeKey = "dashboard";
@@ -100,10 +101,14 @@ const StudentSidebar: React.FC<StudentSidebarProps> = ({
       >
         {(!collapsed || inDrawer) && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ fontWeight: 800, fontSize: "18px", display: "flex", alignItems: "center" }}>
-              <span style={{ color: "#5B21B6" }}>BAJA</span>
-              <span style={{ color: "#F59E0B" }}>PRO</span>
-            </div>
+            <Image
+              src="/assets/logo/logo-completed.png"
+              alt="Logo BAJAPRO"
+              width={120}
+              height={40}
+              style={{ width: "auto", height: "32px", objectFit: "contain" }}
+              priority
+            />
           </div>
         )}
         {!inDrawer && (

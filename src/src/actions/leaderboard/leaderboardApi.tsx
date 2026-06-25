@@ -75,18 +75,69 @@ export const LeaderboardApi = {
           `${BASE_URL}/t_student_course?course_id=${courseId}`
         );
         const badges = await handleFetch(`${BASE_URL}/badges`);
+        
+        // Fetch all scores for actual tooltips
+        const wonderingScores = await handleFetch(`${BASE_URL}/t_wondering_score`);
+        const codeAnswers = await handleFetch(`${BASE_URL}/t_code_answer`);
+        const essayAnswers = await handleFetch(`${BASE_URL}/t_essay_answer`);
+        const codeQuestions = await handleFetch(`${BASE_URL}/code_question`);
+        const essayQuestions = await handleFetch(`${BASE_URL}/essay_question`);
+
+        // Fetch lessons and sublessons of this course to filter scores by course
+        const lessons = await handleFetch(`${BASE_URL}/lessons?course_id=${courseId}`);
+        const lessonIds = lessons.map((l: any) => Number(l.id));
+
+        const subLessonsArrays = await Promise.all(
+          lessonIds.map((lId: number) => handleFetch(`${BASE_URL}/sublessons?lesson_id=${lId}`))
+        );
+        const subLessons = subLessonsArrays.flat();
+        const subLessonIds = subLessons.map((sl: any) => Number(sl.id));
+
+        // Get code questions for these sublessons
+        const courseCodeQuestions = codeQuestions.filter((cq: any) => subLessonIds.includes(Number(cq.sub_lesson_id)));
+        const courseCodeQuestionIds = courseCodeQuestions.map((cq: any) => Number(cq.id));
+
+        // Get essay questions for these code questions
+        const courseEssayQuestions = essayQuestions.filter((eq: any) => {
+          if (eq.sub_lesson_id) {
+            return subLessonIds.includes(Number(eq.sub_lesson_id));
+          }
+          return courseCodeQuestionIds.includes(Number(eq.code_question_id));
+        });
+        const courseEssayQuestionIds = courseEssayQuestions.map((eq: any) => Number(eq.id));
     
         const studentsCourses = students.map((student: UserData) => {
           const matchedCourse = courses.find(
             (course: any) => course.student_id == student.id
           );
-          const badge = matchedCourse?.badge_id ? badges.find((b: any) => b.id == matchedCourse.badge_id) : null;
+          let badge = matchedCourse?.badge_id ? badges.find((b: any) => b.id == matchedCourse.badge_id) : null;
           
-          // Generate realistic sub-scores based on totalScore for display
           const total = matchedCourse?.total_score || 0;
-          const readingScore = Math.floor(total * 0.3);
-          const codingScore = Math.floor(total * 0.4);
-          const essayScore = total - readingScore - codingScore; // ensure it adds up
+
+          if (!badge && badges && badges.length > 0) {
+            badge = badges.find((b: any) => total >= b.minScore && total <= b.maxScore) || badges[0];
+          }
+
+          // Calculate reading score (wondering)
+          const stdWondering = wonderingScores.filter(
+            (w: any) => (w.userId == student.id || w.user_id == student.id) && subLessonIds.includes(Number(w.sub_lesson_id))
+          );
+          const readingScore = stdWondering.reduce((acc: number, curr: any) => acc + (curr.score || curr.wondering_score || 0), 0);
+
+          // Calculate coding score (exploring)
+          const stdCodeAnswers = codeAnswers.filter(
+            (c: any) => (c.userId == student.id || c.user_id == student.id) && courseCodeQuestionIds.includes(Number(c.code_question_id))
+          );
+          const codingScore = stdCodeAnswers.reduce((acc: number, curr: any) => acc + (curr.exploringScore || curr.exploring_score || 0), 0);
+
+          // Calculate essay score (explain)
+          const stdEssayAnswers = essayAnswers.filter(
+            (e: any) => (e.userId == student.id || e.user_id == student.id) && courseEssayQuestionIds.includes(Number(e.essay_question_id))
+          );
+          let essayScore = 0;
+          stdEssayAnswers.forEach((ea: any) => {
+             essayScore += (ea.keruntutan || 0) + (ea.kebenaran || 0) + (ea.konteks_penjelasan || ea.konteksPenjelasan || 0);
+          });
 
           return {
             ...student,

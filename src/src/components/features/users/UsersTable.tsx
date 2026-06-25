@@ -64,15 +64,13 @@ export const UserTable: React.FC<UserTableProps> = ({
       }
     ] : []),
 
-    // 👇 KONDISI 2: JIKA PENGAJAR, TAMPILKAN KOLOM KELAS
-    ...(currentUserRole === "Teacher" ? [
-      {
-        title: "Kelas",
-        dataIndex: "class_name", // Pastikan key-nya sesuai dengan API/Database
-        key: "class_name",
-        sorter: (a: UserData, b: UserData) => (a.class_name || "").localeCompare(b.class_name || "")
-      }
-    ] : []),
+    // 👇 TAMPILKAN KOLOM KELAS UNTUK ADMIN DAN PENGAJAR
+    {
+      title: "Kelas",
+      dataIndex: "class_name", 
+      key: "class_name",
+      sorter: (a: UserData, b: UserData) => (a.class_name || "").localeCompare(b.class_name || "")
+    },
 
     {
       title: "Action", 

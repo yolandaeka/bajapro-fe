@@ -12,12 +12,15 @@ import {
   Empty,
   Space,
   Tag,
+  Alert,
 } from "antd";
 import {
   PlusOutlined,
   DeleteOutlined,
   MenuOutlined,
   EditOutlined,
+  EditFilled,
+  DeleteFilled,
 } from "@ant-design/icons";
 // 1. IMPORT LIBRARY BARU
 import {
@@ -54,7 +57,7 @@ export const LessonListTab: React.FC<Props> = ({
   onUpdate,
   onDelete,
 }) => {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const canCreate = can('course.create');
   const canUpdate = can('course.update');
   const canDelete = can('course.delete');
@@ -218,8 +221,17 @@ export const LessonListTab: React.FC<Props> = ({
         {!levels || levels.length === 0 ? (
           <Empty description="Data Level tidak ditemukan. Pastikan API Level berjalan." />
         ) : (
-          // ARENA DRAG & DROP UTAMA
-          <DragDropContext onDragEnd={canUpdate ? handleDragEnd : () => {}}>
+          <>
+            {user?.role === 'admin' && (
+              <Alert 
+                message="Atur urutan lesson dengan menyeret (drag) baris ke posisi yang diinginkan." 
+                type="info" 
+                showIcon 
+                style={{ marginBottom: 16 }} 
+              />
+            )}
+            {/* ARENA DRAG & DROP UTAMA */}
+            <DragDropContext onDragEnd={canUpdate ? handleDragEnd : () => {}}>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
@@ -280,12 +292,13 @@ export const LessonListTab: React.FC<Props> = ({
                                     <div style={{ flex: 1 }}><Text strong>{lesson.title}</Text></div>
                                     <Space>
                                       <Button
-                                        type="text"
-                                        icon={<EditOutlined style={{ color: "#1677ff" }} />}
+                                        type="primary"
+                                        icon={<EditFilled />}
+                                        style={{ backgroundColor: "#faad14", color: "black" }}
                                         onClick={() => showModal(lesson)}
                                       />
                                       {canDelete && (
-                                        <Button type="text" danger icon={<DeleteOutlined />} onClick={() => onDelete(lesson.id)} />
+                                        <Button type="primary" danger icon={<DeleteFilled />} onClick={() => onDelete(lesson.id)} />
                                       )}
                                     </Space>
                                   </div>
@@ -318,6 +331,7 @@ export const LessonListTab: React.FC<Props> = ({
               })}
             </div>
           </DragDropContext>
+          </>
         )}
       </Card>
 

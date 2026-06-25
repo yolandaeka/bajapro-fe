@@ -15,7 +15,7 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
   const [messageApi, contextHolder] = message.useMessage();
 
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectNotes, setRejectNotes] = useState("");
+  const [rejectNotes, setRejectNotes] = useState<string[]>(["", "", ""]);
 
   const onApprove = async () => {
     try {
@@ -34,7 +34,7 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
           konteks_penjelasan: isQ1 ? values.konteks_penjelasan : (ea.konteks_penjelasan || 0),
           keruntutan: isQ2 ? values.keruntutan : (ea.keruntutan || 0),
           kebenaran: isQ3 ? values.kebenaran : (ea.kebenaran || 0),
-          is_approved_by_teacher: "true",
+          is_approved_by_teacher: 1,
           teacher_notes: ""
         });
       }));
@@ -46,8 +46,8 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
   };
 
   const onReject = async () => {
-    if (!rejectNotes.trim()) {
-      messageApi.error("Catatan (Notes) wajib diisi saat melakukan Reject!");
+    if (rejectNotes.some(n => !n.trim())) {
+      messageApi.error("Semua catatan (Notes) wajib diisi saat melakukan Reject!");
       return;
     }
     if (!data?.essayAnswers || data.essayAnswers.length === 0) {
@@ -56,18 +56,23 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
     }
     try {
       const values = form.getFieldsValue();
-      await Promise.all(data.essayAnswers.map(ea => {
+      await Promise.all(data.essayAnswers.map((ea: any) => {
         const isQ1 = data.essayQuestions[0] && ea.essay_question_id == data.essayQuestions[0].id;
         const isQ2 = data.essayQuestions[1] && ea.essay_question_id == data.essayQuestions[1].id;
         const isQ3 = data.essayQuestions[2] && ea.essay_question_id == data.essayQuestions[2].id;
+
+        let note = "";
+        if (isQ1) note = rejectNotes[0];
+        if (isQ2) note = rejectNotes[1];
+        if (isQ3) note = rejectNotes[2];
 
         return updateGrade(ea.id, {
           ...ea,
           konteks_penjelasan: isQ1 ? values.konteks_penjelasan : (ea.konteks_penjelasan || 0),
           keruntutan: isQ2 ? values.keruntutan : (ea.keruntutan || 0),
           kebenaran: isQ3 ? values.kebenaran : (ea.kebenaran || 0),
-          is_approved_by_teacher: "false",
-          teacher_notes: rejectNotes
+          is_approved_by_teacher: 0,
+          teacher_notes: note
         });
       }));
       messageApi.success("Jawaban berhasil di-Reject!");
@@ -79,6 +84,7 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
   };
 
   if (loading) return <div className="p-6">Memuat data...</div>;
+  if (!data || !data.sublesson) return <div className="p-6 text-center text-gray-500 font-medium">Data laporan tidak ditemukan atau siswa belum memulai modul ini.</div>;
 
   const errorCount = data?.logs?.filter((l: any) => l.is_error).length || 0;
   const successCount = data?.logs?.filter((l: any) => !l.is_error).length || 0;
@@ -125,8 +131,8 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
   }];
 
   const approvalStatus = data?.essayAnswers?.[0]?.is_approved_by_teacher;
-  const statusText = approvalStatus === "true" ? "Approved" : approvalStatus === "false" ? "Rejected" : "Pending";
-  const statusColor = approvalStatus === "true" ? "green" : approvalStatus === "false" ? "red" : "orange";
+  const statusText = approvalStatus === 1 ? "Approved" : approvalStatus === 0 ? "Rejected" : "Pending";
+  const statusColor = approvalStatus === 1 ? "green" : approvalStatus === 0 ? "red" : "orange";
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -206,7 +212,7 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
 
 
             <Alert
-              message="Ubah nilai jawaban pelajar apabila belum sesuai dengan rekomendasi sistem."
+              title="Ubah nilai jawaban pelajar apabila belum sesuai dengan rekomendasi sistem."
               type="success"
               showIcon
               style={{ marginBottom: '24px', backgroundColor: '#f6ffed', borderColor: '#b7eb8f', color: '#389e0d' }}
@@ -289,7 +295,7 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
         </div>
 
                   {/* Actions */}
-          {approvalStatus == null && (
+          {Number(approvalStatus) !== 1 && (
             <div className="flex justify-center gap-4 mt-8">
               <Button
                 type="primary"
@@ -323,18 +329,28 @@ export default function UserAnswerForm({ userId, subLessonId }: { userId: string
     onCancel={() => setIsRejectModalOpen(false)}
     okText="Konfirmasi Reject"
     okButtonProps={{ danger: true }}
+    width={600}
   >
-    <div className="py-4">
-      <Text className="block mb-2 font-medium">Catatan / Feedback untuk Murid (Wajib)</Text>
-      <Input.TextArea
-        rows={4}
-        placeholder="Berikan alasan mengapa jawaban ditolak dan bagian mana yang perlu diperbaiki..."
-        value={rejectNotes}
-        onChange={(e) => setRejectNotes(e.target.value)}
-        status={rejectNotes.trim() === '' ? 'error' : ''}
-      />
-      {!rejectNotes.trim() && (
-        <Text type="danger" className="text-sm mt-1 block">Catatan wajib diisi agar murid dapat memperbaikinya.</Text>
+    <div className="py-4" style={{ maxHeight: "60vh", overflowY: "auto" }}>
+      {data?.essayQuestions?.map((q: any, i: number) => (
+        <div key={q.id} className="mb-6">
+          <Text className="block mb-2 font-medium">Catatan Soal {i + 1}:</Text>
+          <div className="text-xs text-gray-500 mb-2" dangerouslySetInnerHTML={{ __html: q.essay_question }} />
+          <Input.TextArea
+            rows={3}
+            placeholder={`Berikan alasan penolakan untuk pertanyaan ${i + 1}...`}
+            value={rejectNotes[i]}
+            onChange={(e) => {
+              const newNotes = [...rejectNotes];
+              newNotes[i] = e.target.value;
+              setRejectNotes(newNotes);
+            }}
+            status={!rejectNotes[i].trim() ? 'error' : ''}
+          />
+        </div>
+      ))}
+      {rejectNotes.some(n => !n.trim()) && (
+        <Text type="danger" className="text-sm mt-1 block">Semua catatan wajib diisi agar murid dapat memperbaikinya.</Text>
       )}
     </div>
   </Modal>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   MenuFoldOutlined,
@@ -17,7 +17,7 @@ import {
   DeploymentUnitOutlined,
   BankOutlined
 } from "@ant-design/icons";
-import { Layout, Menu, ConfigProvider, Button } from "antd";
+import { Layout, Menu, ConfigProvider, Button, Badge } from "antd";
 import type { MenuProps } from "antd";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -101,7 +101,11 @@ export const allMenuItems: MenuItem[] = [
       },
       {
         key: "approval",
-        label: <Link href="/approval">Approval</Link>,
+        label: (
+          <Link href="/approval" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Approval
+          </Link>
+        ),
         icon: <AppstoreAddOutlined />,
         roles: ["ADMIN"],
         permission: "approval.read",
@@ -196,11 +200,51 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { data: session } = useSession();
   const { can } = useAuth(); // Pakai useAuth
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
 
   const userRole = (session?.user as any)?.role_id == 1 ? "ADMIN" : "PENGAJAR";
 
+  // Fetch pending approval count
+  useEffect(() => {
+    if (userRole === "ADMIN") {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/admin/approval-pengajar?t=${Date.now()}`, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const pending = data.filter((item: any) => item.is_approved_by_admin === 0);
+            setPendingApprovalCount(pending.length);
+          }
+        })
+        .catch(() => { /* ignore */ });
+    }
+  }, [userRole]);
+
   // Filter dengan fungsi `can`
-  const filteredItems = getFilteredMenu(allMenuItems, userRole, can);
+  const rawFilteredItems = getFilteredMenu(allMenuItems, userRole, can);
+  
+  // Inject approval badge count into the filtered menu items
+  const filteredItems = rawFilteredItems.map(item => {
+    if (item.children) {
+      return {
+        ...item,
+        children: item.children.map(child => {
+          if (child.key === "approval" && pendingApprovalCount > 0) {
+            return {
+              ...child,
+              label: (
+                <Link href="/approval" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <span>Approval</span>
+                  <Badge count={pendingApprovalCount} size="small" style={{ backgroundColor: '#ff4d4f' }} />
+                </Link>
+              ),
+            };
+          }
+          return child;
+        }),
+      };
+    }
+    return item;
+  });
 
   // --- FUNGSI OTOMATIS: Mencari Key & Parent yang Aktif ---
   const [openKeys, setOpenKeys] = useState<string[]>([]);
@@ -308,23 +352,13 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
                 <Image
-                  src="/assets/logo/logo-sm.png"
+                  src="/assets/logo/logo-completed.png"
                   alt="Logo BAJAPRO"
-                  width={32}
-                  height={32}
-                  style={{ width: "auto", height: "auto" }}
+                  width={120}
+                  height={40}
+                  style={{ width: "auto", height: "32px", objectFit: "contain" }}
                   priority
                 />
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "18px",
-                    lineHeight: "1",
-                  }}
-                >
-                  <span style={{ color: "#531DAB" }}>BAJA</span>
-                  <span style={{ color: "#FAAD14" }}>PRO</span>
-                </div>
               </div>
             )}
             <Button

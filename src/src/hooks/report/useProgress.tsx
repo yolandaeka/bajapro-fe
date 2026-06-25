@@ -45,7 +45,7 @@ export const useProgress = (userId?: string | number, courseId?: string | number
         const sublessonsArrays = await Promise.all(
           lessonIds.map((lId: any) => reportApi.getSublessons(lId))
         );
-        const sublessons = sublessonsArrays.flat();
+        const sublessons = sublessonsArrays.flat().filter((sl: any) => sl.isactive === true || sl.isActive === true || sl.isactive === 1 || sl.isactive === 'true' || sl.isactive === 'Aktif');
 
         const completedSublessonsCount = progress.filter((p: any) => p.status === 'completed').length;
         const totalSublessonsCount = sublessons.length;
@@ -55,47 +55,47 @@ export const useProgress = (userId?: string | number, courseId?: string | number
         const tableData = sublessons
           .filter((sl: any) => progress.some((p: any) => p.sub_lesson_id == sl.id && p.status === 'completed'))
           .map((sl: any) => {
-          const slProgress = progress.find((p: any) => p.sub_lesson_id == sl.id);
-          const wondering = wonderingScores.find((w: any) => w.sub_lesson_id == sl.id);
-          
-          const slCodeQs = codeQuestions.filter((cq: any) => cq.sub_lesson_id == sl.id);
-          const slCodeAns = codeAnswers.filter((ca: any) => slCodeQs.some((cq: any) => cq.id == ca.code_question_id));
-          const exploringScore = slCodeAns.reduce((acc: number, curr: any) => acc + (curr.exploring_score || 0), 0);
-
-          const slEssayQs = essayQuestions.filter((eq: any) => slCodeQs.some((cq: any) => cq.id == eq.code_question_id));
-          const slEssayAns = essayAnswers.filter((ea: any) => slEssayQs.some((eq: any) => eq.id == ea.essay_question_id));
-          
-          let explainScore = 0;
-          slEssayAns.forEach((ea: any) => {
-            explainScore += (ea.keruntutan || 0) + (ea.kebenaran || 0) + (ea.konteks_penjelasan || 0);
-          });
-          
-          let isApproved = 'pending';
-          if (slEssayAns.length > 0) {
-            const hasReject = slEssayAns.some((ea: any) => ea.is_approved_by_teacher === false || ea.is_approved_by_teacher === 'false' || ea.is_approved_by_teacher === 'no' || ea.is_approved_by_teacher === 'reject');
-            const hasPending = slEssayAns.some((ea: any) => ea.is_approved_by_teacher === null || ea.is_approved_by_teacher === 'pending');
+            const slProgress = progress.find((p: any) => p.sub_lesson_id == sl.id);
+            const wondering = wonderingScores.find((w: any) => w.sub_lesson_id == sl.id);
             
-            if (hasReject) {
-              isApproved = 'reject';
-            } else if (hasPending) {
-              isApproved = 'pending';
-            } else {
-              isApproved = 'approve';
+            const slCodeQs = codeQuestions.filter((cq: any) => cq.sub_lesson_id == sl.id);
+            const slCodeAns = codeAnswers.filter((ca: any) => slCodeQs.some((cq: any) => cq.id == ca.code_question_id));
+            const exploringScore = slCodeAns.reduce((acc: number, curr: any) => acc + (curr.exploring_score || 0), 0);
+
+            const slEssayQs = essayQuestions.filter((eq: any) => slCodeQs.some((cq: any) => cq.id == eq.code_question_id));
+            const slEssayAns = essayAnswers.filter((ea: any) => slEssayQs.some((eq: any) => eq.id == ea.essay_question_id));
+            
+            let explainScore = 0;
+            slEssayAns.forEach((ea: any) => {
+              explainScore += (ea.keruntutan || 0) + (ea.kebenaran || 0) + (ea.konteks_penjelasan || 0);
+            });
+            
+            let isApproved = 'pending';
+            if (slEssayAns.length > 0) {
+              const hasReject = slEssayAns.some((ea: any) => ea.is_approved_by_teacher === 0 || ea.is_approved_by_teacher === false || ea.is_approved_by_teacher === 'false' || ea.is_approved_by_teacher === 'no' || ea.is_approved_by_teacher === 'reject');
+              const hasPending = slEssayAns.some((ea: any) => ea.is_approved_by_teacher === null || ea.is_approved_by_teacher === 'pending');
+              
+              if (hasReject) {
+                isApproved = 'reject';
+              } else if (hasPending) {
+                isApproved = 'pending';
+              } else {
+                isApproved = 'approve';
+              }
             }
-          }
 
-          const totalScore = (wondering?.score || 0) + exploringScore + explainScore;
+            const totalScore = (wondering?.score || 0) + exploringScore + explainScore;
 
-          return {
-            sub_lesson_id: sl.id,
-            sub_lesson_name: sl.title,
-            wondering_score: wondering?.score || 0,
-            exploring_score: exploringScore,
-            explain_score: explainScore,
-            total_score: totalScore,
-            status: isApproved
-          };
-        });
+            return {
+              sub_lesson_id: sl.id,
+              sub_lesson_name: sl.title,
+              wondering_score: wondering?.score || 0,
+              exploring_score: exploringScore,
+              explain_score: explainScore,
+              total_score: totalScore,
+              status: isApproved,
+            };
+          });
 
         setData({
           user: user,

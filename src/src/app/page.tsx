@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from 'antd';
 import { 
   PlayCircleOutlined, 
@@ -27,21 +28,26 @@ const Navbar = () => (
   <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
     <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        {/* Logo */}
-        <div className="w-8 h-8 bg-purple-800 rounded flex items-center justify-center text-white font-bold text-xs">{"</>"}</div>
-        <span className="text-xl font-extrabold tracking-tight text-gray-900">BAJA<span className="text-yellow-500">PRO</span></span>
+        <Image
+          src="/assets/logo/logo-completed.png"
+          alt="Logo BAJAPRO"
+          width={120}
+          height={40}
+          style={{ width: "auto", height: "32px", objectFit: "contain" }}
+          priority
+        />
       </div>
       <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-gray-600">
         <Link href="/" className="hover:text-purple-700 transition">Home</Link>
         <Link href="#materi" className="hover:text-purple-700 transition">Materi</Link>
         <Link href="#aktivitas" className="hover:text-purple-700 transition">Aktivitas</Link>
       </nav>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <Link href="/login">
-          <Button style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Login</Button>
+          <Button style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-2 md:px-4 text-xs md:text-sm">Login</Button>
         </Link>
         <Link href="/register">
-          <Button type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Register</Button>
+          <Button type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-2 md:px-4 text-xs md:text-sm">Register</Button>
         </Link>
       </div>
     </div>
@@ -56,8 +62,8 @@ const HeroSection = () => (
           <span className="flex items-center justify-center w-5 h-5 bg-purple-100 rounded-full text-[10px]"><PlayCircleOutlined /></span>
           Platform Pembelajaran Java
         </div>
-        <h1 className="text-5xl md:text-6xl font-black text-gray-900 leading-[1.1] mb-6">
-          Kuasai <br/> Pemrograman Java <br/> bersama <span className="text-purple-700">BAJAPRO</span>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.2] mb-6">
+          Kuasai <br className="hidden sm:block"/> Pemrograman Java <br className="hidden sm:block"/> bersama <span className="text-purple-700">BAJAPRO</span>
         </h1>
         <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-lg font-medium">
           Tingkatkan kemampuan logika dan pemrograman berorientasi objek Anda dengan kurikulum terstruktur yang dirancang khusus untuk siswa kejuruan.
@@ -181,13 +187,13 @@ const MetodePembelajaranSection = () => (
         </div>
         
         {/* Floating element */}
-        <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-left-12 bg-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 flex items-center gap-5 z-10 animate-bounce" style={{ animationDuration: '3s' }}>
-           <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600">
-             <RobotOutlined className="text-2xl" />
+        <div className="absolute -bottom-4 right-2 md:bottom-10 md:-left-12 bg-white p-3 md:p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 flex items-center gap-3 md:gap-5 z-10 animate-bounce" style={{ animationDuration: '3s' }}>
+           <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600">
+             <RobotOutlined className="text-xl md:text-2xl" />
            </div>
            <div>
-             <div className="text-sm font-extrabold text-gray-900 mb-1">Fast Feedback</div>
-             <div className="text-xs text-gray-500 font-medium">Real-time compilation</div>
+             <div className="text-xs md:text-sm font-extrabold text-gray-900 mb-1">Fast Feedback</div>
+             <div className="text-[10px] md:text-xs text-gray-500 font-medium">Real-time compilation</div>
            </div>
         </div>
       </div>
@@ -231,7 +237,13 @@ const Footer = () => (
   <footer className="bg-[#5B21B6] text-white pt-24 pb-10 px-6">
     <div className="max-w-7xl mx-auto grid md:grid-cols-5 gap-12 mb-20">
       <div className="md:col-span-2 pr-8">
-        <div className="text-3xl font-black tracking-tight text-white mb-6">BAJA<span className="text-yellow-400">PRO</span></div>
+        <Image
+          src="/assets/logo/logo-completed.png"
+          alt="Logo BAJAPRO"
+          width={150}
+          height={50}
+          style={{ width: "auto", height: "40px", objectFit: "contain", marginBottom: "24px" }}
+        />
         <p className="text-purple-200 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
       </div>
       <div>

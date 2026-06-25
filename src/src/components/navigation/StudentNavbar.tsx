@@ -5,6 +5,7 @@ import { Layout, Avatar, Dropdown, Space, Typography, MenuProps, Button } from "
 import { usePathname, useRouter } from "next/navigation";
 import { DownOutlined, LogoutOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 
 const { Header } = Layout;
@@ -20,7 +21,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ setMobileOpen }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  
+
   const userInfo = {
     name: session?.user?.name || "Pelajar",
     role: "Pelajar"
@@ -38,8 +39,8 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ setMobileOpen }) => {
       key: "logout",
       icon: <LogoutOutlined style={{ color: "#ff4d4f" }} />,
       label: <span style={{ color: "#ff4d4f" }}>Keluar</span>,
-      onClick: () => {
-        signOut({ callbackUrl: "/login" });
+      onClick: async () => {
+        await signOut({ callbackUrl: "/login" });
       },
     },
   ];
@@ -101,10 +102,14 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({ setMobileOpen }) => {
             style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
             onClick={() => router.push("/student/dashboard")}
           >
-            <div style={{ fontWeight: 800, fontSize: "20px", display: "flex", alignItems: "center" }}>
-              <span style={{ color: "#5B21B6" }}>BAJA</span>
-              <span style={{ color: "#F59E0B" }}>PRO</span>
-            </div>
+            <Image
+              src="/assets/logo/logo-completed.png"
+              alt="Logo BAJAPRO"
+              width={120}
+              height={40}
+              style={{ width: "auto", height: "32px", objectFit: "contain" }}
+              priority
+            />
           </div>
         )}
       </div>

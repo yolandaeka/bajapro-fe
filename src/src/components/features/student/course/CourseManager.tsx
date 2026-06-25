@@ -40,11 +40,11 @@ export default function CourseManager() {
             getAllCoursesApi(),
             getStudentDashboardApi(currentUserId)
           ]);
-          
+
           const eMap: Record<number, any> = {};
-          if (dashData.enrolledCourses) {
-            dashData.enrolledCourses.forEach((h: any) => {
-              eMap[h.courseId] = h;
+          if (dashData.lessonHistory) {
+            dashData.lessonHistory.forEach((h: any) => {
+              eMap[h.courseId || h.course_id] = h;
             });
           }
 
@@ -56,7 +56,7 @@ export default function CourseManager() {
           setLoading(false);
         }
       };
-      
+
       fetchData();
     }
   }, [session]);
@@ -66,10 +66,10 @@ export default function CourseManager() {
   }
 
   return (
-    <motion.div 
-      variants={containerVariants} 
-      initial="hidden" 
-      animate="visible" 
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       style={{ maxWidth: "1200px", margin: "0 auto" }}
     >
       <motion.div variants={itemVariants} style={{ marginBottom: "28px", maxWidth: "800px" }}>
@@ -87,64 +87,64 @@ export default function CourseManager() {
             const isEnrolled = enrolledMap[course.id];
             // Format progress percent
             const progressVal = isEnrolled ? (isEnrolled.progressPercent || 0) : 0;
-            
+
             return (
-              <Col xs={24} sm={24} md={12} lg={12} key={course.id}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8} key={course.id}>
                 <motion.div variants={itemVariants} whileHover={{ y: -6 }} transition={{ type: "spring", stiffness: 300 }} style={{ height: "100%" }}>
-                  <Card 
+                  <Card
                     variant="borderless"
-                    style={{ 
-                      borderRadius: "16px", 
-                      overflow: "hidden", 
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.03)", 
-                      display: "flex", 
-                      flexDirection: "column", 
+                    style={{
+                      borderRadius: "16px",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.03)",
+                      display: "flex",
+                      flexDirection: "column",
                       height: "100%",
                       border: "1px solid #E5E7EB",
                       backgroundColor: "#FFFFFF"
                     }}
-                    styles={{ body: { padding: "20px", display: "flex", flexDirection: "column", flex: 1 } }}
+                    styles={{ body: { padding: "16px", display: "flex", flexDirection: "column", flex: 1 } }}
                   >
                     {/* Course Thumbnail */}
                     {course.img_thumbnail ? (
-                      <div style={{ 
-                         width: '100%', 
-                         height: '140px', 
-                         borderRadius: '12px', 
-                         background: `url(/assets/courses/${course.img_thumbnail}) center/cover no-repeat`,
-                         backgroundColor: '#F3F4F6',
-                         marginBottom: "16px"
+                      <div style={{
+                        width: '100%',
+                        height: '140px',
+                        borderRadius: '8px',
+                        background: `url(/uploads/courses/${course.img_thumbnail}) center/cover no-repeat`,
+                        backgroundColor: '#F3F4F6',
+                        marginBottom: "16px"
                       }} />
                     ) : (
-                      <div style={{ 
-                        width: '100%', 
-                        height: '140px', 
-                        background: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)', 
-                        borderRadius: '12px',
+                      <div style={{
+                        width: '100%',
+                        height: '140px',
+                        background: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
+                        borderRadius: '8px',
                         marginBottom: "16px"
                       }} />
                     )}
-                    
+
                     <Title level={4} style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 700, color: "#1F2937" }}>
                       {course.course_name}
                     </Title>
-                    
+
                     <Paragraph type="secondary" style={{ display: "block", margin: "0 0 16px 0", minHeight: "36px", fontSize: "12px", lineHeight: "1.5", color: "#6B7280" }} ellipsis={{ rows: 2 }}>
                       {course.description}
                     </Paragraph>
-                    
+
                     {/* Chapters Info */}
                     <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <BookOutlined style={{ color: "#F59E0B", fontSize: "14px" }} /> 
+                        <BookOutlined style={{ color: "#F59E0B", fontSize: "14px" }} />
                         <Text style={{ fontSize: "12px", color: "#6B7280", fontWeight: 600 }}>
-                          {course.lessonCount || 15} Bab
+                          {course.lessonCount} Bab
                         </Text>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <BookOutlined style={{ color: "#F59E0B", fontSize: "14px" }} /> 
+                        <BookOutlined style={{ color: "#F59E0B", fontSize: "14px" }} />
                         <Text style={{ fontSize: "12px", color: "#6B7280", fontWeight: 600 }}>
-                          {course.subLessonCount || 25} Sub Bab
+                          {course.subLessonCount} Sub Bab
                         </Text>
                       </div>
                     </div>
@@ -158,24 +158,24 @@ export default function CourseManager() {
                               <Text style={{ fontWeight: 700, fontSize: "12px", color: "#1F2937" }}>Progress</Text>
                               <Text style={{ fontWeight: 800, color: "#5B21B6", fontSize: "12px" }}>{progressVal}%</Text>
                             </div>
-                            <Progress 
-                              percent={progressVal} 
-                              showInfo={false} 
-                              strokeColor="#5B21B6" 
+                            <Progress
+                              percent={progressVal}
+                              showInfo={false}
+                              strokeColor="#5B21B6"
                               railColor="#E5E7EB"
-                              size="small" 
+                              size="small"
                             />
                           </div>
 
                           {/* Action Buttons */}
                           <div style={{ display: "flex", gap: "10px" }}>
-                            <Button 
-                              type="primary" 
+                            <Button
+                              type="primary"
                               icon={<PlayCircleOutlined />}
-                              style={{ 
-                                flex: 1.2, 
-                                backgroundColor: "#5B21B6", 
-                                borderRadius: "8px", 
+                              style={{
+                                flex: 1.2,
+                                backgroundColor: "#5B21B6",
+                                borderRadius: "8px",
                                 fontSize: "13px",
                                 fontWeight: 600,
                                 border: "none",
@@ -185,13 +185,13 @@ export default function CourseManager() {
                             >
                               Resume
                             </Button>
-                            <Button 
+                            <Button
                               icon={<PieChartOutlined />}
-                              style={{ 
-                                flex: 1, 
-                                borderRadius: "8px", 
-                                borderColor: "#5B21B6", 
-                                color: "#5B21B6", 
+                              style={{
+                                flex: 1,
+                                borderRadius: "8px",
+                                borderColor: "#5B21B6",
+                                color: "#5B21B6",
                                 fontSize: "13px",
                                 fontWeight: 600,
                                 height: "38px"
@@ -203,13 +203,13 @@ export default function CourseManager() {
                           </div>
                         </>
                       ) : (
-                        <Button 
-                          type="primary" 
-                          block 
-                          style={{ 
-                            backgroundColor: "#5B21B6", 
-                            borderRadius: "8px", 
-                            fontWeight: 700, 
+                        <Button
+                          type="primary"
+                          block
+                          style={{
+                            backgroundColor: "#5B21B6",
+                            borderRadius: "8px",
+                            fontWeight: 700,
                             color: "#fff",
                             border: "none",
                             height: "40px"

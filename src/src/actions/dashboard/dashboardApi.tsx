@@ -57,8 +57,8 @@ export const DashboardApi = {
     const myStudents = users.filter((u: any) => classIds.includes(u.class_id));
     
     const essayAnswers = await handleFetch(`${BASE_URL}/t_essay_answer`);
-    const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === "pending" || a.is_approved_by_teacher === false);
-    const approvedTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === "true" || a.is_approved_by_teacher === true);
+    const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === null);
+    const approvedTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === 1);
 
     return {
       pendingApproval: pendingTasks.length,
@@ -68,28 +68,15 @@ export const DashboardApi = {
     };
   },
 
-  getActivityData: async (role: "Admin" | "Pengajar"): Promise<ActivityData[]> => {
-    if (role === "Admin") {
-      return [
-        { day: "Mon", count: 65 },
-        { day: "Tue", count: 85 },
-        { day: "Wed", count: 70 },
-        { day: "Thu", count: 90 },
-        { day: "Fri", count: 50 },
-        { day: "Sat", count: 80 },
-        { day: "Sun", count: 95 },
-      ];
-    } else {
-      return [
-        { day: "Mon", count: 12 },
-        { day: "Tue", count: 18 },
-        { day: "Wed", count: 15 },
-        { day: "Thu", count: 25 },
-        { day: "Fri", count: 10 },
-        { day: "Sat", count: 5 },
-        { day: "Sun", count: 8 },
-      ];
-    }
+  getActivityData: async (role: "Admin" | "Pengajar", teacherId?: string | number, classId?: string, courseId?: string, startDate?: string, endDate?: string): Promise<ActivityData[]> => {
+    let url = `${BASE_URL}/dashboard/activity?role=${role}`;
+    if (teacherId) url += `&teacherId=${teacherId}`;
+    if (classId && classId !== 'all') url += `&classId=${classId}`;
+    if (courseId && courseId !== 'all') url += `&courseId=${courseId}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
+    
+    return handleFetch(url);
   },
 
   getPendingApprovals: async (role: "Admin" | "Pengajar"): Promise<ApprovalItem[]> => {
@@ -104,7 +91,7 @@ export const DashboardApi = {
     } else {
       const essayAnswers = await handleFetch(`${BASE_URL}/t_essay_answer`);
       const users = await handleFetch(`${BASE_URL}/users`);
-      const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === "pending" || a.is_approved_by_teacher === false);
+      const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === null);
       
       return pendingTasks.slice(0, 5).map((task: any) => {
         const student = users.find((u: any) => u.id == task.user_id);
@@ -126,6 +113,9 @@ export const DashboardApi = {
     
     const courses = await handleFetch(`${BASE_URL}/courses`);
     const studentCourses = await handleFetch(`${BASE_URL}/t_student_course`);
+    const studentProgresses = await handleFetch(`${BASE_URL}/t_student_progress`);
+    const subLessons = await handleFetch(`${BASE_URL}/sublessons`);
+    const lessons = await handleFetch(`${BASE_URL}/lessons`);
 
     const activeClasses: ActiveClass[] = [];
     
@@ -170,13 +160,20 @@ export const DashboardApi = {
         const courseName = course ? course.course_name : "Unknown Course";
         
         const studentsInThisCourse = classStudentCourses.filter((sc: any) => sc.course_id == courseId);
-        let totalScore = 0;
-        studentsInThisCourse.forEach((sc: any) => {
-          totalScore += sc.total_score || 0;
-        });
         
-        const maxScorePerStudent = 100;
-        let avgProgress = studentsInThisCourse.length > 0 ? Math.min(100, Math.floor((totalScore / (studentsInThisCourse.length * maxScorePerStudent)) * 100)) : 0;
+        // Count total sublessons for this course
+        const lessonsForCourse = lessons.filter((l: any) => l.course_id == courseId).map((l: any) => l.id);
+        const courseSubLessons = subLessons.filter((sl: any) => lessonsForCourse.includes(sl.lesson_id));
+        const totalSubLessonsInCourse = courseSubLessons.length || 1; // avoid division by zero
+        
+        // Count total completed sublessons for this class in this course
+        const studentIdsInCourse = studentsInThisCourse.map((sc: any) => sc.student_id);
+        const completedProgresses = studentProgresses.filter((p: any) => p.course_id == courseId && p.status === 'completed' && studentIdsInCourse.includes(p.user_id));
+        
+        const totalCompleted = completedProgresses.length;
+        const maxPossibleCompleted = studentsInThisCourse.length * totalSubLessonsInCourse;
+        
+        let avgProgress = maxPossibleCompleted > 0 ? Math.floor((totalCompleted / maxPossibleCompleted) * 100) : 0;
         
         activeClasses.push({
           id: `${c.id}-${courseId}`,

@@ -70,6 +70,7 @@ export const reportApi = {
   getClassesByTeacher: (teacherId: string | number) =>
     handleFetch(`${BASE_URL}/class?teacher_id=${teacherId}`),
 
+
   getCourses: () => handleFetch(`${BASE_URL}/courses`),
 
   getStudentsByClassAndCourse: async (
@@ -84,22 +85,16 @@ export const reportApi = {
     );
 
     const studentsCourses = students.map((student: UserData) => {
-  
       const matchedCourse = courses.find((course: any) => course.student_id == student.id);
       
       return {
         ...student,
         courseId: matchedCourse?.course_id || null,
-        totalScore: matchedCourse?.total_score || 0, // <-- MENGAMBIL TOTAL SCORE
-
+        totalScore: matchedCourse?.total_score || 0,
       };
     });
 
-    const filteredStudents = studentsCourses.filter(
-      (student: UserData & { courseId: string | number | null }) => student.courseId !== null,
-    );
-
-    return filteredStudents;
+    return studentsCourses;
   },
 
   getStudentCourse: (userId: string | number, courseId: string | number) =>
@@ -117,8 +112,14 @@ export const reportApi = {
   getSublessons: (lessonId: string | number) =>
     handleFetch(`${BASE_URL}/sublessons?lesson_id=${lessonId}`),
 
+  getSublesson: (subLessonId: string | number) =>
+    handleFetch(`${BASE_URL}/sublessons/${subLessonId}`),
+
   getWonderingScores: (userId: string | number) =>
     handleFetch(`${BASE_URL}/t_wondering_score?user_id=${userId}`),
+
+  getWonderingScoreBySubLesson: (userId: string | number, subLessonId: string | number) =>
+    handleFetch(`${BASE_URL}/t_wondering_score?user_id=${userId}&sub_lesson_id=${subLessonId}`),
 
   getCodeAnswers: (userId: string | number) =>
     handleFetch(`${BASE_URL}/t_code_answer?user_id=${userId}`),

@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
     }
     // Siswa (3) tidak boleh masuk ke rute admin/pengajar
     if (user.role_id == 3) {
-      return NextResponse.redirect(new URL('/home?', request.url));
+      return NextResponse.redirect(new URL('/student/dashboard', request.url));
     }
     // Pengajar (2) harus disetujui admin
     if (user.role_id == 2 && user.is_approved_by_admin == 0) {
@@ -43,8 +43,8 @@ export async function middleware(request: NextRequest) {
     }
   } 
   
-  // Proteksi rute Student/Home
-  else if (pathname.startsWith('/home') || pathname.startsWith('/student')) {
+  // Proteksi rute Student
+  else if (pathname.startsWith('/student')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login?', request.url));
     }
@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
   // Redirect user yang sudah login
   else if (pathname === '/login' || pathname === '/register') {
     if (user) {
-      if (user.role_id == 3) return NextResponse.redirect(new URL('/home', request.url));
+      if (user.role_id == 3) return NextResponse.redirect(new URL('/student/dashboard', request.url));
       else if (user.role_id == 2 && user.is_approved_by_admin == 0) return NextResponse.redirect(new URL('/waiting-approval', request.url));
       else return NextResponse.redirect(new URL('/dashboard', request.url));
     }

@@ -87,7 +87,7 @@ const QuestionTable = () => {
   const filterContent = (
     <div style={{ width: 250 }}>
       {/* ✅ FIX 2: Course dan SubLesson berdiri sendiri, tidak saling bergantung */}
-      {/* <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12 }}>
         <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>Course</label>
         <Select
           style={{ width: "100%" }}
@@ -97,23 +97,23 @@ const QuestionTable = () => {
           options={courses}
           allowClear
         />
-      </div> */}
+      </div>
 
-      <div style={{ marginBottom: 16 }}>
+      {/* <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>Sub Lesson</label>
         <Select
           style={{ width: "100%" }}
           placeholder="Semua Sub Lesson"
           value={tempSubLessonId}
           onChange={setTempSubLessonId}
-          options={allSubLessons}   // ✅ semua sublesson, tidak perlu pilih course dulu
+          options={allSubLessons}
           allowClear
           showSearch
           filterOption={(input, option) =>
             String(option?.label ?? "").toLowerCase().includes(input.toLowerCase())
           }
         />
-      </div>
+      </div> */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Button onClick={handleResetFilter}>Reset</Button>
         <Button type="primary" onClick={handleApplyFilter}>Terapkan</Button>

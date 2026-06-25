@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 };
 
 import SessionProviderWrapper from "@/src/components/providers/SessionProviderWrapper";
+import SessionGuard from "@/src/components/providers/SessionGuard";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,7 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AntdRegistry>
             <ConfigProvider theme={{ token: { colorPrimary: '#531DAB', fontFamily: poppins.style.fontFamily || 'sans-serif' } }}>
               <App>
+              <SessionGuard>
               {children}
+              </SessionGuard>
               </App>
               {process.env.NODE_ENV === 'development' && (
                 <Script src="/figma-capture.js" strategy="afterInteractive" />

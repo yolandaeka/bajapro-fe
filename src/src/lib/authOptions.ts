@@ -22,6 +22,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email atau password salah");
         }
         
+        await prisma.userLoginLog.create({
+          data: {
+            userId: user.id
+          }
+        });
+        
         return {
           id: user.id.toString(),
           email: user.email,

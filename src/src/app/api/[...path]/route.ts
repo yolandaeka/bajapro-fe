@@ -103,9 +103,9 @@ function mapWonderingScore(ws: any) {
   return {
     id: ws.id,
     user_id: ws.userId,
-    course_id: ws.courseId,
     sub_lesson_id: ws.subLessonId,
-    wondering_score: ws.wonderingScore,
+    score: ws.score,
+    wondering_score: ws.score,
   };
 }
 
@@ -124,12 +124,14 @@ function mapEssayAnswer(ea: any) {
     id: ea.id,
     user_id: ea.userId,
     essay_question_id: ea.essayQuestionId,
-    essay_answer: ea.essayAnswer,
+    answer: ea.answer,
+    essay_answer: ea.answer,
     konteks_penjelasan: ea.konteksPenjelasan,
     keruntutan: ea.keruntutan,
     kebenaran: ea.kebenaran,
     is_approved_by_teacher: ea.isApprovedByTeacher,
-    feedback_note: ea.feedbackNote,
+    feedback_note: ea.teacherNotes,
+    teacher_notes: ea.teacherNotes,
   };
 }
 
@@ -151,6 +153,7 @@ function mapEssayQuestion(eq: any) {
     sub_lesson_id: eq.subLessonId,
     code_question_id: eq.codeQuestionId,
     question: eq.essayQuestion,
+    essay_question: eq.essayQuestion,
     answer: eq.answer,
     answer_2: eq.answer2,
     answer_3: eq.answer3,
@@ -289,6 +292,28 @@ export async function GET(
       return jsonResponse(items.map(mapEssayAnswer));
     }
 
+    // 8.5 t_code_history_logs
+    if (route === 't_code_history_logs') {
+      const userId = searchParams.get('user_id');
+      const codeQuestionId = searchParams.get('code_question_id');
+      const whereClause: any = {};
+      if (userId) {
+        whereClause.userId = Number(userId);
+      }
+      if (codeQuestionId) {
+        whereClause.codeQuestionId = Number(codeQuestionId);
+      }
+      const items = await prisma.codeHistoryLog.findMany({ where: whereClause });
+      return jsonResponse(items.map((chl: any) => ({
+        id: chl.id,
+        user_id: chl.userId,
+        code_question_id: chl.codeQuestionId,
+        time_count: chl.timeCount,
+        message: chl.message,
+        is_error: chl.isError,
+      })));
+    }
+
     // 9. code_question
     if (route === 'code_question') {
       const subLessonId = searchParams.get('sub_lesson_id');
@@ -312,7 +337,18 @@ export async function GET(
 
     // 11. Users
     if (route === 'users') {
-      const users = await prisma.user.findMany({ include: { class: true, role: true }, orderBy: { id: 'asc' } });
+      const classId = searchParams.get('class_id');
+      const roleId = searchParams.get('role_id');
+      const whereClause: any = {};
+      if (classId === 'null' || classId === 'none') {
+        whereClause.classId = null;
+      } else if (classId) {
+        whereClause.classId = Number(classId);
+      }
+      if (roleId) {
+        whereClause.roleId = Number(roleId);
+      }
+      const users = await prisma.user.findMany({ where: whereClause, include: { class: true, role: true }, orderBy: { id: 'asc' } });
       return jsonResponse(users.map((u: any) => ({
         id: u.id, name: u.name, email: u.email, role: u.role?.name || "", isactive: u.isActive ? 1 : 0,
         instansi_sekolah: u.instansiSekolah || null, nip: u.nip || null, class_name: u.class?.className || null, is_approved_by_admin: u.isApprovedByAdmin
@@ -429,10 +465,25 @@ export async function PATCH(
           const updated = await prisma.essayQuestion.update({ where: { id }, data: { essayQuestion: body.question, answer: body.answer, answer2: body.answer_2 || null, answer3: body.answer_3 || null, answer4: body.answer_4 || null } });
           return jsonResponse(mapEssayQuestion(updated));
         }
+        if (resource === 't_essay_answer') {
+          const updated = await prisma.essayAnswer.update({
+            where: { id },
+            data: {
+              ...(body.answer !== undefined && { answer: body.answer }),
+              ...(body.konteks_penjelasan !== undefined && { konteksPenjelasan: body.konteks_penjelasan }),
+              ...(body.keruntutan !== undefined && { keruntutan: body.keruntutan }),
+              ...(body.kebenaran !== undefined && { kebenaran: body.kebenaran }),
+              ...(body.is_approved_by_teacher !== undefined && { isApprovedByTeacher: body.is_approved_by_teacher }),
+              ...(body.teacher_notes !== undefined && { teacherNotes: body.teacher_notes }),
+            }
+          });
+          return jsonResponse(updated);
+        }
       }
     }
     return jsonResponse({ error: 'Route not found' }, 404);
   } catch (error: any) {
+    console.error("PATCH Error:", error);
     return jsonResponse({ error: error.message || 'Internal Server Error' }, 500);
   }
 }
@@ -550,6 +601,21 @@ export async function PUT(
           return jsonResponse(updated);
         }
 
+        if (resource === 't_essay_answer') {
+          const updated = await prisma.essayAnswer.update({
+            where: { id },
+            data: {
+              ...(body.answer !== undefined && { answer: body.answer }),
+              ...(body.konteks_penjelasan !== undefined && { konteksPenjelasan: body.konteks_penjelasan }),
+              ...(body.keruntutan !== undefined && { keruntutan: body.keruntutan }),
+              ...(body.kebenaran !== undefined && { kebenaran: body.kebenaran }),
+              ...(body.is_approved_by_teacher !== undefined && { isApprovedByTeacher: body.is_approved_by_teacher }),
+              ...(body.teacher_notes !== undefined && { teacherNotes: body.teacher_notes }),
+            }
+          });
+          return jsonResponse(updated);
+        }
+
         // Bulk reorder for lessons
         if (resource === 'lessons' && body.updates) {
           const updates = body.updates as { id: number; newPosition: number }[];
@@ -577,13 +643,31 @@ export async function PUT(
           );
           return jsonResponse({ success: true });
         }
+
+        if (resource === 't_essay_answer') {
+          const updated = await prisma.essayAnswer.update({
+            where: { id },
+            data: {
+              ...(body.answer !== undefined && { answer: body.answer }),
+              ...(body.konteks_penjelasan !== undefined && { konteksPenjelasan: body.konteks_penjelasan }),
+              ...(body.keruntutan !== undefined && { keruntutan: body.keruntutan }),
+              ...(body.kebenaran !== undefined && { kebenaran: body.kebenaran }),
+              ...(body.is_approved_by_teacher !== undefined && { isApprovedByTeacher: body.is_approved_by_teacher }),
+              ...(body.teacher_notes !== undefined && { teacherNotes: body.teacher_notes }),
+            }
+          });
+          return jsonResponse(updated);
+        }
       }
     }
     return jsonResponse({ error: 'Route not found' }, 404);
   } catch (error: any) {
+    console.error("PUT Error:", error);
     return jsonResponse({ error: error.message }, 500);
   }
 }
+
+
 
 export async function DELETE(
   req: NextRequest,

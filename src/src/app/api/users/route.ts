@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const email = searchParams.get('email');
   const roleId = searchParams.get('role_id');
+  const classId = searchParams.get('class_id');
 
   try {
     if (email) {
@@ -49,6 +50,13 @@ export async function GET(req: NextRequest) {
     const whereClause: any = {};
     if (roleId) {
       whereClause.roleId = Number(roleId);
+    }
+    if (classId) {
+      if (classId === 'null' || classId === 'none') {
+        whereClause.classId = null;
+      } else {
+        whereClause.classId = Number(classId);
+      }
     }
 
     const users = await prisma.user.findMany({

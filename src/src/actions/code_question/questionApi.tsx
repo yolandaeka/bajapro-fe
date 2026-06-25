@@ -54,7 +54,7 @@ export const fetchCodeQuestionsApi = async (courseId?: number | string, subLesso
     allCourses.forEach((c) => courseMap.set(String(c.id), c.course_name ?? ""));
 
     // 4. Enrich tiap question
-    return questions.map((q) => {
+    const enriched = questions.map((q) => {
       const sl = subLessonMap.get(String(q.sub_lesson_id));
       const lesson = sl ? lessonMap.get(String(sl.lesson_id)) : undefined;
       const courseName = lesson ? courseMap.get(String(lesson.course_id)) : undefined;
@@ -66,7 +66,15 @@ export const fetchCodeQuestionsApi = async (courseId?: number | string, subLesso
         lesson_id: sl?.lesson_id ?? q.lesson_id,
       };
     });
+
+    if (courseId) {
+      return enriched.filter((q) => String(q.course_id) === String(courseId));
+    }
+    return enriched;
   } catch {
+    if (courseId) {
+      return questions.filter((q) => String(q.course_id) === String(courseId));
+    }
     return questions;
   }
 };

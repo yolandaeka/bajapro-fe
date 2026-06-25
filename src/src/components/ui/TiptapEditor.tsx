@@ -14,7 +14,7 @@ import { TableHeader } from "@tiptap/extension-table-header";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { common, createLowlight } from "lowlight";
 import java from "highlight.js/lib/languages/java";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 // Ant Design Icons - Sudah diperbaiki namanya
 import {
@@ -81,6 +81,8 @@ const Btn = ({ onClick, active, disabled, children, title }: BtnProps) => (
 
 // --- MAIN EDITOR COMPONENT ---
 export default function TiptapEditor({ value, onChange }: EditorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ 
@@ -126,8 +128,48 @@ export default function TiptapEditor({ value, onChange }: EditorProps) {
 
   // Handlers
   const addImage = () => {
-    const url = window.prompt("Masukkan URL Gambar:");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
+    // Trigger file input click instead of URL prompt
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/gif" || file.type === "image/webp";
+    if (!isJpgOrPng) {
+      alert("Hanya bisa upload file gambar (JPG, PNG, GIF, WebP)!");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size / 1024 / 1024 > 5) {
+      alert("Ukuran gambar maksimal 5MB!");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload?type=material", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        editor.chain().focus().setImage({ src: data.url }).run();
+      } else {
+        alert("Gagal mengunggah gambar.");
+      }
+    } catch {
+      alert("Terjadi kesalahan saat mengunggah gambar.");
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const setLink = () => {
@@ -143,8 +185,17 @@ export default function TiptapEditor({ value, onChange }: EditorProps) {
 
   return (
     <div className="tiptap-container border border-[#d9d9d9] rounded-md overflow-hidden bg-white hover:border-[#4096ff] transition-colors">
-      {/* TOOLBAR */}
-      <div className="flex flex-wrap items-center gap-y-1 p-1 bg-[#fafafa] border-b border-[#d9d9d9]">
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        style={{ display: "none" }}
+        onChange={handleImageUpload}
+      />
+
+      {/* TOOLBAR - STICKY like Microsoft Word */}
+      <div className="flex flex-wrap items-center gap-y-1 p-1 bg-[#fafafa] border-b border-[#d9d9d9]" style={{ position: "sticky", top: 0, zIndex: 50 }}>
         <Group>
           <Btn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo"><UndoOutlined /></Btn>
           <Btn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo"><RedoOutlined /></Btn>
@@ -178,13 +229,13 @@ export default function TiptapEditor({ value, onChange }: EditorProps) {
             <CodeOutlined /> <span className="ml-1 text-[10px] font-bold">JAVA</span>
           </Btn>
           <Btn onClick={setLink} active={editor.isActive("link")} title="Insert Link"><LinkOutlined /></Btn>
-          <Btn onClick={addImage} title="Insert Image"><FileImageOutlined /></Btn>
+          <Btn onClick={addImage} title="Upload Gambar"><FileImageOutlined /></Btn>
           <Btn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table"><TableOutlined /></Btn>
         </Group>
       </div>
 
-      {/* EDITOR CONTENT */}
-      <div className="p-4 bg-white min-h-[300px]">
+      {/* EDITOR CONTENT - scrollable */}
+      <div className="p-4 bg-white" style={{ maxHeight: "600px", overflowY: "auto" }}>
         <EditorContent editor={editor} className="tiptap-content-area" />
       </div>
 

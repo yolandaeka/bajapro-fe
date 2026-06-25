@@ -150,9 +150,14 @@ export default function LoginPage() {
             
             {/* Logo Kiri Atas (Pindah ke tengah di HP) */}
             <div className="logo-container">
-              <Title level={3} style={{ color: "#5B21B6", margin: 0 }}>
-                BAJAPRO
-              </Title>
+              <Image
+                src="/assets/logo/logo-completed.png"
+                alt="Logo BAJAPRO"
+                width={120}
+                height={40}
+                style={{ width: "auto", height: "32px", objectFit: "contain" }}
+                priority
+              />
             </div>
 
             <Title level={2}>Login</Title>

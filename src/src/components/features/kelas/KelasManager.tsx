@@ -12,7 +12,8 @@ import {
   Space, 
   Popover, 
   Descriptions, 
-  Tag 
+  Tag,
+  Table
 } from "antd";
 import { 
   PlusOutlined, 
@@ -59,6 +60,8 @@ export default function KelasManager() {
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewData, setViewData] = useState<ClassData | null>(null);
+  const [classStudents, setClassStudents] = useState<any[]>([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
 
   const [searchText, setSearchText] = useState("");
   const [filterGuru, setFilterGuru] = useState<string | null>(null);
@@ -104,8 +107,15 @@ export default function KelasManager() {
     
     if (action === "view" && record) {
       setViewData(record);
+      setStudentsLoading(true);
+      fetch(`/api/users?class_id=${record.id}&role_id=3`)
+        .then(res => res.json())
+        .then(data => setClassStudents(data))
+        .catch(err => console.error(err))
+        .finally(() => setStudentsLoading(false));
     } else {
       setViewData(null);
+      setClassStudents([]);
       if (action === "add") {
         form.resetFields();
       } else if (record) {
@@ -293,22 +303,38 @@ export default function KelasManager() {
       >
         {modalMode === "view" ? (
           viewData ? (
-            <Descriptions column={1} bordered style={{ marginTop: "24px" }}>
-              <Descriptions.Item label="Nama Kelas">
-                <strong>{viewData.class_name}</strong>
-              </Descriptions.Item>
-              <Descriptions.Item label="Kode Kelas">
-                <Tag color="purple" style={{ fontSize: "14px", padding: "4px 8px" }}>
-                  {viewData.class_code}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Instansi">
-                {viewData.school_name}
-              </Descriptions.Item>
-              <Descriptions.Item label="Pembuat (Guru)">
-                {viewData.teacher_name || viewData.teacher_id}
-              </Descriptions.Item>
-            </Descriptions>
+            <div>
+              <Descriptions column={1} bordered style={{ marginTop: "24px", marginBottom: "24px" }}>
+                <Descriptions.Item label="Nama Kelas">
+                  <strong>{viewData.class_name}</strong>
+                </Descriptions.Item>
+                <Descriptions.Item label="Kode Kelas">
+                  <Tag color="purple" style={{ fontSize: "14px", padding: "4px 8px" }}>
+                    {viewData.class_code}
+                  </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Instansi">
+                  {viewData.school_name}
+                </Descriptions.Item>
+                <Descriptions.Item label="Pembuat (Guru)">
+                  {viewData.teacher_name || viewData.teacher_id}
+                </Descriptions.Item>
+              </Descriptions>
+              
+              <Title level={5}>Daftar Siswa ({classStudents.length})</Title>
+              <Table 
+                dataSource={classStudents}
+                loading={studentsLoading}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
+                columns={[
+                  { title: "No.", render: (_, __, i) => i + 1, width: 50 },
+                  { title: "Nama Siswa", dataIndex: "name", key: "name" },
+                  { title: "Email", dataIndex: "email", key: "email" },
+                ]}
+                size="small"
+              />
+            </div>
           ) : (
             <p>Memuat data...</p>
           )

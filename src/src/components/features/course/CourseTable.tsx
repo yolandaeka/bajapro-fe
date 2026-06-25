@@ -15,6 +15,7 @@ import {
   SearchOutlined,
   EyeFilled,
   DeleteFilled,
+  EditFilled,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { TableColumnsType } from "antd";
@@ -85,21 +86,21 @@ export default function ListCourse({
       render: (_, record) => (
         <Space>
           <Button
-            type="default"
+            type="primary"
             icon={<EyeFilled />}
-            onClick={() => router.push(`/course/${record.id}`)}
+            style={{ backgroundColor: "#1677ff" }}
+            onClick={() => router.push(`/course/${record.id}?view=true`)}
           >
-            Detail
+            {!can('course.update') && "Detail"}
           </Button>
 
           {can('course.update') && (
             <Button
               type="primary"
-              style={{ backgroundColor: "#1677ff" }}
+              icon={<EditFilled />}
+              style={{ backgroundColor: "#faad14", color: "black" }}
               onClick={() => router.push(`/course/${record.id}`)}
-            >
-              Edit
-            </Button>
+            />
           )}
 
           {can('course.delete') && (
@@ -111,7 +112,7 @@ export default function ListCourse({
                 });
               }}
             >
-              <Button danger icon={<DeleteFilled />}>Hapus</Button>
+              <Button type="primary" danger icon={<DeleteFilled />} />
             </Popconfirm>
           )}
         </Space>

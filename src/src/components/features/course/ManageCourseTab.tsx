@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Form, Button, Card, Space, message, Tabs, App } from "antd"; 
+import { Form, Button, Card, Space, message, Segmented, App } from "antd"; 
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useRouter, useParams } from "next/navigation";
 import { fetchLessonsByCourseApi, createLessonApi } from "@/src/actions/course/courseApi";
@@ -99,6 +99,7 @@ export const ManageCourseMateri = () => {
           onDeleteSub={handleDeleteSubLesson}
           onReorderSub={handleReorderSubLessons}
           loading={loading}
+          courseId={courseId}
         />
       ),
     },
@@ -129,28 +130,35 @@ export const ManageCourseMateri = () => {
           gap: "16px",
         }}
       >
-        {/* <Button
-          size="medium"
+        <Button
+          size="middle"
           color="default"
           variant="filled"
           icon={<ArrowLeftOutlined />}
           onClick={() => router.push("/course")}
         >
-          Kembali
-        </Button> */}
+          Kembali ke Daftar Course
+        </Button>
       </div>
 
-      <Tabs
-        activeKey={activeTab}
-        onChange={handleTabChange}
-        items={tabItems}
-        tabBarStyle={{
-          backgroundColor: "white",
-          padding: "8px 12px",
-          borderRadius: "12px",
-          marginBottom: "16px",
-        }}
-      />
+      <div style={{ backgroundColor: "white", padding: "8px 12px", borderRadius: "12px", marginBottom: "16px", overflowX: 'auto' }}>
+        <Segmented
+          options={[
+            { label: 'Detail Course', value: 'detail' },
+            { label: 'Lessons', value: 'lessons' },
+            { label: 'Sub Lessons & Materials', value: 'materials' },
+          ]}
+          value={activeTab}
+          onChange={handleTabChange}
+          style={{ padding: '4px' }}
+        />
+      </div>
+
+      <div>
+        {activeTab === "detail" && tabItems[0].children}
+        {activeTab === "lessons" && tabItems[1].children}
+        {activeTab === "materials" && tabItems[2].children}
+      </div>
     </div>
   );
 };

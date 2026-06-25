@@ -23,16 +23,16 @@ export default function LeaderboardManager() {
   } = useLeaderboard();
 
   return (
-    <div style={{ padding: "24px", minHeight: "100vh"}}>
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
+    <div style={{ padding: "24px", minHeight: "100vh" }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 32,
         flexWrap: "wrap",
         gap: 16
       }}>
-        
+
         {/* Kiri: Judul */}
         <div style={{ flex: 1, minWidth: "200px" }}>
           <Title level={3} style={{ margin: 0, fontWeight: "bold" }}>Leaderboard</Title>
@@ -42,8 +42,8 @@ export default function LeaderboardManager() {
         {/* Tengah: Toggle */}
         <div style={{ flex: 1, display: "flex", justifyContent: "center", minWidth: "200px" }}>
           <div style={{ backgroundColor: "#e6e6e6", padding: 4, borderRadius: 8 }}>
-            <Radio.Group 
-              optionType="button" 
+            <Radio.Group
+              optionType="button"
               buttonStyle="solid"
               value={rankingType}
               onChange={(e) => {
@@ -61,7 +61,7 @@ export default function LeaderboardManager() {
         </div>
 
         {/* Kanan: Filter Course & Class */}
-        <div style={{  display: "flex", gap: 16, alignItems: "flex-end", justifyContent: "flex-end", minWidth: "250px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-end", justifyContent: "flex-end", minWidth: "250px", flexWrap: "wrap" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <Text strong>Filter Course <span style={{ color: "red" }}>*</span></Text>
             <Select

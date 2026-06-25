@@ -71,7 +71,7 @@ export default function RegisterPage() {
 
         if (role === "Student") {
           messageApi.success("Registrasi Siswa Berhasil!");
-          router.push("/home"); 
+          router.push("/student/dashboard"); 
         } else {
           if (isApprovalNeeded) {
             messageApi.success("Registrasi Pengajar Berhasil! Menunggu Persetujuan.");

@@ -130,8 +130,8 @@ const Navbar = () => {
       key: "logout",
       icon: <LogoutOutlined style={{ color: "#ff4d4f" }} />,
       label: <span style={{ color: "#ff4d4f" }}>Keluar</span>,
-      onClick: () => {
-        signOut({ callbackUrl: "/login" });
+      onClick: async () => {
+        await signOut({ callbackUrl: "/login" });
       }
     },
   ];

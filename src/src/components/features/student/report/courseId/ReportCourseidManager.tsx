@@ -110,11 +110,11 @@ export default function ReportCourseidManager() {
       render: (status: string) => {
         if (status === 'Approve' || status === 'APPROVED') {
           return (
-            <Tag style={{ 
-              borderRadius: '9999px', 
-              padding: '2px 14px', 
-              background: '#D1FAE5', 
-              border: '1px solid #10B981', 
+            <Tag style={{
+              borderRadius: '9999px',
+              padding: '2px 14px',
+              background: '#D1FAE5',
+              border: '1px solid #10B981',
               color: '#065F46',
               fontWeight: 700
             }}>
@@ -122,12 +122,26 @@ export default function ReportCourseidManager() {
             </Tag>
           );
         }
+        if (status === 'Rejected' || status === 'REJECTED') {
+          return (
+            <Tag style={{
+              borderRadius: '9999px',
+              padding: '2px 14px',
+              background: '#FEE2E2',
+              border: '1px solid #F87171',
+              color: '#991B1B',
+              fontWeight: 700
+            }}>
+              ✗ Rejected
+            </Tag>
+          );
+        }
         return (
-          <Tag style={{ 
-            borderRadius: '9999px', 
-            padding: '2px 14px', 
-            background: '#FEF3C7', 
-            border: '1px solid #FBBF24', 
+          <Tag style={{
+            borderRadius: '9999px',
+            padding: '2px 14px',
+            background: '#FEF3C7',
+            border: '1px solid #FBBF24',
             color: '#92400E',
             fontWeight: 700
           }}>
@@ -141,12 +155,12 @@ export default function ReportCourseidManager() {
       key: 'action',
       align: 'center' as const,
       render: (text: any, record: any) => (
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           onClick={() => router.push(`/student/report/${courseId}/${record.sublesson.id}`)}
-          style={{ 
-            backgroundColor: '#5B21B6', 
-            borderRadius: '8px', 
+          style={{
+            backgroundColor: '#5B21B6',
+            borderRadius: '8px',
             border: 'none',
             fontWeight: 600
           }}
@@ -158,7 +172,7 @@ export default function ReportCourseidManager() {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -176,9 +190,9 @@ export default function ReportCourseidManager() {
             </Text>
           </Col>
           <Col>
-            <Button 
-              type="primary" 
-              icon={<ArrowLeftOutlined />} 
+            <Button
+              type="primary"
+              icon={<ArrowLeftOutlined />}
               onClick={() => router.push(`/student/level/${courseId}`)}
               style={{ backgroundColor: '#2563EB', borderRadius: '8px', border: 'none', fontWeight: 600, height: "38px" }}
             >
@@ -193,8 +207,8 @@ export default function ReportCourseidManager() {
         <Row gutter={[24, 24]}>
           {/* Card 1: Current Badge */}
           <Col xs={24} sm={12} lg={6}>
-            <Card 
-              variant="borderless" 
+            <Card
+              variant="borderless"
               style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', height: '100%', border: "1px solid #E5E7EB" }}
               styles={{ body: { padding: '20px' } }}
             >
@@ -215,8 +229,8 @@ export default function ReportCourseidManager() {
 
           {/* Card 2: Total Score */}
           <Col xs={24} sm={12} lg={6}>
-            <Card 
-              variant="borderless" 
+            <Card
+              variant="borderless"
               style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', height: '100%', border: "1px solid #E5E7EB" }}
               styles={{ body: { padding: '20px' } }}
             >
@@ -234,8 +248,8 @@ export default function ReportCourseidManager() {
 
           {/* Card 3: Progress */}
           <Col xs={24} sm={12} lg={6}>
-            <Card 
-              variant="borderless" 
+            <Card
+              variant="borderless"
               style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', height: '100%', border: "1px solid #E5E7EB" }}
               styles={{ body: { padding: '20px' } }}
             >
@@ -254,8 +268,8 @@ export default function ReportCourseidManager() {
 
           {/* Card 4: Finished Test */}
           <Col xs={24} sm={12} lg={6}>
-            <Card 
-              variant="borderless" 
+            <Card
+              variant="borderless"
               style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', height: '100%', border: "1px solid #E5E7EB" }}
               styles={{ body: { padding: '20px' } }}
             >
@@ -275,9 +289,9 @@ export default function ReportCourseidManager() {
 
       {/* Table Card */}
       <motion.div variants={itemVariants}>
-        <Card 
-          variant="borderless" 
-          style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', border: "1px solid #E5E7EB", overflow: "hidden" }} 
+        <Card
+          variant="borderless"
+          style={{ borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.02)', border: "1px solid #E5E7EB", overflow: "hidden" }}
           styles={{ body: { padding: 0 } }}
         >
           <style>{`
@@ -295,13 +309,13 @@ export default function ReportCourseidManager() {
               background-color: #EDE9FE20 !important;
             }
           `}</style>
-          <Table 
+          <Table
             className="custom-table"
-            columns={columns} 
-            dataSource={data.reportData} 
+            columns={columns}
+            dataSource={data.reportData}
             rowKey={(record: any) => record.sublesson.id}
             pagination={{ pageSize: 10 }}
-            scroll={{ x: 800 }}
+            scroll={{ x: 'max-content' }}
             style={{ width: '100%' }}
           />
         </Card>

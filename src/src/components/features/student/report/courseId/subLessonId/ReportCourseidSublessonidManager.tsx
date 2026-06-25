@@ -24,6 +24,9 @@ export default function ReportCourseidSublessonidManager() {
   const [editingAnswer, setEditingAnswer] = useState<any>(null);
   const [newAnswerText, setNewAnswerText] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  
+  const [activeTab, setActiveTab] = useState("1");
 
   const { data: session } = useSession();
 
@@ -41,7 +44,7 @@ export default function ReportCourseidSublessonidManager() {
       setData(res);
     } catch (e) {
       console.error(e);
-      message.error("Gagal memuat detail report.");
+      messageApi.error("Gagal memuat detail report.");
     } finally {
       setLoading(false);
     }
@@ -58,17 +61,58 @@ export default function ReportCourseidSublessonidManager() {
     
     try {
       setSubmitLoading(true);
+
+      const index = data.essayDetails.findIndex((d: any) => d.question.id === editingAnswer.question.id);
+      let kp = editingAnswer.answer.konteks_penjelasan || 0;
+      let kr = editingAnswer.answer.keruntutan || 0;
+      let kb = editingAnswer.answer.kebenaran || 0;
+
+      let aiScore = 0;
+      try {
+        const formData = new URLSearchParams();
+        formData.append('esay_question', editingAnswer.question.essay_question || '');
+        formData.append('esay_answer', editingAnswer.question.answer || '');
+        formData.append('esay_answer2', editingAnswer.question.answer_2 || '');
+        formData.append('esay_answer3', editingAnswer.question.answer_3 || '');
+        formData.append('esay_answer4', editingAnswer.question.answer_4 || '');
+        formData.append('user_answer', newAnswerText);
+
+        const aiRes = await fetch('http://labai.polinema.ac.id:90/online-compiler/compiler/generate/grade', {
+          method: 'POST',
+          body: formData,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+
+        if (aiRes.ok) {
+          const json = await aiRes.json();
+          if (json && typeof json.output === 'number') {
+            aiScore = json.output;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to generate AI score', e);
+      }
+
+      if (index === 0) kp = aiScore;
+      else if (index === 1) kr = aiScore;
+      else if (index === 2) kb = aiScore;
+      else kp = aiScore;
+
       const response = await fetch(`${BASE_URL}/t_essay_answer/${editingAnswer.answer.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             answer: newAnswerText,
+            konteks_penjelasan: kp,
+            keruntutan: kr,
+            kebenaran: kb,
+            is_approved_by_teacher: null,
             updated_at: new Date().toISOString()
         })
       });
 
       if (response.ok) {
-        message.success("Jawaban berhasil diubah!");
+        messageApi.success("Jawaban berhasil diubah dan dinilai otomatis!");
         setIsModalVisible(false);
         // Refresh data
         if (session?.user) {
@@ -76,11 +120,11 @@ export default function ReportCourseidSublessonidManager() {
           fetchDetailData(u.id, courseId, subLessonId);
         }
       } else {
-        message.error("Gagal mengubah jawaban.");
+        messageApi.error("Gagal mengubah jawaban.");
       }
     } catch (e) {
       console.error(e);
-      message.error("Gagal mengubah jawaban.");
+      messageApi.error("Gagal mengubah jawaban.");
     } finally {
       setSubmitLoading(false);
     }
@@ -102,6 +146,7 @@ export default function ReportCourseidSublessonidManager() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {contextHolder}
       
       {/* Header Banner (Purple Theme) */}
       <Card 
@@ -231,7 +276,7 @@ export default function ReportCourseidSublessonidManager() {
               Studi Kasus
             </Title>
             <div 
-              style={{ fontSize: '14px', lineHeight: '1.6', color: '#4B5563', marginBottom: '20px' }}
+              style={{ fontSize: '14px', lineHeight: '1.6', color: '#4B5563', marginBottom: '20px', overflowX: 'auto', maxWidth: '100%' }}
               dangerouslySetInnerHTML={{ __html: data.codeQuestion?.code_question }} 
             />
             
@@ -244,7 +289,9 @@ export default function ReportCourseidSublessonidManager() {
                 whiteSpace: 'pre-wrap', 
                 color: '#FFFFFF', 
                 fontSize: '13px',
-                lineHeight: 1.6
+                lineHeight: 1.6,
+                overflowX: 'auto',
+                maxWidth: '100%'
               }}>
                 {data.codeAnswer?.answer || data.codeQuestion?.hint}
               </div>
@@ -272,7 +319,8 @@ export default function ReportCourseidSublessonidManager() {
         `}</style>
         <Tabs 
           className="report-tabs"
-          defaultActiveKey="1"
+          activeKey={activeTab}
+          onChange={setActiveTab}
           items={[
             {
               key: '1',
@@ -475,7 +523,7 @@ export default function ReportCourseidSublessonidManager() {
                           )}
 
                           {/* Edit Answer Action Button */}
-                          {hasClass && !isApproved && (
+                          {hasClass && isApproved !== 1 && (
                             <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
                               <Button 
                                 type="default" 
@@ -512,6 +560,8 @@ export default function ReportCourseidSublessonidManager() {
         title="Edit Jawaban Essay"
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
+        width="95%"
+        style={{ top: 20, maxWidth: '600px' }}
         footer={[
           <Button key="cancel" onClick={() => setIsModalVisible(false)} style={{ borderRadius: "8px" }}>
             Batal
@@ -527,7 +577,7 @@ export default function ReportCourseidSublessonidManager() {
           </Button>
         ]}
       >
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '16px', overflowX: 'auto' }}>
           <Text style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Pertanyaan:</Text>
           <div dangerouslySetInnerHTML={{ __html: editingAnswer?.question?.essay_question || "" }} style={{ fontSize: "14px", color: "#374151" }} />
         </div>

@@ -71,7 +71,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
         const formData = new FormData();
         formData.append("file", selectedFile);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch("/api/upload?type=course", {
           method: "POST",
           body: formData,
         });
@@ -79,7 +79,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
         if (!res.ok) throw new Error("Gagal mengunggah gambar");
         
         const data = await res.json();
-        finalImageUrl = data.url;
+        finalImageUrl = data.filename; // Store filename in database
       } catch (err) {
         messageApi.error("Terjadi kesalahan saat mengunggah gambar");
         setUploading(false);
@@ -136,7 +136,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
               {/* BOX PREVIEW GAMBAR */}
               {previewImage && (
                 <Image
-                  src={previewImage}
+                  src={previewImage.startsWith('blob:') ? previewImage : `/uploads/courses/${previewImage}`}
                   alt="Preview"
                   style={{ width: 300, height: 300, objectFit: "cover", borderRadius: 8, border: "1px solid #d9d9d9" }}
                 />

@@ -161,7 +161,6 @@ export default function UsersManager() {
         </>
       )}
 
-      {currentUserRole === "Teacher" && (
         <div>
           <Typography.Text strong>Kelas</Typography.Text>
           <Select
@@ -173,7 +172,6 @@ export default function UsersManager() {
             options={kelasOptions}
           />
         </div>
-      )}
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "8px" }}>
         <Button type="dashed" onClick={() => {

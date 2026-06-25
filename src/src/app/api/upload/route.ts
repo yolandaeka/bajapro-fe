@@ -5,6 +5,9 @@ import fs from "fs";
 
 export async function POST(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type");
+    
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -21,7 +24,13 @@ export async function POST(request: NextRequest) {
     const filename = `${uniqueSuffix}${originalExt}`;
 
     // Path ke folder public/uploads
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    let uploadDir = path.join(process.cwd(), "public", "uploads");
+    let publicUrl = `/uploads/${filename}`;
+    
+    if (type === "course") {
+      uploadDir = path.join(process.cwd(), "public", "uploads", "courses");
+      publicUrl = `/uploads/courses/${filename}`;
+    }
 
     // Pastikan folder uploads ada
     if (!fs.existsSync(uploadDir)) {
@@ -33,10 +42,7 @@ export async function POST(request: NextRequest) {
     // Tulis file ke folder
     await writeFile(filepath, buffer);
 
-    // Kembalikan public URL path untuk disimpan di database
-    const publicUrl = `/uploads/${filename}`;
-
-    return NextResponse.json({ url: publicUrl, success: true }, { status: 200 });
+    return NextResponse.json({ url: publicUrl, filename: filename, success: true }, { status: 200 });
   } catch (error: any) {
     console.error("Error uploading file:", error);
     return NextResponse.json({ error: "Gagal mengunggah file" }, { status: 500 });

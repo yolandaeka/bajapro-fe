@@ -17,7 +17,12 @@ export default function DashboardManager() {
     activityData,
     pendingApprovals,
     activeClasses,
-    currentUserRole
+    currentUserRole,
+    activityClassId, setActivityClassId,
+    activityCourseId, setActivityCourseId,
+    activityStartDate, setActivityStartDate,
+    activityEndDate, setActivityEndDate,
+    availableClasses, availableCourses
   } = useDashboard();
 
   return (
@@ -29,14 +34,27 @@ export default function DashboardManager() {
         <Title level={2} style={{ margin: 0, fontWeight: "bold", display: "none" }}>Dashboard</Title>
       </div>
 
-      <StatCards stats={stats} role={currentUserRole} loading={loading} />
+      <StatCards stats={stats} role={currentUserRole || "Pengajar"} loading={loading} />
 
       <Row gutter={[24, 24]} style={{ display: "flex" }}>
         <Col xs={24} lg={16} style={{ display: "flex", flexDirection: "column" }}>
-          <ActivityChart data={activityData} role={currentUserRole} />
+          <ActivityChart 
+            data={activityData} 
+            role={currentUserRole || "Pengajar"} 
+            activityClassId={activityClassId}
+            setActivityClassId={setActivityClassId}
+            activityCourseId={activityCourseId}
+            setActivityCourseId={setActivityCourseId}
+            activityStartDate={activityStartDate}
+            setActivityStartDate={setActivityStartDate}
+            activityEndDate={activityEndDate}
+            setActivityEndDate={setActivityEndDate}
+            availableClasses={availableClasses}
+            availableCourses={availableCourses}
+          />
         </Col>
         <Col xs={24} lg={8} style={{ display: "flex", flexDirection: "column" }}>
-          <ApprovalList data={pendingApprovals} role={currentUserRole} />
+          <ApprovalList data={pendingApprovals} role={currentUserRole || "Pengajar"} />
         </Col>
       </Row>
 

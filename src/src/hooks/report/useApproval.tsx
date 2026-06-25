@@ -37,8 +37,8 @@ export const useApproval = (userId?: string | number, subLessonId?: string | num
           reportApi.getCodeLogs(userId, subLessonId),
           reportApi.getCodeAnswers(userId),
           reportApi.getUser(userId),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sublessons/${subLessonId}`).then(res => res.json()).catch(() => null),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/t_wondering_score?user_id=${userId}&sub_lesson_id=${subLessonId}`).then(res => res.json()).catch(() => [])
+          reportApi.getSublesson(subLessonId).catch(() => null),
+          reportApi.getWonderingScoreBySubLesson(userId, subLessonId).catch(() => [])
         ]);
 
         const codeQuestion = codeQuestions.find((cq: any) => cq.sub_lesson_id == subLessonId);

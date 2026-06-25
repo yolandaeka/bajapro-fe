@@ -250,17 +250,21 @@ export const SubLessonForm: React.FC<Props> = ({
                   setMaterials(newMats);
                 }}
               />
+            ) : canEdit ? (
+              <TiptapEditor
+                value={mat.materials || ""}
+                onChange={(content) => {
+                  const newMats = [...materials];
+                  newMats[index].materials = content;
+                  setMaterials(newMats);
+                }}
+              />
             ) : (
-              <div style={{ pointerEvents: canEdit ? "auto" : "none", opacity: canEdit ? 1 : 0.8 }}>
-                <TiptapEditor
-                  value={mat.materials || ""}
-                  onChange={(content) => {
-                    const newMats = [...materials];
-                    newMats[index].materials = content;
-                    setMaterials(newMats);
-                  }}
-                />
-              </div>
+              <div 
+                className="p-4 bg-gray-50 border border-gray-200 rounded min-h-[100px] material-content-body"
+                dangerouslySetInnerHTML={{ __html: mat.materials || "-" }} 
+                style={{ opacity: 0.8 }}
+              />
             )}
           </fieldset>
         </div>
@@ -282,7 +286,7 @@ export const SubLessonForm: React.FC<Props> = ({
           icon={<ArrowLeftOutlined />}
           onClick={onBack}
         >
-          Kembali
+          Batal
         </Button>
         <Space>
           {canEdit && (

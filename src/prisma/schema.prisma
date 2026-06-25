@@ -35,27 +35,28 @@ model Class {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  roleId             Int                  @map("role_id")
-  classId            Int?                 @map("class_id")
-  name               String
-  email              String               @unique
-  password           String
-  isApprovedByAdmin  Int                  @default(0) @map("is_approved_by_admin")
-  instansiSekolah    String               @map("instansi_sekolah")
-  nip                String?              @map("nip")
-  isActive           Boolean              @default(true) @map("isactive")
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
-  
-  role               Role                 @relation(fields: [roleId], references: [id])
-  class              Class?               @relation(fields: [classId], references: [id])
-  studentCourses     StudentCourse[]
-  studentProgresses  StudentProgress[]
-  wonderingScores    WonderingScore[]
-  codeAnswers        CodeAnswer[]
-  essayAnswers       EssayAnswer[]
-  codeHistoryLogs    CodeHistoryLog[]
+  id                Int      @id @default(autoincrement())
+  roleId            Int      @map("role_id")
+  classId           Int?     @map("class_id")
+  name              String
+  email             String   @unique
+  password          String
+  isApprovedByAdmin Int      @default(0) @map("is_approved_by_admin")
+  instansiSekolah   String   @map("instansi_sekolah")
+  nip               String?  @map("nip")
+  isActive          Boolean  @default(true) @map("isactive")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  role              Role              @relation(fields: [roleId], references: [id])
+  class             Class?            @relation(fields: [classId], references: [id])
+  studentCourses    StudentCourse[]
+  studentProgresses StudentProgress[]
+  wonderingScores   WonderingScore[]
+  codeAnswers       CodeAnswer[]
+  essayAnswers      EssayAnswer[]
+  codeHistoryLogs   CodeHistoryLog[]
+  loginLogs         UserLoginLog[]
 
   @@map("m_users")
 }
@@ -89,38 +90,38 @@ model Level {
 }
 
 model Lesson {
-  id           Int        @id @default(autoincrement())
-  courseId     Int        @map("course_id")
-  levelId      Int        @map("level_id")
+  id           Int      @id @default(autoincrement())
+  courseId     Int      @map("course_id")
+  levelId      Int      @map("level_id")
   title        String
   description  String
   position     Int
-  imgThumbnail String?    @map("img_thumbnail")
-  published    Int        @default(0)
-  isActive     Boolean    @default(true) @map("isactive")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  
-  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  level        Level      @relation(fields: [levelId], references: [id])
-  subLessons   SubLesson[]
+  imgThumbnail String?  @map("img_thumbnail")
+  published    Int      @default(0)
+  isActive     Boolean  @default(true) @map("isactive")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  course     Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  level      Level       @relation(fields: [levelId], references: [id])
+  subLessons SubLesson[]
 
   @@map("m_lesson")
 }
 
 model SubLesson {
-  id            Int               @id @default(autoincrement())
-  lessonId      Int               @map("lesson_id")
+  id            Int      @id @default(autoincrement())
+  lessonId      Int      @map("lesson_id")
   title         String
-  orderPosition Int               @map("order_position")
-  isActive      Boolean           @default(true) @map("isactive")
-  createdAt     DateTime          @default(now()) @map("created_at")
-  updatedAt     DateTime          @updatedAt @map("updated_at")
-  
-  lesson        Lesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  materials     Material[]
-  codeQuestions CodeQuestion[]
-  progresses    StudentProgress[]
+  orderPosition Int      @map("order_position")
+  isActive      Boolean  @default(true) @map("isactive")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  lesson          Lesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  materials       Material[]
+  codeQuestions   CodeQuestion[]
+  progresses      StudentProgress[]
   wonderingScores WonderingScore[]
 
   @@map("m_sub_lesson")
@@ -138,46 +139,46 @@ model Material {
   isActive        Boolean  @default(true) @map("isactive")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-  
-  subLesson       SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
+
+  subLesson SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
 
   @@map("m_materials")
 }
 
 model CodeQuestion {
-  id           Int              @id @default(autoincrement())
-  subLessonId  Int              @map("sub_lesson_id")
-  codeQuestion String           @map("code_question") @db.Text
+  id           Int      @id @default(autoincrement())
+  subLessonId  Int      @map("sub_lesson_id")
+  codeQuestion String   @map("code_question") @db.Text
   image        String?
-  score        Int              @default(30)
+  score        Int      @default(30)
   hint         String?
-  isActive     Boolean          @default(true) @map("isactive")
-  createdAt    DateTime         @default(now()) @map("created_at")
-  updatedAt    DateTime         @updatedAt @map("updated_at")
-  
-  subLesson    SubLesson        @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
-  essayQuestions EssayQuestion[]
-  codeAnswers   CodeAnswer[]
+  isActive     Boolean  @default(true) @map("isactive")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  subLesson       SubLesson        @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
+  essayQuestions  EssayQuestion[]
+  codeAnswers     CodeAnswer[]
   codeHistoryLogs CodeHistoryLog[]
 
   @@map("t_code_question")
 }
 
 model EssayQuestion {
-  id             Int           @id @default(autoincrement())
-  subLessonId    Int?          @map("sub_lesson_id")
-  codeQuestionId Int?          @map("code_question_id")
-  essayQuestion  String        @map("essay_question") @db.Text
-  answer         String        @db.Text
-  answer2        String?       @map("answer_2") @db.Text
-  answer3        String?       @map("answer_3") @db.Text
-  answer4        String?       @map("answer_4") @db.Text
-  isActive       Boolean       @default(true) @map("isactive")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-  
-  codeQuestion   CodeQuestion? @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
-  essayAnswers   EssayAnswer[]
+  id             Int      @id @default(autoincrement())
+  subLessonId    Int?     @map("sub_lesson_id")
+  codeQuestionId Int?     @map("code_question_id")
+  essayQuestion  String   @map("essay_question") @db.Text
+  answer         String   @db.Text
+  answer2        String?  @map("answer_2") @db.Text
+  answer3        String?  @map("answer_3") @db.Text
+  answer4        String?  @map("answer_4") @db.Text
+  isActive       Boolean  @default(true) @map("isactive")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  codeQuestion CodeQuestion? @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
+  essayAnswers EssayAnswer[]
 
   @@map("t_essay_question")
 }
@@ -191,10 +192,10 @@ model StudentCourse {
   isActive   Boolean  @default(true) @map("isactive")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
-  
-  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  badge      Badge?   @relation(fields: [badgeId], references: [id])
+
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  badge   Badge? @relation(fields: [badgeId], references: [id])
 
   @@map("t_student_course")
 }
@@ -222,10 +223,10 @@ model StudentProgress {
   isActive    Boolean  @default(true) @map("isactive")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  student     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  subLesson   SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
+
+  student   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subLesson SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
 
   @@map("t_student_progress")
 }
@@ -238,62 +239,62 @@ model WonderingScore {
   isActive    Boolean  @default(true) @map("isactive")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  student     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subLesson   SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
+
+  student   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subLesson SubLesson @relation(fields: [subLessonId], references: [id], onDelete: Cascade)
 
   @@map("t_wondering_score")
 }
 
 model CodeAnswer {
-  id             Int          @id @default(autoincrement())
-  userId         Int          @map("user_id")
-  codeQuestionId Int          @map("code_question_id")
-  isCodeRight    Boolean      @default(false) @map("is_code_right")
-  exploringScore Int          @default(0) @map("exploring_score")
-  isActive       Boolean      @default(true) @map("isactive")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  
-  student        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  codeQuestion   CodeQuestion @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  codeQuestionId Int      @map("code_question_id")
+  isCodeRight    Boolean  @default(false) @map("is_code_right")
+  exploringScore Int      @default(0) @map("exploring_score")
+  isActive       Boolean  @default(true) @map("isactive")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  student      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeQuestion CodeQuestion @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
 
   @@map("t_code_answer")
 }
 
 model EssayAnswer {
-  id                  Int           @id @default(autoincrement())
-  userId              Int           @map("user_id")
-  essayQuestionId     Int           @map("essay_question_id")
-  answer              String        @db.Text
-  konteksPenjelasan   Int           @default(0) @map("konteks_penjelasan")
-  keruntutan          Int           @default(0) @map("keruntutan")
-  kebenaran           Int           @default(0) @map("kebenaran")
-  teacherNotes        String?       @map("teacher_notes") @db.Text
-  isApprovedByTeacher String        @default("pending") @map("is_approved_by_teacher") // pending, approved, rejected
-  isActive            Boolean       @default(true) @map("isactive")
-  createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt           DateTime      @updatedAt @map("updated_at")
-  
-  student             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  essayQuestion       EssayQuestion @relation(fields: [essayQuestionId], references: [id], onDelete: Cascade)
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @map("user_id")
+  essayQuestionId     Int      @map("essay_question_id")
+  answer              String   @db.Text
+  konteksPenjelasan   Int      @default(0) @map("konteks_penjelasan")
+  keruntutan          Int      @default(0) @map("keruntutan")
+  kebenaran           Int      @default(0) @map("kebenaran")
+  teacherNotes        String?  @map("teacher_notes") @db.Text
+  isApprovedByTeacher Int?     @map("is_approved_by_teacher") // null = pending, 1 = approved, 0 = rejected
+  isActive            Boolean  @default(true) @map("isactive")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  student       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  essayQuestion EssayQuestion @relation(fields: [essayQuestionId], references: [id], onDelete: Cascade)
 
   @@map("t_essay_answer")
 }
 
 model CodeHistoryLog {
-  id             Int          @id @default(autoincrement())
-  userId         Int          @map("user_id")
-  codeQuestionId Int          @map("code_question_id")
-  timeCount      Int          @default(0) @map("time_count")
-  message        String       @db.Text
-  isError        Boolean      @default(false) @map("is_error")
-  isActive       Boolean      @default(true) @map("isactive")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  
-  student        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  codeQuestion   CodeQuestion @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  codeQuestionId Int      @map("code_question_id")
+  timeCount      Int      @default(0) @map("time_count")
+  message        String   @db.Text
+  isError        Boolean  @default(false) @map("is_error")
+  isActive       Boolean  @default(true) @map("isactive")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  student      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeQuestion CodeQuestion @relation(fields: [codeQuestionId], references: [id], onDelete: Cascade)
 
   @@map("t_code_history_logs")
 }
@@ -307,4 +308,14 @@ model Permission {
   roles     Role[]   @relation("PermissionToRole")
 
   @@map("m_permission")
+}
+
+model UserLoginLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  loginTime DateTime @default(now()) @map("login_time")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("t_user_login_logs")
 }
