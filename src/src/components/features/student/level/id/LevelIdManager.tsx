@@ -93,7 +93,7 @@ export default function LevelIdManager() {
         await enrollCourseApi(studentId, courseId);
         setIsEnrolled(true);
         messageApi.success("Successfully enrolled!");
-        router.push(`/student/material/${courseId}/${levelId}`);
+        router.push(`/student/material/${courseId}/${levelId}?fromLevel=true`);
       } catch (e) {
         console.error(e);
         messageApi.error("Failed to enroll");
@@ -101,7 +101,7 @@ export default function LevelIdManager() {
         setEnrolling(false);
       }
     } else {
-      router.push(`/student/material/${courseId}/${levelId}`);
+      router.push(`/student/material/${courseId}/${levelId}?fromLevel=true`);
     }
   };
 

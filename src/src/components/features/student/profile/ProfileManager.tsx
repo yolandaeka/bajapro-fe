@@ -146,7 +146,7 @@ export default function ProfileManager() {
                             <div style={{ background: '#FFF0F6', padding: '10px', borderRadius: '12px', color: '#EB2F96' }}><BankOutlined style={{ fontSize: '18px' }} /></div>
                             <div>
                                 <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>Instansi / Sekolah</Text>
-                                <Text style={{ fontWeight: 600, color: '#1F2937', fontSize: '15px' }}>{data.user.instansi_sekolah || '-'}</Text>
+                                <Text style={{ fontWeight: 600, color: '#1F2937', fontSize: '15px' }}>{data.classData?.school_name || data.user.instansi_sekolah || '-'}</Text>
                             </div>
                         </div>
 

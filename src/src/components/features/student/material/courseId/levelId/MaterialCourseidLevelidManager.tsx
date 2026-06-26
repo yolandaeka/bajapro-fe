@@ -79,6 +79,7 @@ export default function MaterialCourseidLevelidManager() {
   const courseId = Number(params?.courseId);
   const levelId = Number(params?.levelId);
   const urlSubLessonId = searchParams?.get("subLessonId");
+  const fromLevel = searchParams?.get("fromLevel") === "true";
 
   const [loading, setLoading] = useState(true);
   const [studentId, setStudentId] = useState<number>(5);
@@ -213,7 +214,7 @@ export default function MaterialCourseidLevelidManager() {
       // Restore from localStorage
       const savedState = localStorage.getItem(`materialState_${courseId}_${levelId}`);
       let parsedState: any = {};
-      if (savedState) {
+      if (savedState && !fromLevel) {
         try { parsedState = JSON.parse(savedState); } catch (e) { }
       }
 
@@ -277,6 +278,13 @@ export default function MaterialCourseidLevelidManager() {
       fetchData();
     }
   }, [studentId, courseId, levelId]);
+
+  useEffect(() => {
+    if (fromLevel && courseId && levelId) {
+      router.replace(`/student/material/${courseId}/${levelId}`);
+    }
+  }, [fromLevel, courseId, levelId, router]);
+
 
   useEffect(() => {
     if (activeSubLessonId) {

@@ -110,13 +110,6 @@ export const LeaderboardApi = {
           const matchedCourse = courses.find(
             (course: any) => course.student_id == student.id
           );
-          let badge = matchedCourse?.badge_id ? badges.find((b: any) => b.id == matchedCourse.badge_id) : null;
-          
-          const total = matchedCourse?.total_score || 0;
-
-          if (!badge && badges && badges.length > 0) {
-            badge = badges.find((b: any) => total >= b.minScore && total <= b.maxScore) || badges[0];
-          }
 
           // Calculate reading score (wondering)
           const stdWondering = wonderingScores.filter(
@@ -138,6 +131,13 @@ export const LeaderboardApi = {
           stdEssayAnswers.forEach((ea: any) => {
              essayScore += (ea.keruntutan || 0) + (ea.kebenaran || 0) + (ea.konteks_penjelasan || ea.konteksPenjelasan || 0);
           });
+
+          const total = readingScore + codingScore + essayScore;
+
+          let badge = matchedCourse?.badge_id ? badges.find((b: any) => b.id == matchedCourse.badge_id) : null;
+          if (!badge && badges && badges.length > 0) {
+            badge = badges.find((b: any) => total >= b.minScore && total <= b.maxScore) || badges[0];
+          }
 
           return {
             ...student,

@@ -195,3 +195,13 @@ body {
   text-decoration: line-through;
 }
 
+/* Custom override for landing page navigation/footer links */
+.landing-nav-link {
+  color: #4b5563 !important;
+  transition: color 0.2s ease-in-out !important;
+  text-decoration: none !important;
+}
+.landing-nav-link:hover {
+  color: #5b21b6 !important;
+}
+

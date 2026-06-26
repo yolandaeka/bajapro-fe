@@ -108,10 +108,33 @@ export const Top3Cards: React.FC<Top3CardsProps> = ({ data }) => {
               gap: 6,
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
             }}>
-              {student.badgeImage && (
+              {student.badgeImage ? (
                 <img src={student.badgeImage} alt="badge" width={16} height={16} />
+              ) : (
+                <span>🏅</span>
               )}
               {student.badgeName || "Bronze Coder"}
+            </div>
+
+            {/* Detail Scores */}
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              marginTop: 14, paddingTop: 12, borderTop: "1px dashed #E5E7EB", width: "100%", gap: 4
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Read</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.readingScore || 0}</span>
+              </div>
+              <div style={{ width: 1, height: 16, backgroundColor: "#E5E7EB" }} />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Explore</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.codingScore || 0}</span>
+              </div>
+              <div style={{ width: 1, height: 16, backgroundColor: "#E5E7EB" }} />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Essay</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.essayScore || 0}</span>
+              </div>
             </div>
           </Card>
         </div>

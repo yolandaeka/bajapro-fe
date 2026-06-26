@@ -109,12 +109,6 @@ export default function LoginPage() {
           padding: 40px;
         }
 
-        .logo-container {
-          position: absolute;
-          top: 40px;
-          left: 10%; /* Mengikuti padding form-side */
-        }
-
         /* MEDIA QUERIES UNTUK RESPONSIVE */
         @media (max-width: 992px) {
           .banner-side {
@@ -131,13 +125,8 @@ export default function LoginPage() {
             max-width: 480px;
           }
 
-          .logo-container {
-            position: relative;
-            top: 0;
-            left: 0;
-            margin-bottom: 32px;
-            text-align: center;
-            width: 100%;
+          .auth-logo-wrapper {
+            justify-content: center !important;
           }
         }
       `}</style>
@@ -148,18 +137,6 @@ export default function LoginPage() {
         <div className="form-side">
           <div className="form-content" style={{ maxWidth: 400, width: "100%" }}>
             
-            {/* Logo Kiri Atas (Pindah ke tengah di HP) */}
-            <div className="logo-container">
-              <Image
-                src="/assets/logo/logo-completed.png"
-                alt="Logo BAJAPRO"
-                width={120}
-                height={40}
-                style={{ width: "auto", height: "32px", objectFit: "contain" }}
-                priority
-              />
-            </div>
-
             <Title level={2}>Login</Title>
             <Text type="secondary" style={{ display: "block", marginBottom: 32 }}>
               Login to access your bajapro account

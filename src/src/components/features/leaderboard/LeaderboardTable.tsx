@@ -53,7 +53,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, loadin
       align: "center" as const,
     },
     {
-      title: "Coding Score",
+      title: "Exploring Score",
       dataIndex: "codingScore",
       key: "codingScore",
       align: "center" as const,

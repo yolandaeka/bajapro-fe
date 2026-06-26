@@ -93,13 +93,7 @@ export default function LeaderboardManager() {
           }}>
             {getInitials(student.name)}
           </Avatar>
-          {isCenter && (
-            <div style={{
-              backgroundColor: c.badge, color: "#fff", fontSize: 11, fontWeight: 700,
-              padding: "2px 12px", borderRadius: 6, display: "inline-block", marginBottom: 8
-            }}>MVP</div>
-          )}
-          <div style={{ fontWeight: 700, fontSize: isCenter ? 16 : 14, color: "#1E1B4B", marginBottom: 4, lineHeight: 1.3 }}>
+          <div style={{ fontWeight: 700, fontSize: isCenter ? 16 : 14, color: "#1E1B4B", marginBottom: 4, lineHeight: 1.3, marginTop: isCenter ? 8 : 0 }}>
             {student.name}
           </div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 4, marginBottom: 8 }}>
@@ -108,9 +102,36 @@ export default function LeaderboardManager() {
           </div>
           <div style={{
             backgroundColor: c.badge, color: "#fff", fontSize: 11, fontWeight: 700,
-            padding: "4px 14px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 4
+            padding: "4px 14px", borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 6,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
           }}>
-            🏅 {student.badgeName || "No Badge"}
+            {student.badgeImage ? (
+              <img src={student.badgeImage} alt="badge" style={{ width: 14, height: 14, objectFit: "contain" }} />
+            ) : (
+              <span>🏅</span>
+            )}
+            {student.badgeName || "No Badge"}
+          </div>
+
+          {/* Detail Scores */}
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            marginTop: 14, paddingTop: 12, borderTop: "1px dashed #E5E7EB", width: "100%", gap: 4
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Read</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.readingScore || 0}</span>
+            </div>
+            <div style={{ width: 1, height: 16, backgroundColor: "#E5E7EB" }} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Explore</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.codingScore || 0}</span>
+            </div>
+            <div style={{ width: 1, height: 16, backgroundColor: "#E5E7EB" }} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#6B7280", textTransform: "uppercase" }}>Essay</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#1F2937" }}>{student.essayScore || 0}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -144,14 +165,20 @@ export default function LeaderboardManager() {
         <Tag style={{
           backgroundColor: record.badgeName === "No Badge" ? "#F3F4F6" : "#EDE9FE",
           color: record.badgeName === "No Badge" ? "#6B7280" : "#5B21B6",
-          border: "none", borderRadius: 6, fontWeight: 700, fontSize: 11, padding: "2px 10px"
+          border: "none", borderRadius: 6, fontWeight: 700, fontSize: 11, padding: "4px 10px",
+          display: "inline-flex", alignItems: "center", gap: 6
         }}>
-          🏅 {record.badgeName?.toUpperCase() || "NO BADGE"}
+          {record.badgeImage ? (
+            <img src={record.badgeImage} alt="badge" style={{ width: 16, height: 16, objectFit: "contain" }} />
+          ) : (
+            <span>🏅</span>
+          )}
+          {record.badgeName?.toUpperCase() || "NO BADGE"}
         </Tag>
       )
     },
     { title: "READING", dataIndex: "readingScore", key: "readingScore", align: "center" as const, width: 90, render: (v: number) => <span style={{ color: "#374151", fontWeight: 500 }}>{v}</span> },
-    { title: "CODING", dataIndex: "codingScore", key: "codingScore", align: "center" as const, width: 90, render: (v: number) => <span style={{ color: "#374151", fontWeight: 500 }}>{v}</span> },
+    { title: "EXPLORING", dataIndex: "codingScore", key: "codingScore", align: "center" as const, width: 95, render: (v: number) => <span style={{ color: "#374151", fontWeight: 500 }}>{v}</span> },
     { title: "ESSAY", dataIndex: "essayScore", key: "essayScore", align: "center" as const, width: 90, render: (v: number) => <span style={{ color: "#374151", fontWeight: 500 }}>{v}</span> },
     {
       title: "TOTAL SCORE", dataIndex: "totalScore", key: "totalScore", align: "center" as const, width: 100,

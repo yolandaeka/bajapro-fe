@@ -47,7 +47,7 @@ export default function RegisterPage() {
       const newUser = {
         role_id: role === "Student" ? 3 : 2,
         class_id: null,
-        kode_kelas: values.kode_kelas,
+        kode_kelas: values.kode_kelas && values.kode_kelas.trim() !== "" ? values.kode_kelas.trim() : null,
         name: values.name,
         email: values.email,
         password: values.password,
@@ -147,12 +147,6 @@ export default function RegisterPage() {
           flex: 1 1 200px;
         }
 
-        .logo-container {
-          position: absolute;
-          top: 40px;
-          right: 40px;
-        }
-
         /* MEDIA QUERIES UNTUK RESPONSIVE */
         @media (max-width: 992px) {
           .banner-side {
@@ -169,13 +163,8 @@ export default function RegisterPage() {
             max-width: 480px;
           }
 
-          .logo-container {
-            position: relative;
-            top: 0;
-            right: 0;
-            margin-bottom: 32px;
-            text-align: center;
-            width: 100%;
+          .auth-logo-wrapper {
+            justify-content: center !important;
           }
         }
       `}</style>
@@ -206,10 +195,6 @@ export default function RegisterPage() {
         <div className="form-side">
           <div className="form-content" style={{ maxWidth: 480, width: "100%" }}>
             
-            <div className="logo-container">
-              <Title level={4} style={{ color: "#5B21B6", margin: 0 }}>BAJAPRO</Title>
-            </div>
-
             <Segmented
               options={["Student", "Teacher"]}
               value={role}
@@ -237,8 +222,8 @@ export default function RegisterPage() {
               </div>
 
               {role === "Student" ? (
-                <Form.Item label="Kode Kelas" name="kode_kelas" rules={[{ required: true, message: "Kode kelas wajib diisi" }]}>
-                  <Input size="large" placeholder="Masukkan kode kelas dari pengajar" />
+                <Form.Item label="Kode Kelas (Opsional)" name="kode_kelas" rules={[{ required: false }]}>
+                  <Input size="large" placeholder="Masukkan kode kelas dari pengajar (kosongkan jika tidak ada)" />
                 </Form.Item>
               ) : (
                 <div className="input-row">

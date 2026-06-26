@@ -37,10 +37,10 @@ const Navbar = () => (
           priority
         />
       </div>
-      <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-gray-600">
-        <Link href="/" className="hover:text-purple-700 transition">Home</Link>
-        <Link href="#materi" className="hover:text-purple-700 transition">Materi</Link>
-        <Link href="#aktivitas" className="hover:text-purple-700 transition">Aktivitas</Link>
+      <nav className="hidden md:flex items-center gap-10 text-sm font-semibold">
+        <Link href="/" className="landing-nav-link">Home</Link>
+        <Link href="#materi" className="landing-nav-link">Materi</Link>
+        <Link href="#aktivitas" className="landing-nav-link">Aktivitas</Link>
       </nav>
       <div className="flex items-center gap-2 md:gap-4">
         <Link href="/login">
@@ -66,7 +66,7 @@ const HeroSection = () => (
           Kuasai <br className="hidden sm:block"/> Pemrograman Java <br className="hidden sm:block"/> bersama <span className="text-purple-700">BAJAPRO</span>
         </h1>
         <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-lg font-medium">
-          Tingkatkan kemampuan logika dan pemrograman berorientasi objek Anda dengan kurikulum terstruktur yang dirancang khusus untuk siswa kejuruan.
+          Tingkatkan kemampuan logika dan pemrograman berorientasi objek Anda dengan kurikulum terstruktur.
         </p>
         <div className="flex flex-wrap gap-4">
           <Link href="/register">
@@ -234,7 +234,7 @@ const SistemTerintegrasiSection = () => (
 );
 
 const Footer = () => (
-  <footer className="bg-[#5B21B6] text-white pt-24 pb-10 px-6">
+  <footer className="bg-[#FAF8FD] text-gray-700 pt-24 pb-10 px-6 border-t border-purple-100">
     <div className="max-w-7xl mx-auto grid md:grid-cols-5 gap-12 mb-20">
       <div className="md:col-span-2 pr-8">
         <Image
@@ -244,35 +244,35 @@ const Footer = () => (
           height={50}
           style={{ width: "auto", height: "40px", objectFit: "contain", marginBottom: "24px" }}
         />
-        <p className="text-purple-200 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
+        <p className="text-gray-500 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
       </div>
       <div>
-        <h4 className="font-bold mb-6 text-white text-base">Company</h4>
-        <ul className="space-y-4 text-sm text-purple-200 font-medium">
-          <li><Link href="#" className="hover:text-white transition">About Us</Link></li>
-          <li><Link href="#" className="hover:text-white transition">Blog</Link></li>
+        <h4 className="font-bold mb-6 text-gray-900 text-base">Company</h4>
+        <ul className="space-y-4 text-sm font-medium">
+          <li><Link href="#" className="landing-nav-link">About Us</Link></li>
+          <li><Link href="#" className="landing-nav-link">Blog</Link></li>
         </ul>
       </div>
       <div>
-        <h4 className="font-bold mb-6 text-white text-base">Resources</h4>
-        <ul className="space-y-4 text-sm text-purple-200 font-medium">
-          <li><Link href="#" className="hover:text-white transition">Java Documentation</Link></li>
+        <h4 className="font-bold mb-6 text-gray-900 text-base">Resources</h4>
+        <ul className="space-y-4 text-sm font-medium">
+          <li><Link href="#" className="landing-nav-link">Java Documentation</Link></li>
         </ul>
       </div>
       <div>
-        <h4 className="font-bold mb-6 text-white text-base">Support</h4>
-        <ul className="space-y-4 text-sm text-purple-200 font-medium">
-          <li><Link href="#" className="hover:text-white transition">Help Center</Link></li>
-          <li><Link href="#" className="hover:text-white transition">Contact Us</Link></li>
-          <li><Link href="#" className="hover:text-white transition">Privacy Policy</Link></li>
+        <h4 className="font-bold mb-6 text-gray-900 text-base">Support</h4>
+        <ul className="space-y-4 text-sm font-medium">
+          <li><Link href="#" className="landing-nav-link">Help Center</Link></li>
+          <li><Link href="#" className="landing-nav-link">Contact Us</Link></li>
+          <li><Link href="#" className="landing-nav-link">Privacy Policy</Link></li>
         </ul>
       </div>
     </div>
-    <div className="max-w-7xl mx-auto pt-8 border-t border-purple-800/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-purple-300 font-medium">
+    <div className="max-w-7xl mx-auto pt-8 border-t border-purple-100 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-medium">
       <div>© 2026 BAJAPRO v2.1.1. All rights reserved.</div>
-      <div className="flex gap-5 text-lg">
-        <GlobalOutlined className="cursor-pointer hover:text-white transition" />
-        <ShareAltOutlined className="cursor-pointer hover:text-white transition" />
+      <div className="flex gap-5 text-lg text-gray-400">
+        <GlobalOutlined className="cursor-pointer hover:text-[#5B21B6] transition" />
+        <ShareAltOutlined className="cursor-pointer hover:text-[#5B21B6] transition" />
       </div>
     </div>
   </footer>
