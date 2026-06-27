@@ -18,9 +18,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const compilerBaseUrl = process.env.NODE_ENV === 'production' 
-      ? 'http://127.0.0.1:90' 
-      : 'http://labai.polinema.ac.id:90';
+    const compilerBaseUrl = 'http://labai.polinema.ac.id:90';
 
     let res;
     try {

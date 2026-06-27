@@ -12,11 +12,7 @@ export async function POST(req: Request) {
 
     let res;
     try {
-      // Saat dijalankan di local (npm run dev), kita panggil domain publik.
-      // Saat di-deploy (production), kita panggil 127.0.0.1 (localhost IPv4) untuk menembus firewall (NAT Loopback).
-      const compilerBaseUrl = process.env.NODE_ENV === 'production' 
-        ? 'http://127.0.0.1:90' 
-        : 'http://labai.polinema.ac.id:90';
+      const compilerBaseUrl = 'http://labai.polinema.ac.id:90';
 
       res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/run`, {
         method: 'POST',
