@@ -21,38 +21,61 @@ import {
   SettingOutlined, 
   CheckCircleFilled, 
   GlobalOutlined, 
-  ShareAltOutlined
+  ShareAltOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
 
-const Navbar = () => (
-  <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
-    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Image
-          src="/assets/logo/logo-completed.png"
-          alt="Logo BAJAPRO"
-          width={120}
-          height={40}
-          style={{ width: "auto", height: "32px", objectFit: "contain" }}
-          priority
-        />
+const Navbar = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  return (
+    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/assets/logo/logo-completed.png"
+            alt="Logo BAJAPRO"
+            width={120}
+            height={40}
+            style={{ width: "auto", height: "32px", objectFit: "contain" }}
+            priority
+          />
+        </div>
+        <nav className="hidden md:flex items-center gap-10 text-sm font-semibold">
+          <Link href="/" className="landing-nav-link">Home</Link>
+          <Link href="#materi" className="landing-nav-link">Materi</Link>
+          <Link href="#aktivitas" className="landing-nav-link">Aktivitas</Link>
+        </nav>
+        <div className="hidden md:flex items-center gap-4">
+          <Link href="/login">
+            <Button style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-4 text-sm">Login</Button>
+          </Link>
+          <Link href="/register">
+            <Button type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-4 text-sm">Register</Button>
+          </Link>
+        </div>
+        <div className="md:hidden flex items-center">
+          <Button type="text" icon={<MenuOutlined style={{ fontSize: '20px', color: '#5B21B6' }} />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        </div>
       </div>
-      <nav className="hidden md:flex items-center gap-10 text-sm font-semibold">
-        <Link href="/" className="landing-nav-link">Home</Link>
-        <Link href="#materi" className="landing-nav-link">Materi</Link>
-        <Link href="#aktivitas" className="landing-nav-link">Aktivitas</Link>
-      </nav>
-      <div className="flex items-center gap-2 md:gap-4">
-        <Link href="/login">
-          <Button style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-2 md:px-4 text-xs md:text-sm">Login</Button>
-        </Link>
-        <Link href="/register">
-          <Button type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }} className="px-2 md:px-4 text-xs md:text-sm">Register</Button>
-        </Link>
+      {/* Mobile Menu */}
+      <div className={`md:hidden absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-lg transition-all duration-300 overflow-hidden ${mobileMenuOpen ? 'max-h-[400px] py-4' : 'max-h-0 py-0'}`}>
+        <div className="px-6 flex flex-col gap-4">
+          <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-gray-700 hover:text-purple-700">Home</Link>
+          <Link href="#materi" onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-gray-700 hover:text-purple-700">Materi</Link>
+          <Link href="#aktivitas" onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold text-gray-700 hover:text-purple-700">Aktivitas</Link>
+          <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
+              <Button block style={{ color: '#5B21B6', borderColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Login</Button>
+            </Link>
+            <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
+              <Button block type="primary" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', fontWeight: 600 }}>Register</Button>
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 const HeroSection = () => (
   <section className="pt-40 pb-24 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)' }}>
@@ -62,18 +85,18 @@ const HeroSection = () => (
           <span className="flex items-center justify-center w-5 h-5 bg-purple-100 rounded-full text-[10px]"><PlayCircleOutlined /></span>
           Platform Pembelajaran Java
         </div>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.2] mb-6">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.2] mb-4 md:mb-6">
           Kuasai <br className="hidden sm:block"/> Pemrograman Java <br className="hidden sm:block"/> bersama <span className="text-purple-700">BAJAPRO</span>
         </h1>
-        <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-lg font-medium">
+        <p className="text-base md:text-lg text-gray-600 mb-8 md:mb-10 leading-relaxed max-w-lg font-medium">
           Tingkatkan kemampuan logika dan pemrograman berorientasi objek Anda dengan kurikulum terstruktur.
         </p>
-        <div className="flex flex-wrap gap-4">
-          <Link href="/register">
-            <Button type="primary" size="large" style={{ backgroundColor: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Mulai Belajar Sekarang &rarr;</Button>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-4">
+          <Link href="/register" className="w-full sm:w-auto">
+            <Button type="primary" size="large" block style={{ backgroundColor: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Mulai Belajar Sekarang &rarr;</Button>
           </Link>
-          <Link href="#materi">
-            <Button size="large" style={{ borderColor: '#5B21B6', color: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Lihat Kurikulum</Button>
+          <Link href="#materi" className="w-full sm:w-auto">
+            <Button size="large" block style={{ borderColor: '#5B21B6', color: '#5B21B6', borderRadius: '8px', padding: '0 32px', height: '52px', fontWeight: 700, fontSize: '15px' }}>Lihat Kurikulum</Button>
           </Link>
         </div>
       </div>
@@ -113,11 +136,11 @@ const modules = [
 ]
 
 const AlurBelajarSection = () => (
-  <section id="materi" className="py-28 px-6 bg-white">
+  <section id="materi" className="py-20 md:py-28 px-6 bg-white overflow-hidden">
     <div className="max-w-7xl mx-auto">
-      <div className="mb-14 max-w-2xl">
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Alur Belajar Terstruktur</h2>
-        <p className="text-gray-600 text-lg">Kuasai dasar-dasar Java melalui materi pembelajaran yang terstruktur dan dirancang untuk membantu Anda membangun kemampuan pemrograman secara bertahap.</p>
+      <div className="mb-10 md:mb-14 max-w-2xl">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 md:mb-4">Alur Belajar Terstruktur</h2>
+        <p className="text-gray-600 text-base md:text-lg">Kuasai dasar-dasar Java melalui materi pembelajaran yang terstruktur dan dirancang untuk membantu Anda membangun kemampuan pemrograman secara bertahap.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         {modules.map(mod => (
@@ -135,11 +158,11 @@ const AlurBelajarSection = () => (
 );
 
 const MetodePembelajaranSection = () => (
-  <section id="aktivitas" className="py-24 px-6 bg-white">
-    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+  <section id="aktivitas" className="py-20 md:py-24 px-6 bg-white overflow-hidden">
+    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
       <div>
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Metode Pembelajaran Variatif</h2>
-        <p className="text-gray-600 text-lg mb-12">Dapatkan pengalaman belajar yang lebih interaktif melalui kombinasi materi teks, video, dan latihan.</p>
+        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 md:mb-4">Metode Pembelajaran Variatif</h2>
+        <p className="text-gray-600 text-base md:text-lg mb-8 md:mb-12">Dapatkan pengalaman belajar yang lebih interaktif melalui kombinasi materi teks, video, dan latihan.</p>
         
         <div className="space-y-10">
           {[
@@ -202,10 +225,10 @@ const MetodePembelajaranSection = () => (
 );
 
 const SistemTerintegrasiSection = () => (
-  <section className="py-28 px-6" style={{ background: 'linear-gradient(180deg, #FDF4FF 0%, #F9FAFB 100%)' }}>
+  <section className="py-20 md:py-28 px-6 overflow-hidden" style={{ background: 'linear-gradient(180deg, #FDF4FF 0%, #F9FAFB 100%)' }}>
     <div className="max-w-7xl mx-auto text-center">
-      <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Sistem Terintegrasi untuk Semua</h2>
-      <p className="text-gray-600 text-lg mb-16 max-w-2xl mx-auto font-medium">Pengalaman yang dioptimalkan untuk setiap peran dalam ekosistem pembelajaran.</p>
+      <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 md:mb-4">Sistem Terintegrasi untuk Semua</h2>
+      <p className="text-gray-600 text-base md:text-lg mb-10 md:mb-16 max-w-2xl mx-auto font-medium">Pengalaman yang dioptimalkan untuk setiap peran dalam ekosistem pembelajaran.</p>
       
       <div className="grid md:grid-cols-3 gap-8 text-left">
         {[
@@ -234,15 +257,15 @@ const SistemTerintegrasiSection = () => (
 );
 
 const Footer = () => (
-  <footer className="bg-[#FAF8FD] text-gray-700 pt-24 pb-10 px-6 border-t border-purple-100">
-    <div className="max-w-7xl mx-auto grid md:grid-cols-5 gap-12 mb-20">
-      <div className="md:col-span-2 pr-8">
+  <footer className="bg-[#FAF8FD] text-gray-700 pt-16 md:pt-24 pb-8 md:pb-10 px-6 border-t border-purple-100 overflow-hidden">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-12 mb-12 md:mb-20">
+      <div className="md:col-span-2 md:pr-8">
         <Image
           src="/assets/logo/logo-completed.png"
           alt="Logo BAJAPRO"
           width={150}
           height={50}
-          style={{ width: "auto", height: "40px", objectFit: "contain", marginBottom: "24px" }}
+          style={{ width: "auto", height: "32px", objectFit: "contain", marginBottom: "20px" }}
         />
         <p className="text-gray-500 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
       </div>

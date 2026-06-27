@@ -18,13 +18,23 @@ export async function POST(req: Request) {
       });
     }
 
-    const res = await fetch('http://labai.polinema.ac.id:90/online-compiler/compiler/generate/grade', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    const compilerBaseUrl = process.env.NODE_ENV === 'production' 
+      ? 'http://127.0.0.1:90' 
+      : 'http://labai.polinema.ac.id:90';
+
+    let res;
+    try {
+      res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/generate/grade`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+    } catch (fetchError: any) {
+      console.error('Grader fetch network error:', fetchError);
+      return NextResponse.json({ error: `Grader server is unreachable: ${fetchError.message}` }, { status: 200 });
+    }
 
     const text = await res.text();
     try {
@@ -33,10 +43,10 @@ export async function POST(req: Request) {
     } catch(e) {
       // Jika error HTML dari Django
       console.error('Grade HTML response:', text.substring(0, 500));
-      return NextResponse.json({ error: 'Format response dari Django salah', raw: text }, { status: 500 });
+      return NextResponse.json({ error: `Format response dari Django salah (${res.status})`, raw: text.substring(0, 200) }, { status: 200 });
     }
   } catch (error: any) {
     console.error('Compiler grade error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 200 });
   }
 }

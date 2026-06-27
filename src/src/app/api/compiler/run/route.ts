@@ -10,15 +10,38 @@ export async function POST(req: Request) {
     formData.append('user', user || 'student');
     formData.append('code', code || '');
 
-    const res = await fetch('http://labai.polinema.ac.id:90/online-compiler/compiler/run', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    let res;
+    try {
+      // Saat dijalankan di local (npm run dev), kita panggil domain publik.
+      // Saat di-deploy (production), kita panggil 127.0.0.1 (localhost IPv4) untuk menembus firewall (NAT Loopback).
+      const compilerBaseUrl = process.env.NODE_ENV === 'production' 
+        ? 'http://127.0.0.1:90' 
+        : 'http://labai.polinema.ac.id:90';
 
-    const data = await res.json();
+      res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/run`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+    } catch (fetchError: any) {
+      console.error('Compiler fetch network error:', fetchError);
+      // Return 200 with error so the UI handles it gracefully instead of a 500 error log
+      return NextResponse.json({ error: `Compiler server is unreachable: ${fetchError.message}` }, { status: 200 });
+    }
+
+    let data;
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error('Compiler returned non-JSON:', res.status, text.substring(0, 100));
+      return NextResponse.json({ 
+        error: `Compiler API returned error (${res.status}): ${text.substring(0, 200)}` 
+      }, { status: 200 });
+    }
     
     // Save to CodeHistoryLog
     if (studentId && codeQuestionId) {
@@ -29,8 +52,8 @@ export async function POST(req: Request) {
         logs = `Server Error: ${data.error}`;
       } else {
         const output = data.output || {};
-        if (output.java && output.java.includes("failed")) isError = true;
-        else if (output.test_output && output.test_output.includes("FAILED")) isError = true;
+        if (typeof output.java === 'string' && output.java.includes("failed")) isError = true;
+        else if (typeof output.test_output === 'string' && output.test_output.includes("FAILED")) isError = true;
         
         logs = `[Test Output]\n${output.test_output || ''}`;
       }
@@ -54,6 +77,7 @@ export async function POST(req: Request) {
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Compiler run error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // If it's a completely unexpected error, return 200 so UI can display it
+    return NextResponse.json({ error: error.message }, { status: 200 });
   }
 }
