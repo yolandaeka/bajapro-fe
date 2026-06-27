@@ -482,9 +482,11 @@ export async function GET(
 
       const lessons = await prisma.lesson.findMany({
         where: { courseId },
+        orderBy: { id: 'asc' },
         include: {
           subLessons: {
             where: { isActive: true },
+            orderBy: { id: 'asc' },
             include: {
               codeQuestions: true,
             },
@@ -506,7 +508,7 @@ export async function GET(
         where: { userId: studentId },
       });
 
-      const essayQuestions = await prisma.essayQuestion.findMany();
+      const essayQuestions = await prisma.essayQuestion.findMany({ orderBy: { id: 'asc' } });
 
       const reportData = courseSubLessons.map((sl: any) => {
         const progress = progressList.find((p: any) => p.subLessonId === sl.id);
@@ -1112,9 +1114,11 @@ export async function POST(
               formData.append('esay_answer4', dbQuestion.answer4 || '');
               formData.append('user_answer', essay.answer);
 
-              const compilerBaseUrl = 'http://labai.polinema.ac.id:90';
+              const compilerBaseUrl = process.env.NODE_ENV === 'production'
+                  ? process.env.COMPILER_URL
+                  : 'http://labai.polinema.ac.id:90/online-compiler';
 
-              const res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/generate/grade`, {
+              const res = await fetch(`${compilerBaseUrl}/compiler/generate/grade`, {
                 method: 'POST',
                 body: formData,
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

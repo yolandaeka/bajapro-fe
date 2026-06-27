@@ -4,9 +4,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Ganti URL ini dengan URL asli Django compiler Anda
-    // Disarankan untuk menaruhnya di .env sebagai COMPILER_API_URL
-    const compilerUrl = 'http://labai.polinema.ac.id:90';
+    const compilerUrl = process.env.NODE_ENV === 'production'
+       ? 'http://192.168.60.92:8000'
+       : 'http://labai.polinema.ac.id:90';
 
     const response = await fetch(compilerUrl, {
       method: 'POST',

@@ -18,11 +18,13 @@ export async function POST(req: Request) {
       });
     }
 
-    const compilerBaseUrl = 'http://labai.polinema.ac.id:90';
+    const compilerBaseUrl = process.env.NODE_ENV === 'production'
+       ? process.env.COMPILER_URL
+       : 'http://labai.polinema.ac.id:90/online-compiler';
 
     let res;
     try {
-      res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/generate/grade`, {
+      res = await fetch(`${compilerBaseUrl}/compiler/generate/grade`, {
         method: 'POST',
         body: formData,
         headers: {

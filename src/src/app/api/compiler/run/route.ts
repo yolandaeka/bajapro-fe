@@ -12,9 +12,11 @@ export async function POST(req: Request) {
 
     let res;
     try {
-      const compilerBaseUrl = 'http://labai.polinema.ac.id:90';
+      const compilerBaseUrl = process.env.NODE_ENV === 'production'
+       ? process.env.COMPILER_URL
+       : 'http://labai.polinema.ac.id:90/online-compiler'
 
-      res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/run`, {
+      res = await fetch(`${compilerBaseUrl}/compiler/run`, {
         method: 'POST',
         body: formData,
         headers: {
