@@ -34,7 +34,7 @@ export default function LoginPage() {
         messageApi.error(result.error);
       } else {
         messageApi.success("Login berhasil!");
-        
+
         // Cek sesi untuk melakukan route redirection karena result tidak memuat data user
         const resSession = await fetch("/api/auth/session");
         const session = await resSession.json();
@@ -132,11 +132,11 @@ export default function LoginPage() {
       `}</style>
 
       <div className="auth-container">
-        
+
         {/* BAGIAN KIRI: FORM */}
         <div className="form-side">
           <div className="form-content" style={{ maxWidth: 400, width: "100%" }}>
-            
+
             <Title level={2}>Login</Title>
             <Text type="secondary" style={{ display: "block", marginBottom: 32 }}>
               Login to access your bajapro account
@@ -151,7 +151,7 @@ export default function LoginPage() {
                   { type: "email", message: "Format email salah" },
                 ]}
               >
-                <Input size="large" placeholder="john.doe@gmail.com" />
+                <Input size="large" placeholder="ex. budi@gmail.com" />
               </Form.Item>
 
               <Form.Item

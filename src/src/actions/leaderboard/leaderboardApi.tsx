@@ -1,9 +1,11 @@
 import { UserData } from "@/src/types/users";
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") return process.env.NEXT_PUBLIC_API_URL || "/api";
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined") return "/api";
   if (process.env.VERCEL_URL) return "https://" + process.env.VERCEL_URL + "/api";
-  return "http://localhost:3000/api";
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}/api`;
 };
 const BASE_URL = getBaseUrl();
 

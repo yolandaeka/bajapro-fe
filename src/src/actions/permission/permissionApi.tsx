@@ -2,9 +2,11 @@ import {Permission } from "@/src/types/permission";
 import {RoleData} from "@/src/types/roles"
 
 const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace('/api', '/api/permission');
   if (typeof window !== "undefined") return "/api/permission";
   if (process.env.VERCEL_URL) return "https://" + process.env.VERCEL_URL + "/api/permission";
-  return "http://localhost:3000/api/permission";
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}/api/permission`;
 };
 const BASE_URL = getBaseUrl();
 const USE_REAL_API = true; 

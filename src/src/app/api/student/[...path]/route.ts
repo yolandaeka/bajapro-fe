@@ -1112,7 +1112,11 @@ export async function POST(
               formData.append('esay_answer4', dbQuestion.answer4 || '');
               formData.append('user_answer', essay.answer);
 
-              const res = await fetch('http://labai.polinema.ac.id:90/online-compiler/compiler/generate/grade', {
+              const compilerBaseUrl = process.env.NODE_ENV === 'production' 
+                ? 'http://127.0.0.1:90' 
+                : 'http://labai.polinema.ac.id:90';
+
+              const res = await fetch(`${compilerBaseUrl}/online-compiler/compiler/generate/grade`, {
                 method: 'POST',
                 body: formData,
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

@@ -1,7 +1,9 @@
 const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace('/api', '/api/student');
   if (typeof window !== "undefined") return "/api/student";
   if (process.env.VERCEL_URL) return "https://" + process.env.VERCEL_URL + "/api/student";
-  return "http://localhost:3000/api/student";
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}/api/student`;
 };
 const BASE_URL = getBaseUrl();
 

@@ -214,10 +214,10 @@ export default function RegisterPage() {
               
               <div className="input-row">
                 <Form.Item label="Name" name="name" className="input-col" rules={[{ required: true, message: "Wajib diisi" }]}>
-                  <Input size="large" placeholder="john.doe" />
+                  <Input size="large" placeholder="ex. Budi Santoso" />
                 </Form.Item>
                 <Form.Item label="Email" name="email" className="input-col" rules={[{ required: true, message: "Wajib diisi" }, { type: "email", message: "Email tidak valid" }]}>
-                  <Input size="large" placeholder="john.doe@gmail.com" />
+                  <Input size="large" placeholder="ex. budi@gmail.com" />
                 </Form.Item>
               </div>
 
