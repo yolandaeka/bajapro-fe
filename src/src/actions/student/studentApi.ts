@@ -1,9 +1,14 @@
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace('/api', '/api/student');
-  if (typeof window !== "undefined") return "/api/student";
-  if (process.env.VERCEL_URL) return "https://" + process.env.VERCEL_URL + "/api/student";
-  const port = process.env.PORT || 3000;
-  return `http://localhost:${port}/api/student`;
+  let url = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '/api/student') : "/api/student";
+  if (typeof window === "undefined" && url.startsWith("/")) {
+    if (process.env.VERCEL_URL) {
+      url = "https://" + process.env.VERCEL_URL + url;
+    } else {
+      const port = process.env.PORT || 3000;
+      url = `http://localhost:${port}${url}`;
+    }
+  }
+  return url;
 };
 const BASE_URL = getBaseUrl();
 

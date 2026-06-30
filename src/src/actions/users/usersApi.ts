@@ -60,9 +60,10 @@ let dummyUsers: UserData[] = [
   { id: 4, name: "Budi Santoso", role: "Pelajar", email: "budi@gmail.com", isactive: 0, class_name: "12 IPA 2" },
 ];
 
-export const getUsersApi = async (): Promise<UserData[]> => {
+export const getUsersApi = async (teacherId?: number | null): Promise<UserData[]> => {
   if (USE_REAL_API) {
-    const users = await handleFetch(`${BASE_URL}/users`);
+    const url = teacherId ? `${BASE_URL}/users?teacher_id=${teacherId}` : `${BASE_URL}/users`;
+    const users = await handleFetch(url);
     const roles = await handleFetch(`${BASE_URL}/roles`);
     const classes = await handleFetch(`${BASE_URL}/class`);
     return users.map((u: any) => {

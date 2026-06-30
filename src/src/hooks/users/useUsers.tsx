@@ -32,7 +32,10 @@ export const useUser = (sessionUser?: SessionUser | null) => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getUsersApi();
+      const isPengajar = Number(sessionUser?.role_id) === 2;
+      const teacherId = isPengajar ? Number(sessionUser?.id) : null;
+      
+      const data = await getUsersApi(teacherId);
       setUsers(data);
     } catch (error) {
       messageApi.error("Gagal memuat data user");

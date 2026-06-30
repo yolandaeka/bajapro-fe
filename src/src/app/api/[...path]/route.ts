@@ -339,15 +339,30 @@ export async function GET(
     if (route === 'users') {
       const classId = searchParams.get('class_id');
       const roleId = searchParams.get('role_id');
+      const teacherId = searchParams.get('teacher_id');
       const whereClause: any = {};
+      
       if (classId === 'null' || classId === 'none') {
         whereClause.classId = null;
       } else if (classId) {
         whereClause.classId = Number(classId);
       }
+      
       if (roleId) {
         whereClause.roleId = Number(roleId);
       }
+      
+      if (teacherId) {
+        // Teacher can see students in their classes, and themselves
+        const teacherClasses = await prisma.class.findMany({ where: { teacherId: Number(teacherId) } });
+        const classIds = teacherClasses.map((c: any) => c.id);
+        
+        whereClause.OR = [
+          { id: Number(teacherId) }, // The teacher themselves
+          { classId: { in: classIds } } // Students in their classes
+        ];
+      }
+
       const users = await prisma.user.findMany({ where: whereClause, include: { class: true, role: true }, orderBy: { id: 'asc' } });
       return jsonResponse(users.map((u: any) => ({
         id: u.id, name: u.name, email: u.email, role: u.role?.name || "", isactive: u.isActive ? 1 : 0,
@@ -362,8 +377,15 @@ export async function GET(
       if (name) {
         whereClause.name = name;
       }
-      const permissions = await prisma.permission.findMany({ where: whereClause, orderBy: { id: 'asc' } });
-      return jsonResponse(permissions);
+      const permissions = await prisma.permission.findMany({ 
+        where: whereClause, 
+        include: { roles: true },
+        orderBy: { id: 'asc' } 
+      });
+      return jsonResponse(permissions.map((p: any) => ({
+        ...p,
+        role_ids: p.roles.map((r: any) => r.id)
+      })));
     }
 
     // 13. Roles
@@ -475,6 +497,18 @@ export async function PATCH(
               ...(body.kebenaran !== undefined && { kebenaran: body.kebenaran }),
               ...(body.is_approved_by_teacher !== undefined && { isApprovedByTeacher: body.is_approved_by_teacher }),
               ...(body.teacher_notes !== undefined && { teacherNotes: body.teacher_notes }),
+            }
+          });
+          return jsonResponse(updated);
+        }
+        if (resource === 'permissions') {
+          // Handle many-to-many role_ids update
+          const updated = await prisma.permission.update({
+            where: { id },
+            data: {
+              roles: {
+                set: (body.role_ids || []).map((roleId: number) => ({ id: roleId }))
+              }
             }
           });
           return jsonResponse(updated);

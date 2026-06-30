@@ -2,11 +2,16 @@ import { LevelData, LevelFormData } from "@/src/types/level";
 
 // Ambil alamat URL dari file .env.local
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  if (typeof window !== "undefined") return "/api";
-  if (process.env.VERCEL_URL) return "https://" + process.env.VERCEL_URL + "/api";
-  const port = process.env.PORT || 3000;
-  return `http://localhost:${port}/api`;
+  let url = process.env.NEXT_PUBLIC_API_URL || "/api";
+  if (typeof window === "undefined" && url.startsWith("/")) {
+    if (process.env.VERCEL_URL) {
+      url = "https://" + process.env.VERCEL_URL + url;
+    } else {
+      const port = process.env.PORT || 3000;
+      url = `http://localhost:${port}${url}`;
+    }
+  }
+  return url;
 };
 const BASE_URL = getBaseUrl();
 
