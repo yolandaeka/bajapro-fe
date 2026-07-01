@@ -1114,9 +1114,13 @@ export async function POST(
               formData.append('esay_answer4', dbQuestion.answer4 || '');
               formData.append('user_answer', essay.answer);
 
+              // const compilerBaseUrl = process.env.NODE_ENV === 'production'
+              //     ? process.env.COMPILER_URL
+              //     : 'http://labai.polinema.ac.id:90/online-compiler';
+
               const compilerBaseUrl = process.env.NODE_ENV === 'production'
-                  ? process.env.COMPILER_URL
-                  : 'http://labai.polinema.ac.id:90/online-compiler';
+       ? 'http://192.168.60.92:8000'
+       : 'http://labai.polinema.ac.id:90/online-compiler';
 
               const res = await fetch(`${compilerBaseUrl}/compiler/generate/grade`, {
                 method: 'POST',
