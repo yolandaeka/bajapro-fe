@@ -106,7 +106,7 @@ const StudentSidebar: React.FC<StudentSidebarProps> = ({
               alt="Logo BAJAPRO"
               width={120}
               height={40}
-              style={{ width: "auto", height: "32px", objectFit: "contain" }}
+              style={{ width: "auto", height: "20px", objectFit: "contain" }}
               priority
             />
           </div>

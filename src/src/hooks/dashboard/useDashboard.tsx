@@ -42,7 +42,7 @@ export const useDashboard = () => {
     try {
       const [statsData, approvalRes, classesRes, classesListRes, coursesListRes] = await Promise.all([
         currentUserRole === "Admin" ? DashboardApi.getAdminStats() : DashboardApi.getPengajarStats(currentUserId as string | number),
-        DashboardApi.getPendingApprovals(currentUserRole as "Admin" | "Pengajar"),
+        DashboardApi.getPendingApprovals(currentUserRole as "Admin" | "Pengajar", currentUserId as string | number),
         DashboardApi.getActiveClasses(currentUserRole as "Admin" | "Pengajar", currentUserId as string | number),
         fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/class${currentUserRole === 'Pengajar' ? `?teacher_id=${currentUserId}` : ''}`).then(res => res.json()),
         fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/courses`).then(res => res.json())

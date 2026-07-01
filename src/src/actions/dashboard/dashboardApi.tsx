@@ -62,10 +62,13 @@ export const DashboardApi = {
     const classIds = classes.map((c: any) => c.id);
     const users = await handleFetch(`${BASE_URL}/users?role_id=3`);
     const myStudents = users.filter((u: any) => classIds.includes(u.class_id));
+    const myStudentIds = myStudents.map((u: any) => u.id);
     
     const essayAnswers = await handleFetch(`${BASE_URL}/t_essay_answer`);
-    const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === null);
-    const approvedTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === 1);
+    const myEssayAnswers = essayAnswers.filter((a: any) => myStudentIds.includes(a.user_id));
+    
+    const pendingTasks = myEssayAnswers.filter((a: any) => a.is_approved_by_teacher === null);
+    const approvedTasks = myEssayAnswers.filter((a: any) => a.is_approved_by_teacher === 1);
 
     return {
       pendingApproval: pendingTasks.length,
@@ -86,7 +89,7 @@ export const DashboardApi = {
     return handleFetch(url);
   },
 
-  getPendingApprovals: async (role: "Admin" | "Pengajar"): Promise<ApprovalItem[]> => {
+  getPendingApprovals: async (role: "Admin" | "Pengajar", teacherId?: string | number): Promise<ApprovalItem[]> => {
     if (role === "Admin") {
       const users = await handleFetch(`${BASE_URL}/users?role_id=2`);
       const pendingTeachers = users.filter((t: any) => t.is_approved_by_admin === 0);
@@ -97,8 +100,16 @@ export const DashboardApi = {
       }));
     } else {
       const essayAnswers = await handleFetch(`${BASE_URL}/t_essay_answer`);
-      const users = await handleFetch(`${BASE_URL}/users`);
-      const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === null);
+      let users = await handleFetch(`${BASE_URL}/users?role_id=3`);
+      
+      if (teacherId) {
+        const classes = await handleFetch(`${BASE_URL}/class?teacher_id=${teacherId}`);
+        const classIds = classes.map((c: any) => c.id);
+        users = users.filter((u: any) => classIds.includes(u.class_id));
+      }
+      
+      const myStudentIds = users.map((u: any) => u.id);
+      const pendingTasks = essayAnswers.filter((a: any) => a.is_approved_by_teacher === null && myStudentIds.includes(a.user_id));
       
       return pendingTasks.slice(0, 5).map((task: any) => {
         const student = users.find((u: any) => u.id == task.user_id);

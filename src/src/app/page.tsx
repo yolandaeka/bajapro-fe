@@ -36,7 +36,7 @@ const Navbar = () => {
             alt="Logo BAJAPRO"
             width={120}
             height={40}
-            style={{ width: "auto", height: "32px", objectFit: "contain" }}
+            style={{ width: "auto", height: "24px", objectFit: "contain" }}
             priority
           />
         </div>
@@ -265,7 +265,7 @@ const Footer = () => (
           alt="Logo BAJAPRO"
           width={150}
           height={50}
-          style={{ width: "auto", height: "32px", objectFit: "contain", marginBottom: "20px" }}
+          style={{ width: "auto", height: "24px", objectFit: "contain", marginBottom: "20px" }}
         />
         <p className="text-gray-500 text-sm leading-relaxed mb-6 font-medium">Platform e-course interaktif dengan compiler terintegrasi untuk mencetak developer masa depan.</p>
       </div>

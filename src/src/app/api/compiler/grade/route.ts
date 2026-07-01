@@ -18,8 +18,12 @@ export async function POST(req: Request) {
       });
     }
 
+    // const compilerBaseUrl = process.env.NODE_ENV === 'production'
+    //    ? process.env.COMPILER_URL
+    //    : 'http://labai.polinema.ac.id:90/online-compiler';
+
     const compilerBaseUrl = process.env.NODE_ENV === 'production'
-       ? process.env.COMPILER_URL
+       ? 'http://192.168.60.92:8000'
        : 'http://labai.polinema.ac.id:90/online-compiler';
 
     let res;

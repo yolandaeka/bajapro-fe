@@ -73,8 +73,9 @@ export default function UsersManager() {
   // --- LOGIKA FILTERING ---
   const filteredUsers = users.filter((u) => {
     if (currentUserRole === "Teacher") {
-      if (u.role !== "Students") return false;
-      if (u.id !== currentUserId) return false;
+      if (u.role !== "Students" && u.id !== currentUserId) {
+         return false;
+      }
     }
     if (searchText && !u.name.toLowerCase().includes(searchText.toLowerCase())) return false;
     if (filterRole && u.role !== filterRole) return false;

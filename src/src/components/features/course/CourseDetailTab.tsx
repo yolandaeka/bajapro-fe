@@ -29,12 +29,26 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
     initialData?.img_thumbnail || ""
   );
 
+  const getImageUrl = (img: string) => {
+    if (!img) return "";
+    if (
+      img.startsWith("blob:") ||
+      img.startsWith("/") ||
+      img.startsWith("http://") ||
+      img.startsWith("https://")
+    ) {
+      return img;
+    }
+    return `/uploads/courses/${img}`;
+  };
+
   useEffect(() => {
     if (initialData) {
       form.setFieldsValue({
         course_name: initialData.course_name,
         description: initialData.description,
       });
+      setPreviewImage(initialData.img_thumbnail || "");
     }
   }, [initialData, form]);
 
@@ -136,7 +150,7 @@ export const CourseDetailTab: React.FC<CourseDetailProps> = ({
               {/* BOX PREVIEW GAMBAR */}
               {previewImage && (
                 <Image
-                  src={previewImage.startsWith('blob:') ? previewImage : `/uploads/courses/${previewImage}`}
+                  src={getImageUrl(previewImage)}
                   alt="Preview"
                   style={{ width: 300, height: 300, objectFit: "cover", borderRadius: 8, border: "1px solid #d9d9d9" }}
                 />

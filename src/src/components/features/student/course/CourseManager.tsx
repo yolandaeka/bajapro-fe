@@ -111,7 +111,7 @@ export default function CourseManager() {
                         width: '100%',
                         height: '140px',
                         borderRadius: '8px',
-                        background: `url(/uploads/courses/${course.img_thumbnail}) center/cover no-repeat`,
+                        background: `url(${course.img_thumbnail.startsWith('/') || course.img_thumbnail.startsWith('http') ? course.img_thumbnail : `/uploads/courses/${course.img_thumbnail}`}) center/cover no-repeat`,
                         backgroundColor: '#F3F4F6',
                         marginBottom: "16px"
                       }} />

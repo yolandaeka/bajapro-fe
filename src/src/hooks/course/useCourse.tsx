@@ -144,7 +144,7 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
         messageApi.success(`${type} berhasil dihapus.`);
         onSuccess();
       } catch (error: any) {
-        // ERROR HANDLING UNTUK DATA YANG MASIH BERELASI (FOREIGN KEY)
+     
         console.error(error);
         modalApi.error({
           title: "Gagal Menghapus",
@@ -161,6 +161,7 @@ const handleDeleteGeneral = async (id: number, deleteApi: (id: number) => Promis
       if (isEditing) {
         await updateCourseApi(courseId!, values);
         messageApi.success("Course berhasil diperbarui");
+        setCourseData(prev => prev ? { ...prev, ...values } : null);
       } else {
         const response = await createCourseApi(values);
 

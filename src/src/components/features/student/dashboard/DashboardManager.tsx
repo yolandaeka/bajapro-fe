@@ -253,7 +253,7 @@ export default function DashboardManager() {
                                 width: '100%',
                                 height: '130px',
                                 borderRadius: '12px',
-                                background: `url(/assets/courses/${history.course.img_thumbnail}) center/cover no-repeat`,
+                                background: `url(${history.course.img_thumbnail.startsWith('/') || history.course.img_thumbnail.startsWith('http') ? history.course.img_thumbnail : `/uploads/courses/${history.course.img_thumbnail}`}) center/cover no-repeat`,
                                 backgroundColor: '#F3F4F6',
                                 marginBottom: '16px'
                               }} />
@@ -457,7 +457,7 @@ export default function DashboardManager() {
                             transition: 'all 0.3s'
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: 0, paddingRight: "12px" }}>
                             <div style={{ width: "24px", textAlign: "center" }}>
                               {isTop3 ? (
                                 <div style={{
@@ -497,8 +497,8 @@ export default function DashboardManager() {
                               {getInitials(item.name)}
                             </Avatar>
 
-                            <div>
-                              <Text style={{ fontWeight: 800, fontSize: "14px", display: "block", color: "#1e293b", marginBottom: isTop3 ? "2px" : "0" }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <Text style={{ fontWeight: 800, fontSize: "14px", display: "block", color: "#1e293b", marginBottom: isTop3 ? "2px" : "0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                 {item.name}
                               </Text>
                               {isTop3 && (
@@ -509,8 +509,8 @@ export default function DashboardManager() {
                             </div>
                           </div>
 
-                          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                            <Text style={{ fontWeight: 800, color: "#1e293b", fontSize: isTop3 ? "18px" : "15px", display: "block", lineHeight: "1" }}>
+                          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+                            <Text style={{ fontWeight: 800, color: "#1e293b", fontSize: isTop3 ? "18px" : "15px", display: "block", lineHeight: "1", whiteSpace: "nowrap" }}>
                               {formatScore(item.score)}
                             </Text>
                             {isTop3 && index === 0 && <Text style={{ fontWeight: 800, color: "#9ca3af", fontSize: "9px", marginTop: "4px" }}>PTS</Text>}

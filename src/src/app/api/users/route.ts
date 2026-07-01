@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
   const email = searchParams.get('email');
   const roleId = searchParams.get('role_id');
   const classId = searchParams.get('class_id');
+  const teacherId = searchParams.get('teacher_id');
 
   try {
     if (email) {
@@ -57,6 +58,18 @@ export async function GET(req: NextRequest) {
       } else {
         whereClause.classId = Number(classId);
       }
+    }
+    if (teacherId) {
+      const classesOfTeacher = await prisma.class.findMany({
+        where: { teacherId: Number(teacherId) },
+        select: { id: true },
+      });
+      const classIds = classesOfTeacher.map((c) => c.id);
+      
+      whereClause.OR = [
+        { classId: { in: classIds } },
+        { id: Number(teacherId) },
+      ];
     }
 
     const users = await prisma.user.findMany({
