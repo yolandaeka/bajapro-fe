@@ -104,6 +104,8 @@ export default function MaterialCourseidLevelidManager() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [scoreGained, setScoreGained] = useState<number>(0);
+  const [isCodeCorrect, setIsCodeCorrect] = useState<boolean>(false);
+  const [codeScore, setCodeScore] = useState<number>(0);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -367,6 +369,8 @@ export default function MaterialCourseidLevelidManager() {
       setCodeContent("");
     }
     setEssayAnswers({});
+    setIsCodeCorrect(false);
+    setCodeScore(0);
   };
 
   // Handle run code
@@ -416,8 +420,11 @@ export default function MaterialCourseidLevelidManager() {
       setRunOutput(logs);
       if (!isError) {
         messageApi.success("Kode berhasil dijalankan tanpa error!");
+        setIsCodeCorrect(true);
+        setCodeScore(data.output?.point || (activeSubLesson?.codeQuestion?.score || 30));
       } else {
         messageApi.error("Ada error di kodemu! Silakan periksa output.");
+        setIsCodeCorrect(false);
       }
     } catch (e: any) {
       setRunOutput(`Failed to reach compiler server: ${e.message}`);
@@ -432,9 +439,15 @@ export default function MaterialCourseidLevelidManager() {
     if (!activeSubLesson) return;
 
     // Check code question
-    if (activeSubLesson.codeQuestion && !codeContent.trim()) {
-      messageApi.warning("Silakan isi Code Editor terlebih dahulu!");
-      return;
+    if (activeSubLesson.codeQuestion) {
+      if (!codeContent.trim()) {
+        messageApi.warning("Silakan isi Code Editor terlebih dahulu!");
+        return;
+      }
+      if (!isCodeCorrect) {
+        messageApi.warning("Kode kamu masih ada yang salah atau belum dijalankan (Run). Pastikan kode benar sebelum submit!");
+        return;
+      }
     }
 
     // Check essay answers
@@ -452,7 +465,7 @@ export default function MaterialCourseidLevelidManager() {
         answer: essayAnswers[eq.id] || ""
       }));
 
-      const codePts = activeSubLesson.codeQuestion ? (Number(activeSubLesson.codeQuestion.score) || 30) : 0;
+      const codePts = activeSubLesson.codeQuestion ? codeScore : 0;
       const essayPts = payloadEssay.length * 20;
       const totalPoints = 10 + codePts + essayPts; // 10 pts for wondering score
 
@@ -469,13 +482,14 @@ export default function MaterialCourseidLevelidManager() {
       // Show popup
       setScoreGained(totalPoints);
       setShowSuccessModal(true);
-      // Reload states locally to update progress sidebar
-      const [newProgress, newCourseProg] = await Promise.all([
+      // Reload states locally to update progress sidebar in background
+      Promise.all([
         getStudentProgressApi(studentId, courseId),
         getStudentCourseProgressApi(studentId, courseId)
-      ]);
-      setStudentProgress(newProgress);
-      setCourseProgress(newCourseProg);
+      ]).then(([newProgress, newCourseProg]) => {
+        setStudentProgress(newProgress);
+        setCourseProgress(newCourseProg);
+      }).catch(console.error);
 
     } catch (e) {
       console.error(e);
@@ -552,6 +566,8 @@ export default function MaterialCourseidLevelidManager() {
         setCodeContent("");
       }
       setEssayAnswers({});
+      setIsCodeCorrect(false);
+      setCodeScore(0);
     } else {
       messageApi.success("Luar biasa! Kamu telah melahap habis semua materi level ini. Kembali ke peta petualangan!");
       router.push(`/student/level/${courseId}`);
@@ -669,9 +685,14 @@ export default function MaterialCourseidLevelidManager() {
               </div>
 
               <Title level={2} style={{ fontWeight: 800, color: "#1e293b", margin: "0 0 8px 0" }}>Luar Biasa!</Title>
-              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "32px", lineHeight: 1.6 }}>
+              <Paragraph style={{ color: "#64748b", fontSize: "15px", marginBottom: "20px", lineHeight: 1.6 }}>
                 Kamu telah berhasil menyelesaikan dan mengirimkan materi <span style={{ fontWeight: 700, color: "#531DAB" }}>{activeSubLesson?.title}</span>!
               </Paragraph>
+
+              <div style={{ background: "#f8fafc", padding: "16px", borderRadius: "12px", marginBottom: "32px", border: "1px dashed #cbd5e1" }}>
+                <Text style={{ fontSize: "14px", color: "#64748b", display: "block", marginBottom: "4px" }}>Total Poin Diperoleh</Text>
+                <Text style={{ fontSize: "28px", fontWeight: 800, color: "#f59e0b" }}>+{scoreGained} PTS</Text>
+              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Button
@@ -1146,7 +1167,10 @@ export default function MaterialCourseidLevelidManager() {
                     <div style={{ position: "relative" }}>
                       <textarea
                         value={codeContent}
-                        onChange={(e) => setCodeContent(e.target.value)}
+                        onChange={(e) => {
+                          setCodeContent(e.target.value);
+                          setIsCodeCorrect(false);
+                        }}
                         style={{
                           width: "100%",
                           height: "360px",

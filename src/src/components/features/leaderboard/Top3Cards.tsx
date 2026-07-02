@@ -36,7 +36,7 @@ export const Top3Cards: React.FC<Top3CardsProps> = ({ data }) => {
           <Card
             style={{
               width: 220,
-              height: height,
+              minHeight: height,
               marginTop: marginTop,
               textAlign: "center",
               borderRadius: 16,
